@@ -1,15 +1,21 @@
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { ChevronLeft } from 'lucide-react'
+import { headers as getHeaders } from 'next/headers'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { MarkCompleteButton } from '@/components/ui/MarkCompleteButton'
 import { getPayload } from '@/lib/payload'
 
-export const revalidate = 60
+// Halaman ini butuh status login (untuk tombol "Tandai Selesai" & status
+// completed), jadi tidak bisa ISR murni — lihat catatan di
+// components/layout/Header.tsx soal trade-off dynamic vs ISR yang sama.
+export const dynamic = 'force-dynamic'
 
 export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]'>) {
   const { slug } = await props.params
   const payload = await getPayload()
+  const { user } = await payload.auth({ headers: await getHeaders() })
 
   // overrideAccess: false wajib di setiap query dari halaman publik — lihat
   // catatan di app/(frontend)/page.tsx.
@@ -19,6 +25,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
     depth: 2,
     limit: 1,
     overrideAccess: false,
+    user,
   })
   const lesson = lessonResult.docs[0]
 
@@ -28,6 +35,18 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
 
   const mod = typeof lesson.module === 'object' ? lesson.module : undefined
   const course = mod && typeof mod.course === 'object' ? mod.course : undefined
+
+  let alreadyCompleted = false
+  if (user && course) {
+    const existing = await payload.find({
+      collection: 'progress',
+      where: { and: [{ user: { equals: user.id } }, { lesson: { equals: lesson.id } }] },
+      limit: 1,
+      overrideAccess: false,
+      user,
+    })
+    alreadyCompleted = existing.docs.length > 0
+  }
 
   return (
     <div className="min-h-screen pt-24 pb-12">
@@ -78,6 +97,23 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
               </p>
             </div>
           )}
+
+          <div className="mt-12 pt-8 border-t border-white/10">
+            {user && course ? (
+              <MarkCompleteButton
+                lessonId={lesson.id}
+                courseId={course.id}
+                initiallyCompleted={alreadyCompleted}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                <Link href="/login" className="text-white hover:underline">
+                  Masuk
+                </Link>{' '}
+                untuk menandai lesson ini selesai dan melacak progress belajarmu.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

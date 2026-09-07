@@ -111,7 +111,7 @@ bagian bawah `docs/17-ROADMAP.md`.
 - [x] Fase 0 — Scaffolding & Dev Environment
 - [x] Fase 1 — Data Model & Admin Panel Dasar
 - [x] Fase 2 — Frontend Publik: Katalog Course
-- [ ] Fase 3 — Auth & Progress Tracking
+- [x] Fase 3 — Auth & Progress Tracking
 - [ ] Fase 4 — Blog + Giscus
 - [ ] Fase 5 — Code Sandbox (Judge0)
 - [ ] Fase 6 — Lab Cybersecurity (CTFd)
