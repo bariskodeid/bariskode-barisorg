@@ -35,6 +35,9 @@ USE_DOCS_AS_HOMEPAGE=false
 ################################################################################
 # Judge0 Workers Configuration
 ################################################################################
+# COUNT=2 cocok untuk VM ~12GB RAM (lihat docs/14-DEPLOYMENT-ORACLE-VM.md).
+# Untuk VM kecil (mis. 4GB), turunkan ke 1 dan sesuaikan mem_limit
+# judge0-workers di infra/docker-compose.yml.
 INTERVAL=
 COUNT=2
 MAX_QUEUE_SIZE=50

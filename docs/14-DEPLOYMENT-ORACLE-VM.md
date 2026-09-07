@@ -214,3 +214,31 @@ Dengan kuota 2 OCPU/12GB, alokasi kasar: web (Next.js+Payload) ~1–2GB, Postgre
 ~1–2GB. Masih ada slack untuk MVP dengan traffic rendah–menengah; monitor lewat
 `docker stats` dan siap upgrade VM (paid) kalau salah satu servis konsisten
 mendekati limit.
+
+## 9. Deploy di VM Non-Oracle / RAM Lebih Kecil (mis. 4GB)
+
+Stack ini tidak terikat ke Oracle — bisa jalan di VPS/server Ubuntu mana pun
+selama resource cukup. Untuk RAM di bawah rekomendasi 12GB di atas (mis. 4
+core/4GB, storage bukan bottleneck), `infra/docker-compose.yml` yang
+sebenarnya (bukan contoh YAML di bagian 4, itu sekadar ilustrasi awal) sudah
+diisi `mem_limit` per service yang dikira-kira untuk pas di ~4GB — total hard
+limit ~3.1GB, sisa untuk OS/Docker daemon. Langkah tambahan:
+
+1. **Turunkan worker Judge0**: `infra/judge0/judge0.conf` sudah di-set
+   `COUNT=1` (dari default `2`) supaya sesuai `mem_limit: 700m` di service
+   `judge0-workers` — cukup untuk satu eksekusi kode bersamaan. Naikkan lagi
+   kalau RAM di-upgrade.
+2. **Pasang swap sebagai jaring pengaman**: `sudo infra/setup-swap.sh` (default
+   4GB, idempotent, aman dijalankan ulang). Ini bukan pengganti RAM — tujuannya
+   supaya lonjakan singkat tidak langsung memicu OOM-kill container, dan
+   performa tetap prioritas RAM asli karena `vm.swappiness` di-set rendah (10).
+3. **Pantau setelah deploy**: `docker stats` dan `free -h` selama beberapa hari
+   pertama, khususnya saat ada yang submit kode ke sandbox *dan* pakai CTFd
+   bersamaan. Kalau salah satu container sering kena `mem_limit`-nya (cek
+   `docker inspect <container> | grep OOMKilled`), naikkan limit service itu
+   di `infra/docker-compose.yml` dan turunkan yang lain, atau pertimbangkan
+   pisah CTFd/Judge0 ke VM lain — arsitekturnya sudah mendukung service
+   terpisah lewat subdomain.
+4. Kalau prioritasnya cuma course/blog dulu (bukan sandbox/lab), bisa juga
+   deploy tanpa `judge0-*` dan `ctfd*` dulu (`docker compose up -d postgres
+   web caddy`) dan nyalakan sisanya belakangan setelah lihat sisa RAM riil.

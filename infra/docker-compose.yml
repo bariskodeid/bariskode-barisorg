@@ -22,6 +22,15 @@
 # sama persis dengan MARIADB_PASSWORD di service `ctfd-db`, dan docker compose
 # cuma bisa interpolasi ${VAR} dari .env di root project, bukan dari env_file
 # service lain.
+#
+# `mem_limit` di tiap service sengaja diisi (bukan default) untuk aman jalan
+# di VM 4GB RAM: total hard limit semua service ~3.1GB, sisa ~0.9GB untuk
+# OS/Docker daemon. Ini cgroup memory limit biasa (bukan `deploy.resources`,
+# yang cuma dipakai Swarm) — kalau container kena limit, HANYA container itu
+# yang di-OOM-kill oleh kernel, bukan proses lain di host. Kalau VM kamu
+# >= 8GB RAM, angka-angka ini boleh dihapus/dinaikkan — lihat catatan resource
+# di docs/14-DEPLOYMENT-ORACLE-VM.md. Untuk RAM sekecil ini, jalankan juga
+# `infra/setup-swap.sh` sebagai jaring pengaman tambahan (bukan pengganti).
 
 x-logging: &default-logging
   logging:
@@ -33,6 +42,7 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    mem_limit: 400m
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-bariskode}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME}
@@ -62,6 +72,7 @@ services:
       - '127.0.0.1:${JUDGE0_PORT:-2358}:2358'
     privileged: true
     restart: unless-stopped
+    mem_limit: 200m
     <<: *default-logging
 
   judge0-workers:
@@ -71,6 +82,11 @@ services:
       - ./judge0/judge0.conf:/judge0.conf:ro
     privileged: true
     restart: unless-stopped
+    # 700m: proses worker Rails + isolate cgroup per eksekusi (MEMORY_LIMIT
+    # di judge0.conf 128000KB ~125MB) + overhead. Dengan COUNT=1 di
+    # judge0.conf (diturunkan dari default 2 untuk RAM 4GB), cukup untuk satu
+    # eksekusi bersamaan.
+    mem_limit: 700m
     <<: *default-logging
 
   judge0-db:
@@ -82,6 +98,7 @@ services:
     volumes:
       - judge0_data:/var/lib/postgresql/data
     restart: unless-stopped
+    mem_limit: 200m
     <<: *default-logging
 
   judge0-redis:
@@ -89,6 +106,7 @@ services:
     command: ['bash', '-c', 'docker-entrypoint.sh --appendonly no --requirepass "$$REDIS_PASSWORD"']
     env_file: ./judge0/judge0.conf
     restart: unless-stopped
+    mem_limit: 48m
     <<: *default-logging
 
   # --- CTFd (lab cybersecurity, Fase 6) ---
@@ -113,6 +131,7 @@ services:
     depends_on:
       - ctfd-db
       - ctfd-redis
+    mem_limit: 400m
     <<: *default-logging
 
   ctfd-db:
@@ -133,6 +152,7 @@ services:
         '--wait_timeout=28800',
         '--log-warnings=0',
       ]
+    mem_limit: 400m
     <<: *default-logging
 
   # Redis modern (bukan redis:4 seperti docker-compose.yml resmi CTFd —
@@ -142,6 +162,7 @@ services:
     restart: unless-stopped
     volumes:
       - ctfd_redis_data:/data
+    mem_limit: 48m
     <<: *default-logging
 
   # --- Aplikasi utama & reverse proxy (Fase 7, production only) ---
@@ -155,6 +176,7 @@ services:
       - postgres
     expose:
       - '3000'
+    mem_limit: 600m
     <<: *default-logging
 
   # Jalankan migration lewat `docker compose run --rm web-migrate` (BUKAN
@@ -191,6 +213,7 @@ services:
     depends_on:
       - web
       - ctfd
+    mem_limit: 96m
     <<: *default-logging
 
 volumes:
