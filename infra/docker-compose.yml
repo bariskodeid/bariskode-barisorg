@@ -1,0 +1,27 @@
+# Stack infrastruktur bariskode.org.
+#
+# Fase 0: hanya service `postgres` yang dipakai untuk local development
+# (lihat docs/07-LOCAL-DEVELOPMENT.md). Service Judge0, CTFd, dan Caddy
+# ditambahkan pada fase yang relevan (lihat docs/17-ROADMAP.md, Fase 5/6/7)
+# supaya file ini tidak berisi konfigurasi yang belum ada gunanya.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bariskode}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME}
+      POSTGRES_DB: ${POSTGRES_DB:-bariskode}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-bariskode}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

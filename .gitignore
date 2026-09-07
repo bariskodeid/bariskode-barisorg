@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js / build output
+.next/
+out/
+build/
+dist/
+
+# Env files (never commit real secrets)
+.env
+.env.local
+.env.*.local
+infra/.env
+
+# Payload
+apps/web/public/media/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Claude Code local runtime state
+.claude/
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage/
