@@ -92,8 +92,8 @@ bagian bawah `docs/17-ROADMAP.md`.
 
 ## Status Implementasi
 
-- [ ] Fase 0 — Scaffolding & Dev Environment
-- [ ] Fase 1 — Data Model & Admin Panel Dasar
+- [x] Fase 0 — Scaffolding & Dev Environment
+- [x] Fase 1 — Data Model & Admin Panel Dasar
 - [ ] Fase 2 — Frontend Publik: Katalog Course
 - [ ] Fase 3 — Auth & Progress Tracking
 - [ ] Fase 4 — Blog + Giscus
