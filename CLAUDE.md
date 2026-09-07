@@ -132,17 +132,20 @@ bagian bawah `docs/17-ROADMAP.md`.
   contoh — sudah diverifikasi jalan bersih dari instance kosong. Kurikulum
   lab lengkap (di luar 3 challenge bukti-konsep ini) tetap keputusan konten
   terpisah, lihat docs/12-FEATURE-CYBERSECURITY-LABS.md.
-- **Deployment production (Fase 7) & repo GitHub (Fase 8) belum ada sama
-  sekali** — proyek ini masih git lokal murni, belum pernah di-push. Yang
-  perlu user lakukan sendiri (butuh akun/domain asli, tidak bisa Claude Code
-  lakukan): (1) buat repo GitHub & push; (2) provisioning VM Oracle Cloud
-  (docs/14-DEPLOYMENT-ORACLE-VM.md); (3) arahkan domain ke Cloudflare + DNS
-  records ke IP VM (docs/13-DEPLOYMENT-CLOUDFLARE.md); (4) set GitHub Secrets
-  VM_HOST/VM_USER/VM_SSH_KEY (docs/15-CICD.md) baru `deploy.yml` bisa jalan.
-  Semua config/kode sisi bariskode.org sendiri (Dockerfile, docker-compose.yml
-  lengkap dengan service `web`+`caddy`, Caddyfile, ci.yml, deploy.yml) sudah
-  ditulis & DITES SUNGGUHAN secara lokal (bukan cuma ditulis lalu didiamkan) —
-  lihat detail bug yang ketemu & diperbaiki di commit Fase 7.
+- **Repo GitHub (Fase 8) sudah ada & sinkron** — remote `origin` sudah
+  terpasang (`github-bariskode:bariskodeid/bariskode-barisorg.git`) dan
+  `main` lokal sinkron dengan `origin/main`. Yang **masih** perlu user
+  lakukan sendiri untuk Fase 7 (butuh akun/domain asli, tidak bisa Claude
+  Code lakukan): (1) provisioning VM (Oracle Cloud —
+  docs/14-DEPLOYMENT-ORACLE-VM.md — atau VPS lain, lihat juga bagian 9 di
+  dokumen itu untuk tuning VM RAM kecil mis. 4GB); (2) arahkan domain ke
+  Cloudflare + DNS records ke IP VM (docs/13-DEPLOYMENT-CLOUDFLARE.md); (3)
+  set GitHub Secrets VM_HOST/VM_USER/VM_SSH_KEY (docs/15-CICD.md) baru
+  `deploy.yml` bisa jalan. Semua config/kode sisi bariskode.org sendiri
+  (Dockerfile, docker-compose.yml lengkap dengan service `web`+`caddy`,
+  Caddyfile, ci.yml, deploy.yml) sudah ditulis & DITES SUNGGUHAN secara lokal
+  (bukan cuma ditulis lalu didiamkan) — lihat detail bug yang ketemu &
+  diperbaiki di commit Fase 7.
 - **Checklist keamanan (docs/16-SECURITY-CHECKLIST.md) — sebagian butuh VM
   asli, belum bisa dikerjakan**: rotate ke secret production yang benar-benar
   acak (bukan nilai dev di `.env`), set SSL/TLS Cloudflare ke Full (strict),
