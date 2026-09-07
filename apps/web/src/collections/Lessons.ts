@@ -30,5 +30,56 @@ export const Lessons: CollectionConfig = {
     },
     { name: 'sandboxLanguage', type: 'text', admin: { condition: (data) => data.hasSandbox } },
     { name: 'sandboxStarterCode', type: 'code', admin: { condition: (data) => data.hasSandbox } },
+    {
+      name: 'hasQuiz',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { description: 'Aktifkan quiz pilihan ganda di akhir lesson ini' },
+    },
+    {
+      name: 'quizQuestions',
+      type: 'array',
+      minRows: 1,
+      admin: { condition: (data) => data.hasQuiz },
+      // Validasi server-side: tiap soal harus punya tepat satu opsi benar —
+      // lihat docs/19-FEATURE-QUIZ.md.
+      validate: (value) => {
+        if (!Array.isArray(value)) return true
+        for (const q of value as { question?: string; options?: { isCorrect?: boolean }[] }[]) {
+          const correctCount = (q?.options ?? []).filter((o) => o?.isCorrect).length
+          if (correctCount !== 1) {
+            return `Soal "${q?.question ?? ''}" harus punya tepat satu jawaban benar.`
+          }
+        }
+        return true
+      },
+      fields: [
+        { name: 'question', type: 'text', required: true },
+        {
+          name: 'options',
+          type: 'array',
+          minRows: 2,
+          maxRows: 6,
+          fields: [
+            { name: 'text', type: 'text', required: true },
+            {
+              name: 'isCorrect',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: { description: 'Tandai sebagai satu-satunya jawaban benar' },
+              // KEAMANAN: Lessons.access.read publik (() => true, tanpa auth) —
+              // tanpa field-level access ini, kunci jawaban bocor ke siapa saja
+              // yang fetch lesson (REST/GraphQL/frontend) sebelum mengerjakan
+              // quiz. Pola sama seperti Users.role (field access lebih ketat
+              // dari collection-level access). Grading di /api/quiz sengaja
+              // pakai overrideAccess:true untuk bisa baca field ini.
+              access: {
+                read: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'instructor',
+              },
+            },
+          ],
+        },
+      ],
+    },
   ],
 }

@@ -6,7 +6,17 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
-import { Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts } from './collections'
+import {
+  Users,
+  Categories,
+  Media,
+  Courses,
+  Modules,
+  Lessons,
+  Progress,
+  Posts,
+  Certificates,
+} from './collections'
 
 const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
@@ -20,7 +30,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts],
+  collections: [Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts, Certificates],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

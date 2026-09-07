@@ -6,6 +6,9 @@ import { notFound } from 'next/navigation'
 
 import { CodeSandbox } from '@/components/CodeSandbox'
 import { MarkCompleteButton } from '@/components/ui/MarkCompleteButton'
+import { Quiz } from '@/components/ui/Quiz'
+import { dictionaries } from '@/lib/i18n/dictionaries'
+import { getLocale } from '@/lib/i18n/getLocale'
 import { isAllowedLanguage } from '@/lib/judge0'
 import { getPayload } from '@/lib/payload'
 
@@ -17,6 +20,8 @@ export const dynamic = 'force-dynamic'
 export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]'>) {
   const { slug } = await props.params
   const payload = await getPayload()
+  const locale = await getLocale()
+  const t = dictionaries[locale]
   const { user } = await payload.auth({ headers: await getHeaders() })
 
   // overrideAccess: false wajib di setiap query dari halaman publik — lihat
@@ -41,12 +46,21 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
   const category = course && typeof course.category === 'object' ? course.category : undefined
   const isCybersecurityLesson = category?.slug === 'cybersecurity'
 
+  // Sanitasi eksplisit: hanya teruskan `question`/`text` ke client component,
+  // TIDAK PERNAH `isCorrect` (harusnya sudah dikecualikan oleh field access di
+  // Lessons.ts untuk role student, ini lapis kedua yang eksplisit di kode).
+  const quizQuestions = (lesson.quizQuestions ?? []).map((q) => ({
+    question: q.question,
+    options: (q.options ?? []).map((o) => ({ text: o.text })),
+  }))
+
   const normalizedSandboxLanguage = lesson.sandboxLanguage?.toLowerCase().trim()
   const sandboxLanguage = isAllowedLanguage(normalizedSandboxLanguage)
     ? normalizedSandboxLanguage
     : undefined
 
   let alreadyCompleted = false
+  let existingScore: number | null = null
   if (user && course) {
     const existing = await payload.find({
       collection: 'progress',
@@ -56,6 +70,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
       user,
     })
     alreadyCompleted = existing.docs.length > 0
+    existingScore = existing.docs[0]?.score ?? null
   }
 
   return (
@@ -98,9 +113,9 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
                 <div className="rounded-xl border border-white/10 bg-white/5 p-6">
                   <p className="text-sm text-muted-foreground">
                     <Link href="/login" className="text-white hover:underline">
-                      Masuk
+                      {t.nav.login}
                     </Link>{' '}
-                    untuk mencoba sandbox kode interaktif di lesson ini.
+                    {t.lesson.loginToSandbox}
                   </p>
                 </div>
               ) : sandboxLanguage ? (
@@ -111,8 +126,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
               ) : (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-6">
                   <p className="text-sm text-muted-foreground">
-                    Bahasa sandbox lesson ini (&quot;{lesson.sandboxLanguage}&quot;) belum
-                    didukung.
+                    {t.lesson.sandboxUnsupported(lesson.sandboxLanguage ?? '')}
                   </p>
                 </div>
               )}
@@ -128,15 +142,12 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
             >
               <div>
                 <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">
-                  Lab Praktik
+                  {t.lesson.labTitle}
                 </p>
                 <p className="text-lg font-bold group-hover:text-green-400 transition-colors">
-                  Buka Lab CTF
+                  {t.lesson.openLab}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Ruang lab terpisah — perlu akun sendiri di sana (tidak terhubung dengan akun
-                  bariskode.org ini).
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t.lesson.labDesc}</p>
               </div>
               <ExternalLink className="w-5 h-5 shrink-0 text-muted-foreground group-hover:text-white transition-colors" />
             </a>
@@ -144,17 +155,27 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
 
           <div className="mt-12 pt-8 border-t border-white/10">
             {user && course ? (
-              <MarkCompleteButton
-                lessonId={lesson.id}
-                courseId={course.id}
-                initiallyCompleted={alreadyCompleted}
-              />
+              lesson.hasQuiz && quizQuestions.length > 0 ? (
+                <Quiz
+                  lessonId={lesson.id}
+                  courseId={course.id}
+                  questions={quizQuestions}
+                  initiallyCompleted={alreadyCompleted}
+                  initialScore={existingScore}
+                />
+              ) : (
+                <MarkCompleteButton
+                  lessonId={lesson.id}
+                  courseId={course.id}
+                  initiallyCompleted={alreadyCompleted}
+                />
+              )
             ) : (
               <p className="text-sm text-muted-foreground">
                 <Link href="/login" className="text-white hover:underline">
-                  Masuk
+                  {t.nav.login}
                 </Link>{' '}
-                untuk menandai lesson ini selesai dan melacak progress belajarmu.
+                {t.lesson.loginToComplete}
               </p>
             )}
           </div>

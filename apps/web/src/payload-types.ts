@@ -75,6 +75,7 @@ export interface Config {
     lessons: Lesson;
     progress: Progress;
     posts: Post;
+    certificates: Certificate;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     lessons: LessonsSelect<false> | LessonsSelect<true>;
     progress: ProgressSelect<false> | ProgressSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    certificates: CertificatesSelect<false> | CertificatesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -292,6 +294,26 @@ export interface Lesson {
   hasSandbox?: boolean | null;
   sandboxLanguage?: string | null;
   sandboxStarterCode?: string | null;
+  /**
+   * Aktifkan quiz pilihan ganda di akhir lesson ini
+   */
+  hasQuiz?: boolean | null;
+  quizQuestions?:
+    | {
+        question: string;
+        options?:
+          | {
+              text: string;
+              /**
+               * Tandai sebagai satu-satunya jawaban benar
+               */
+              isCorrect?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -353,6 +375,18 @@ export interface Post {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certificates".
+ */
+export interface Certificate {
+  id: number;
+  user: number | User;
+  course: number | Course;
+  issuedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -406,6 +440,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'certificates';
+        value: number | Certificate;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -578,6 +616,20 @@ export interface LessonsSelect<T extends boolean = true> {
   hasSandbox?: T;
   sandboxLanguage?: T;
   sandboxStarterCode?: T;
+  hasQuiz?: T;
+  quizQuestions?:
+    | T
+    | {
+        question?: T;
+        options?:
+          | T
+          | {
+              text?: T;
+              isCorrect?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -619,6 +671,17 @@ export interface PostsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certificates_select".
+ */
+export interface CertificatesSelect<T extends boolean = true> {
+  user?: T;
+  course?: T;
+  issuedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

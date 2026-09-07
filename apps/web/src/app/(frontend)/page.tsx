@@ -1,6 +1,8 @@
 import { ArrowRight, Code2, Database, LineChart, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 
+import { dictionaries } from '@/lib/i18n/dictionaries'
+import { getLocale } from '@/lib/i18n/getLocale'
 import { getPayload } from '@/lib/payload'
 
 const categoryIcons: Record<string, typeof Code2> = {
@@ -21,6 +23,8 @@ export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   const payload = await getPayload()
+  const locale = await getLocale()
+  const t = dictionaries[locale]
 
   // overrideAccess: false wajib di setiap query dari halaman publik — Local
   // API Payload defaultnya overrideAccess: true, yang membypass access
@@ -51,19 +55,18 @@ export default async function HomePage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-6 md:mb-8">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Open source &amp; gratis
+              {t.home.badge}
             </span>
           </div>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 md:mb-8 leading-[1.1] md:leading-[0.9]">
-            Belajar coding, data,
+            {t.home.heroTitle1}
             <br />
-            <span className="text-muted-foreground">sampai cybersecurity.</span>
+            <span className="text-muted-foreground">{t.home.heroTitle2}</span>
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-12 leading-relaxed">
-            Materi terstruktur, lab praktik langsung di browser, dan progress
-            tracking — semuanya gratis dan open source di bariskode.org.
+            {t.home.heroDesc}
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
@@ -71,14 +74,14 @@ export default async function HomePage() {
               href="/courses"
               className="group inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-mono text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors rounded-lg"
             >
-              Mulai Belajar
+              {t.home.startLearning}
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <a
               href="#kategori"
               className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 bg-white/5 backdrop-blur-sm text-white font-mono text-sm font-bold uppercase tracking-wider hover:bg-white/10 transition-colors rounded-lg"
             >
-              Lihat Kategori
+              {t.home.viewCategories}
             </a>
           </div>
         </div>
@@ -87,7 +90,7 @@ export default async function HomePage() {
         {categories.docs.length > 0 && (
           <div id="kategori" className="scroll-mt-24 mb-16 md:mb-24">
             <h2 className="text-sm font-mono uppercase tracking-widest text-muted-foreground mb-6 text-center">
-              Kategori
+              {t.home.categories}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
               {categories.docs.map((category) => {
@@ -118,7 +121,7 @@ export default async function HomePage() {
         {highlightCourses.docs.length > 0 && (
           <div className="border-t border-white/10 pt-12">
             <h2 className="text-sm font-mono uppercase tracking-widest text-muted-foreground mb-6 text-center">
-              Kursus Pilihan
+              {t.home.featuredCourses}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {highlightCourses.docs.map((course) => {
@@ -144,7 +147,7 @@ export default async function HomePage() {
                       {course.title}
                     </h3>
                     <div className="mt-auto pt-4 flex items-center gap-2 text-sm text-muted-foreground group-hover:text-white transition-colors">
-                      Lihat kursus
+                      {t.home.viewCourse}
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </div>
                   </Link>

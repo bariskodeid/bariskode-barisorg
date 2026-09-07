@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
+import { T } from '@/lib/i18n/LocaleContext'
 import { getPayload } from '@/lib/payload'
 import type { Lesson, Module } from '@/payload-types'
 
@@ -101,11 +102,13 @@ export default async function CourseDetailPage(props: PageProps<'/courses/[slug]
           )}
 
           <h2 className="text-sm font-mono uppercase tracking-widest text-muted-foreground mb-4">
-            Materi
+            <T ns="courseDetail" k="materials" />
           </h2>
 
           {modulesResult.docs.length === 0 ? (
-            <p className="text-muted-foreground">Belum ada materi untuk kursus ini.</p>
+            <p className="text-muted-foreground">
+              <T ns="courseDetail" k="empty" />
+            </p>
           ) : (
             <div className="space-y-6">
               {modulesResult.docs.map((mod: Module) => (

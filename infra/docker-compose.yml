@@ -197,6 +197,22 @@ services:
     entrypoint: ['pnpm', 'payload']
     profiles: ['migrate']
 
+  # One-off script job (mis. reminder email cron) lewat `payload run`, pola
+  # persis sama dengan web-migrate di atas (stage `builder`, butuh source
+  # lengkap). Pakai: `docker compose run --rm web-script
+  # scripts/send-progress-reminders.ts` — lihat docs/14-DEPLOYMENT-ORACLE-VM.md
+  # untuk contoh entry cron.
+  web-script:
+    build:
+      context: ../apps/web
+      target: builder
+    env_file: ../apps/web/.env
+    depends_on:
+      - postgres
+    entrypoint: ['pnpm', 'payload', 'run']
+    profiles: ['script']
+    mem_limit: 400m
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped

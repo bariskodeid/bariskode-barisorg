@@ -97,15 +97,39 @@ manual.
 **Definition of done**: semua item checklist tercentang, platform siap diumumkan
 publik.
 
+## Fase 10 — Sertifikat, Notifikasi Email, Quiz Builder, i18n UI
+
+Diangkat dari backlog "Fase Lanjutan" di bawah atas permintaan eksplisit —
+4 dari 6 item backlog, dua sisanya (search, SSO CTFd) tetap backlog.
+
+- **Sertifikat PDF**: collection `Certificates`, generate via
+  `@react-pdf/renderer` (bukan Puppeteer — VM production 4GB RAM), auto-issued
+  saat course 100% selesai lewat `GET /api/certificates/[courseId]`. Lihat
+  `docs/18-FEATURE-CERTIFICATES.md`.
+- **Notifikasi email**: dua trigger — course baru published (hook
+  `afterChange` di `Courses.ts`) dan reminder progress mandek (script cron
+  `scripts/send-progress-reminders.ts`, service `web-script` di
+  `infra/docker-compose.yml`). Pakai SMTP_* yang sudah di-scaffold. Lihat
+  `docs/21-FEATURE-EMAIL-NOTIFICATIONS.md`.
+- **Quiz builder**: pilihan ganda saja, field `hasQuiz`/`quizQuestions` di
+  `Lessons`, grading di `POST /api/quiz`, skor tersimpan di `Progress.score`
+  (field yang sudah ada, sebelumnya placeholder kosong). Field jawaban benar
+  (`isCorrect`) dikunci field-access dari role student — lihat
+  `docs/19-FEATURE-QUIZ.md`.
+- **i18n UI**: toggle Indonesia (default)/English untuk string interface
+  SAJA — konten course/lesson/blog dari Payload TETAP Bahasa Indonesia, tidak
+  diterjemahkan (lihat catatan di `docs/01-PRD.md`). Cookie-based, bukan
+  routing per-locale. Lihat `docs/20-FEATURE-I18N-UI.md`.
+
+**Definition of done**: keempatnya lolos `pnpm lint && pnpm typecheck && pnpm
+build`, migration schema Certificates/Lessons dibuat via `payload
+migrate:create` dan diverifikasi jalan lokal.
+
 ---
 
 ## Fase Lanjutan (Backlog, di luar v1)
 
 Dicatat di sini supaya tidak hilang, tapi **tidak dikerjakan sampai v1 stabil**:
 
-- Sertifikat penyelesaian course (generate PDF otomatis).
 - Search full-text (Meilisearch/Typesense self-hosted).
 - SSO antara Payload dan CTFd.
-- Multi-bahasa (i18n) untuk konten.
-- Quiz builder terintegrasi (bukan hanya `score` manual di Progress).
-- Notifikasi email (course baru, reminder progress).

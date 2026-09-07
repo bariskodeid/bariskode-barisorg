@@ -4,8 +4,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
+import { useLocale } from '@/lib/i18n/LocaleContext'
+
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useLocale()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -26,7 +29,7 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data?.errors?.[0]?.message || data?.message || 'Email atau password salah.')
+        setError(data?.errors?.[0]?.message || data?.message || t.auth.login.genericError)
         setLoading(false)
         return
       }
@@ -34,7 +37,7 @@ export default function LoginPage() {
       router.push('/my-learning')
       router.refresh()
     } catch {
-      setError('Tidak bisa terhubung ke server. Coba lagi.')
+      setError(t.auth.login.networkError)
       setLoading(false)
     }
   }
@@ -42,15 +45,13 @@ export default function LoginPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold tracking-tighter mb-2 text-center">Masuk</h1>
-        <p className="text-sm text-muted-foreground text-center mb-8">
-          Lanjutkan progress belajarmu di bariskode.org.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tighter mb-2 text-center">{t.auth.login.title}</h1>
+        <p className="text-sm text-muted-foreground text-center mb-8">{t.auth.login.subtitle}</p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label htmlFor="email" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Email
+              {t.auth.login.email}
             </label>
             <input
               id="email"
@@ -67,7 +68,7 @@ export default function LoginPage() {
               htmlFor="password"
               className="text-xs font-mono uppercase tracking-wider text-muted-foreground"
             >
-              Password
+              {t.auth.login.password}
             </label>
             <input
               id="password"
@@ -86,14 +87,14 @@ export default function LoginPage() {
             disabled={loading}
             className="mt-2 inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-black font-mono text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors rounded-lg disabled:opacity-50"
           >
-            {loading ? 'Memproses...' : 'Masuk'}
+            {loading ? t.auth.login.submitting : t.auth.login.submit}
           </button>
         </form>
 
         <p className="text-sm text-muted-foreground text-center mt-6">
-          Belum punya akun?{' '}
+          {t.auth.login.noAccount}{' '}
           <Link href="/register" className="text-white hover:underline">
-            Daftar
+            {t.auth.login.register}
           </Link>
         </p>
       </div>

@@ -185,8 +185,8 @@ bagian bawah `docs/17-ROADMAP.md`.
       lewat simulasi lokal (migrate fresh DB lalu build, persis alur CI).
       `deploy.yml` ditulis sesuai docs/15-CICD.md tapi baru template — perlu
       GitHub Secrets (VM_HOST/VM_USER/VM_SSH_KEY) yang cuma ada setelah Fase
-      7 benar-benar dieksekusi, dan repo ini belum pernah di-push ke GitHub
-      sama sekali (masih git lokal murni).
+      7 benar-benar dieksekusi. Repo GitHub sendiri sudah ada & sinkron
+      (`origin` terpasang, `main` lokal = `origin/main`).
 - [x] Fase 9 — Security Hardening & Launch Checklist — semua item yang bisa
       dikerjakan tanpa VM/domain asli sudah selesai: rate limit ditambah ke
       `/api/progress` (sebelumnya cuma `/api/sandbox`), security header
@@ -200,8 +200,42 @@ bagian bawah `docs/17-ROADMAP.md`.
       restore backup) dicatat di "Pending Aksi Manual" di atas — ini bukan
       "belum selesai", tapi memang tidak bisa dikerjakan sebelum Fase 7
       benar-benar dieksekusi oleh user.
+- [x] Fase 10 — Sertifikat PDF, Notifikasi Email, Quiz Builder, i18n UI —
+      diangkat dari backlog atas permintaan eksplisit user. Sertifikat:
+      collection `Certificates` + `@react-pdf/renderer` (bukan Puppeteer,
+      VM 4GB RAM) + `GET /api/certificates/[courseId]`. Email: hook
+      `afterChange` di Courses.ts (course published) + script cron
+      `scripts/send-progress-reminders.ts` (reminder progress mandek,
+      dijalankan via `payload run`, service `web-script` baru di
+      docker-compose). Quiz: field `hasQuiz`/`quizQuestions` pilihan-ganda
+      di Lessons (field `isCorrect` dikunci field-access dari role student
+      — lihat docs/19-FEATURE-QUIZ.md soal kenapa ini penting), grading di
+      `POST /api/quiz`, skor ke `Progress.score` (field lama yang sebelumnya
+      placeholder kosong). i18n: toggle ID/EN UI-only (cookie-based, BUKAN
+      next-intl/routing per-locale) — konten CMS tetap Indonesia, lihat
+      docs/20-FEATURE-I18N-UI.md soal kenapa root layout sengaja tidak baca
+      cookies() (supaya ISR courses/blog tidak ikut rusak). Migration
+      Certificates & Lessons quiz fields sudah dibuat via `payload
+      migrate:create` & diverifikasi jalan lokal. Semua lolos `pnpm lint &&
+      pnpm typecheck && pnpm build`, DAN sudah diverifikasi end-to-end via
+      `pnpm dev` sungguhan (bukan cuma build-time): submit quiz dengan
+      jawaban benar → skor 100% & lesson auto-completed, isCorrect
+      dikonfirmasi TIDAK muncul di response fetch lesson sebagai role
+      student, resubmit quiz idempotent (balikan `alreadyCompleted`), course
+      100% → download sertifikat PDF valid (`%PDF-1.3` magic bytes), flip
+      course draft→published men-trigger hook email (log graceful skip
+      karena SMTP_HOST kosong di dev, tidak crash), script
+      `send-progress-reminders.ts` jalan bersih via `payload run`, dan
+      locale switch ID/EN lewat cookie mengubah teks UI di halaman
+      server-rendered (`force-dynamic`) tanpa mengubah konten course. SATU
+      bug ketemu & diperbaiki saat smoke test: komponen `<T>` awalnya
+      menerima function sebagai children yang dilempar dari Server ke Client
+      Component (RSC tidak bisa serialize function lewat boundary itu, bikin
+      /courses & /blog 500) — diganti jadi props `ns`/`k` (string,
+      serializable). Belum dites: pengiriman email SUNGGUHAN ke SMTP asli
+      (cuma dites sampai titik "siap kirim, SMTP kosong di dev").
 
-Semua 9 fase v1 di docs/17-ROADMAP.md sudah dikerjakan sejauh yang bisa
+Semua 9 fase v1 + Fase 10 di docs/17-ROADMAP.md sudah dikerjakan sejauh yang bisa
 dilakukan tanpa infrastruktur production asli. Sisa pekerjaan proyek ini
 adalah aksi manual user (lihat "Pending Aksi Manual" di atas) + fase lanjutan
 di luar v1 (bagian bawah docs/17-ROADMAP.md) kalau dibutuhkan nanti.

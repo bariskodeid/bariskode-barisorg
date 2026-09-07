@@ -11,8 +11,9 @@ Semua collection didefinisikan di `src/collections/*.ts` dan didaftarkan di
 
 ```
 Users ──┬──< Progress >── Lessons ──< Modules ──< Courses >── Categories
-        │                                                        │
-        └──< Posts >───────────────────────────────────────────┘
+        │                                             │          │
+        ├──< Certificates >──────────────────────────┘          │
+        └──< Posts >──────────────────────────────────────────────┘
                   └── (optional) relatedCourse → Courses
 Media ──< (dipakai oleh Courses.thumbnail, Lessons.video, Posts.featuredImage)
 ```
@@ -169,6 +170,40 @@ export const Lessons: CollectionConfig = {
     },
     { name: 'sandboxLanguage', type: 'text', admin: { condition: (data) => data.hasSandbox } },
     { name: 'sandboxStarterCode', type: 'code', admin: { condition: (data) => data.hasSandbox } },
+    {
+      name: 'hasQuiz',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { description: 'Aktifkan quiz pilihan ganda di akhir lesson ini' },
+    },
+    {
+      name: 'quizQuestions',
+      type: 'array',
+      minRows: 1,
+      admin: { condition: (data) => data.hasQuiz },
+      // validate: tiap soal harus tepat satu isCorrect — lihat
+      // docs/19-FEATURE-QUIZ.md & src/collections/Lessons.ts.
+      fields: [
+        { name: 'question', type: 'text', required: true },
+        {
+          name: 'options',
+          type: 'array',
+          minRows: 2,
+          maxRows: 6,
+          fields: [
+            { name: 'text', type: 'text', required: true },
+            {
+              name: 'isCorrect',
+              type: 'checkbox',
+              // KEAMANAN: field-level access dikunci ke admin/instructor —
+              // Lessons.access.read publik, tanpa ini kunci jawaban bocor ke
+              // client sebelum quiz dikerjakan. Lihat docs/19-FEATURE-QUIZ.md.
+              access: { read: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'instructor' },
+            },
+          ],
+        },
+      ],
+    },
   ],
 }
 ```
@@ -197,7 +232,7 @@ export const Progress: CollectionConfig = {
     { name: 'lesson', type: 'relationship', relationTo: 'lessons', required: true },
     { name: 'course', type: 'relationship', relationTo: 'courses', required: true }, // denormalized, mempercepat query "progress per course"
     { name: 'completedAt', type: 'date', required: true, defaultValue: () => new Date().toISOString() },
-    { name: 'score', type: 'number' }, // opsional, untuk lesson dengan quiz
+    { name: 'score', type: 'number' }, // diisi POST /api/quiz saat lesson.hasQuiz — lihat docs/19-FEATURE-QUIZ.md
   ],
   indexes: [{ fields: ['user', 'lesson'], unique: true }], // cegah duplikat record
 }
@@ -235,15 +270,47 @@ export const Posts: CollectionConfig = {
 }
 ```
 
+## `Certificates`
+
+Diterbitkan otomatis oleh `GET /api/certificates/[courseId]` saat course user
+100% selesai (lihat `docs/18-FEATURE-CERTIFICATES.md`) — tidak ada UI admin
+untuk membuat manual.
+
+```ts
+// src/collections/Certificates.ts
+import type { CollectionConfig } from 'payload'
+
+export const Certificates: CollectionConfig = {
+  slug: 'certificates',
+  admin: { useAsTitle: 'id' },
+  access: {
+    read: ({ req: { user } }) => (user?.role === 'admin' ? true : { user: { equals: user?.id } }),
+    create: ({ req: { user }, data }) => {
+      if (!user) return false
+      if (user.role === 'admin') return true
+      return data?.user === user.id
+    },
+    update: () => false, // immutable
+    delete: ({ req: { user } }) => user?.role === 'admin',
+  },
+  fields: [
+    { name: 'user', type: 'relationship', relationTo: 'users', required: true },
+    { name: 'course', type: 'relationship', relationTo: 'courses', required: true },
+    { name: 'issuedAt', type: 'date', required: true, defaultValue: () => new Date().toISOString() },
+  ],
+  indexes: [{ fields: ['user', 'course'], unique: true }],
+}
+```
+
 ## Registrasi di `payload.config.ts`
 
 ```ts
 // src/payload.config.ts (cuplikan relevan)
-import { Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts } from './collections'
+import { Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts, Certificates } from './collections'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 
 export default buildConfig({
-  collections: [Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts],
+  collections: [Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts, Certificates],
   plugins: [
     seoPlugin({
       collections: ['posts', 'courses'],

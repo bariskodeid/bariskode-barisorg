@@ -4,8 +4,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
+import { useLocale } from '@/lib/i18n/LocaleContext'
+
 export default function RegisterPage() {
   const router = useRouter()
+  const { t } = useLocale()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -26,7 +29,7 @@ export default function RegisterPage() {
       const createData = await createRes.json()
 
       if (!createRes.ok) {
-        setError(createData?.errors?.[0]?.message || createData?.message || 'Registrasi gagal.')
+        setError(createData?.errors?.[0]?.message || createData?.message || t.auth.register.genericError)
         setLoading(false)
         return
       }
@@ -47,7 +50,7 @@ export default function RegisterPage() {
       router.push('/my-learning')
       router.refresh()
     } catch {
-      setError('Tidak bisa terhubung ke server. Coba lagi.')
+      setError(t.auth.register.networkError)
       setLoading(false)
     }
   }
@@ -55,15 +58,13 @@ export default function RegisterPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold tracking-tighter mb-2 text-center">Daftar Akun</h1>
-        <p className="text-sm text-muted-foreground text-center mb-8">
-          Gratis, langsung bisa tandai progress belajar.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tighter mb-2 text-center">{t.auth.register.title}</h1>
+        <p className="text-sm text-muted-foreground text-center mb-8">{t.auth.register.subtitle}</p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label htmlFor="name" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Nama
+              {t.auth.register.name}
             </label>
             <input
               id="name"
@@ -77,7 +78,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="email" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Email
+              {t.auth.register.email}
             </label>
             <input
               id="email"
@@ -94,7 +95,7 @@ export default function RegisterPage() {
               htmlFor="password"
               className="text-xs font-mono uppercase tracking-wider text-muted-foreground"
             >
-              Password
+              {t.auth.register.password}
             </label>
             <input
               id="password"
@@ -114,14 +115,14 @@ export default function RegisterPage() {
             disabled={loading}
             className="mt-2 inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-black font-mono text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors rounded-lg disabled:opacity-50"
           >
-            {loading ? 'Memproses...' : 'Daftar'}
+            {loading ? t.auth.register.submitting : t.auth.register.submit}
           </button>
         </form>
 
         <p className="text-sm text-muted-foreground text-center mt-6">
-          Sudah punya akun?{' '}
+          {t.auth.register.hasAccount}{' '}
           <Link href="/login" className="text-white hover:underline">
-            Masuk
+            {t.auth.register.login}
           </Link>
         </p>
       </div>

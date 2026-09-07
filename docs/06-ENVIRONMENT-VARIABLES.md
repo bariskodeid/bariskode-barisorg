@@ -20,7 +20,10 @@ NEXT_PUBLIC_GISCUS_CATEGORY_ID=CHANGE_ME
 JUDGE0_API_URL=http://judge0-server:2358
 JUDGE0_API_KEY= # kosongkan jika instance self-hosted tanpa auth di jaringan internal
 
-# --- Email (opsional, untuk reset password dsb) ---
+# --- Email (opsional — kosongkan untuk skip kirim) ---
+# Dipakai untuk notifikasi course baru published & reminder progress mandek
+# (docs/21-FEATURE-EMAIL-NOTIFICATIONS.md), BUKAN reset password (belum ada
+# flow itu di v1).
 SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=

@@ -4,20 +4,23 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher'
+import { useLocale } from '@/lib/i18n/LocaleContext'
 import { cn } from '@/lib/utils'
 
 import { LogoutButton } from './LogoutButton'
 
-// Nav item ditambah bertahap seiring fase roadmap selesai (lihat
-// docs/17-ROADMAP.md) — jangan link ke rute yang belum dibangun.
-const navItems = [
-  { href: '/', label: 'Beranda' },
-  { href: '/courses', label: 'Kursus' },
-  { href: '/blog', label: 'Blog' },
-]
-
 export function Header() {
   const pathname = usePathname()
+  const { t } = useLocale()
+
+  // Nav item ditambah bertahap seiring fase roadmap selesai (lihat
+  // docs/17-ROADMAP.md) — jangan link ke rute yang belum dibangun.
+  const navItems = [
+    { href: '/', label: t.nav.home },
+    { href: '/courses', label: t.nav.courses },
+    { href: '/blog', label: t.nav.blog },
+  ]
   // Status login dicek client-side (bukan lewat props dari server layout)
   // supaya halaman ISR seperti landing page tidak ikut jadi fully dynamic
   // gara-gara root layout membaca cookies/headers. Trade-off: nav auth state
@@ -65,12 +68,13 @@ export function Header() {
                 pathname === '/my-learning' ? 'text-white' : 'text-muted-foreground',
               )}
             >
-              Belajar Saya
+              {t.nav.myLearning}
             </Link>
           )}
         </nav>
 
         <div className="flex items-center gap-4">
+          <LocaleSwitcher />
           {isLoggedIn ? (
             <LogoutButton />
           ) : (
@@ -79,13 +83,13 @@ export function Header() {
                 href="/login"
                 className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-white transition-colors"
               >
-                Masuk
+                {t.nav.login}
               </Link>
               <Link
                 href="/register"
                 className="text-xs font-mono uppercase tracking-widest px-3 py-1.5 rounded-lg bg-white text-black font-bold hover:bg-gray-200 transition-colors"
               >
-                Daftar
+                {t.nav.register}
               </Link>
             </>
           )}

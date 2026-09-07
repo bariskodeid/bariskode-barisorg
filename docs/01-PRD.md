@@ -40,8 +40,14 @@ lanjutan bila dibutuhkan:
 - Pembayaran / course berbayar.
 - Aplikasi mobile native.
 - Live class / cohort dengan jadwal.
-- Sertifikat otomatis (bisa ditambah belakangan sebagai fitur ringan).
-- Multi-bahasa (v1 fokus Bahasa Indonesia).
+
+Update: sertifikat otomatis, quiz builder, dan notifikasi email sudah
+diimplementasikan (Fase 10, lihat `17-ROADMAP.md`) meski awalnya dicatat di
+sini sebagai kandidat "belakangan". Soal bahasa: **konten** (course/lesson/
+blog) tetap fokus Bahasa Indonesia seperti keputusan awal — yang berubah
+hanya UI/interface (nav, tombol, label) yang sekarang punya toggle
+Indonesia/English, TIDAK menerjemahkan konten. Lihat
+`docs/20-FEATURE-I18N-UI.md`.
 
 ## Prinsip Desain
 

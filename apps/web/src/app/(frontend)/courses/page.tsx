@@ -1,6 +1,7 @@
 import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
+import { T } from '@/lib/i18n/LocaleContext'
 import { getPayload } from '@/lib/payload'
 import { cn } from '@/lib/utils'
 
@@ -41,10 +42,11 @@ export default async function CoursesPage(props: PageProps<'/courses'>) {
     <div className="min-h-screen pt-24 pb-12">
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">Kursus</h1>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">
+            <T ns="courses" k="title" />
+          </h1>
           <p className="text-muted-foreground text-lg mb-8 max-w-2xl">
-            Materi terstruktur dari dasar sampai lanjutan — pilih kategori atau jelajahi
-            semuanya.
+            <T ns="courses" k="desc" />
           </p>
 
           <div className="flex flex-wrap gap-2 mb-12">
@@ -57,7 +59,7 @@ export default async function CoursesPage(props: PageProps<'/courses'>) {
                   : 'border-white/10 bg-white/5 text-muted-foreground hover:text-white',
               )}
             >
-              Semua
+              <T ns="courses" k="all" />
             </Link>
             {categories.docs.map((category) => (
               <Link
@@ -76,7 +78,9 @@ export default async function CoursesPage(props: PageProps<'/courses'>) {
           </div>
 
           {courses.docs.length === 0 ? (
-            <p className="text-muted-foreground">Belum ada kursus published di kategori ini.</p>
+            <p className="text-muted-foreground">
+              <T ns="courses" k="empty" />
+            </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {courses.docs.map((course) => {

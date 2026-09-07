@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 import { GiscusComments } from '@/components/GiscusComments'
+import { T } from '@/lib/i18n/LocaleContext'
 import { getPayload } from '@/lib/payload'
 
 export const revalidate = 60
@@ -95,7 +96,7 @@ export default async function BlogDetailPage(props: PageProps<'/blog/[slug]'>) {
             >
               <div>
                 <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">
-                  Lanjut belajar
+                  <T ns="blogDetail" k="continueLearning" />
                 </p>
                 <p className="text-lg font-bold group-hover:text-green-400 transition-colors">
                   {relatedCourse.title}

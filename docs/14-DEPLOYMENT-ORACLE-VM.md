@@ -242,3 +242,20 @@ limit ~3.1GB, sisa untuk OS/Docker daemon. Langkah tambahan:
 4. Kalau prioritasnya cuma course/blog dulu (bukan sandbox/lab), bisa juga
    deploy tanpa `judge0-*` dan `ctfd*` dulu (`docker compose up -d postgres
    web caddy`) dan nyalakan sisanya belakangan setelah lihat sisa RAM riil.
+
+## 10. Cron Reminder Email
+
+Selain backup (bagian 8), reminder progress mandek (lihat
+docs/21-FEATURE-EMAIL-NOTIFICATIONS.md) juga dijalankan lewat cron di VM,
+lewat service `web-script` di `infra/docker-compose.yml` (pola sama seperti
+`web-migrate` — image `web` yang jalan production sengaja ramping/standalone,
+tidak bisa jalankan script langsung, jadi `web-script` pakai stage `builder`).
+Contoh `/etc/cron.d/bariskode-emails`:
+
+```
+0 8 * * * root cd /path/to/repo && docker compose -f infra/docker-compose.yml run --rm web-script scripts/send-progress-reminders.ts >> /var/log/bariskode-reminders.log 2>&1
+```
+
+Butuh `SMTP_HOST/PORT/USER/PASS/FROM` terisi di `apps/web/.env` — tanpa itu
+script tetap jalan tapi cuma log warning & tidak mengirim apa pun (lihat
+`src/lib/email.ts`).
