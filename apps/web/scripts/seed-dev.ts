@@ -60,6 +60,36 @@ async function main() {
     },
   })
 
+  const cybersecurityCategory = await payload.create({
+    collection: 'categories',
+    data: { name: 'Cybersecurity', slug: 'cybersecurity' },
+  })
+
+  const cybersecurityCourse = await payload.create({
+    collection: 'courses',
+    data: {
+      title: 'Pengantar Web Exploitation',
+      slug: 'pengantar-web-exploitation',
+      category: cybersecurityCategory.id,
+      status: 'published',
+    },
+  })
+
+  const cybersecurityModule = await payload.create({
+    collection: 'modules',
+    data: { title: 'Dasar-Dasar Web Security', course: cybersecurityCourse.id, order: 1 },
+  })
+
+  await payload.create({
+    collection: 'lessons',
+    data: {
+      title: 'Mengenal SQL Injection',
+      slug: 'mengenal-sql-injection',
+      module: cybersecurityModule.id,
+      order: 1,
+    },
+  })
+
   await payload.create({
     collection: 'posts',
     data: {
@@ -86,7 +116,7 @@ async function main() {
     },
   })
 
-  console.log('Seed selesai: 2 users, 1 category, 1 course, 1 module, 1 lesson, 1 post.')
+  console.log('Seed selesai: 2 users, 2 categories, 2 courses, 2 modules, 2 lessons, 1 post.')
   console.log('Login admin: admin@bariskode.org / password123')
 }
 

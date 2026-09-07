@@ -126,6 +126,12 @@ bagian bawah `docs/17-ROADMAP.md`.
   total: jalankan `docker compose -f infra/docker-compose.yml up -d
   judge0-server judge0-workers` di environment yang mengizinkan privileged
   container, lalu coba tombol Run beneran di lesson dengan `hasSandbox: true`.
+- **CTFd**: setelah `docker compose up -d ctfd ctfd-db ctfd-redis`, jalankan
+  `CTFD_ADMIN_PASSWORD=<password> infra/ctfd/seed-ctfd.sh` untuk menyelesaikan
+  setup wizard CTFd (nama CTF, akun admin) sekaligus membuat 3 challenge
+  contoh — sudah diverifikasi jalan bersih dari instance kosong. Kurikulum
+  lab lengkap (di luar 3 challenge bukti-konsep ini) tetap keputusan konten
+  terpisah, lihat docs/12-FEATURE-CYBERSECURITY-LABS.md.
 
 ## Status Implementasi
 
@@ -135,6 +141,8 @@ bagian bawah `docs/17-ROADMAP.md`.
 - [x] Fase 3 — Auth & Progress Tracking
 - [x] Fase 4 — Blog + Giscus (Giscus butuh setup manual GitHub, lihat catatan di bawah)
 - [x] Fase 5 — Code Sandbox (Judge0) — eksekusi kode live belum dites, lihat catatan di atas
+- [x] Fase 6 — Lab Cybersecurity (CTFd) — diverifikasi penuh end-to-end (lihat
+      di bawah), termasuk 3 challenge contoh & solve lewat akun terpisah
 - [ ] Fase 6 — Lab Cybersecurity (CTFd)
 - [ ] Fase 7 — Deployment Production
 - [ ] Fase 8 — CI/CD

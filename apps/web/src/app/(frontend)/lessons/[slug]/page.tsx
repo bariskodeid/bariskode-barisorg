@@ -1,5 +1,5 @@
 import { RichText } from '@payloadcms/richtext-lexical/react'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, ExternalLink } from 'lucide-react'
 import { headers as getHeaders } from 'next/headers'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -20,11 +20,12 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
   const { user } = await payload.auth({ headers: await getHeaders() })
 
   // overrideAccess: false wajib di setiap query dari halaman publik — lihat
-  // catatan di app/(frontend)/page.tsx.
+  // catatan di app/(frontend)/page.tsx. depth: 3 supaya course.category ikut
+  // ter-resolve jadi objek (dibutuhkan untuk cek kategori cybersecurity).
   const lessonResult = await payload.find({
     collection: 'lessons',
     where: { slug: { equals: slug } },
-    depth: 2,
+    depth: 3,
     limit: 1,
     overrideAccess: false,
     user,
@@ -37,6 +38,8 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
 
   const mod = typeof lesson.module === 'object' ? lesson.module : undefined
   const course = mod && typeof mod.course === 'object' ? mod.course : undefined
+  const category = course && typeof course.category === 'object' ? course.category : undefined
+  const isCybersecurityLesson = category?.slug === 'cybersecurity'
 
   const normalizedSandboxLanguage = lesson.sandboxLanguage?.toLowerCase().trim()
   const sandboxLanguage = isAllowedLanguage(normalizedSandboxLanguage)
@@ -114,6 +117,29 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
                 </div>
               )}
             </div>
+          )}
+
+          {isCybersecurityLesson && (
+            <a
+              href={`${process.env.NEXT_PUBLIC_CTF_URL}/challenges`}
+              target="_blank"
+              rel="noreferrer"
+              className="group mt-8 flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors p-6"
+            >
+              <div>
+                <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">
+                  Lab Praktik
+                </p>
+                <p className="text-lg font-bold group-hover:text-green-400 transition-colors">
+                  Buka Lab CTF
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ruang lab terpisah — perlu akun sendiri di sana (tidak terhubung dengan akun
+                  bariskode.org ini).
+                </p>
+              </div>
+              <ExternalLink className="w-5 h-5 shrink-0 text-muted-foreground group-hover:text-white transition-colors" />
+            </a>
           )}
 
           <div className="mt-12 pt-8 border-t border-white/10">

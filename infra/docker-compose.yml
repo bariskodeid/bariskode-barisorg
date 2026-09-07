@@ -2,15 +2,23 @@
 #
 # Fase 0: service `postgres` untuk local development (lihat
 # docs/07-LOCAL-DEVELOPMENT.md). Fase 5: service Judge0 (code sandbox) — lihat
-# docs/11-FEATURE-CODE-SANDBOX.md. Service CTFd & Caddy ditambahkan pada fase
-# yang relevan (docs/17-ROADMAP.md, Fase 6/7) supaya file ini tidak berisi
-# konfigurasi yang belum ada gunanya.
+# docs/11-FEATURE-CODE-SANDBOX.md. Fase 6: service CTFd (lab cybersecurity) —
+# lihat docs/12-FEATURE-CYBERSECURITY-LABS.md. Caddy ditambahkan di Fase 7
+# (docs/17-ROADMAP.md) supaya file ini tidak berisi konfigurasi yang belum
+# ada gunanya.
 #
 # PENTING: judge0-server & judge0-workers butuh `privileged: true` (dipakai
 # oleh sandbox "isolate" milik Judge0 untuk isolasi proses per-submission).
 # Kalau environment kamu tidak mengizinkan privileged container (mis. runner
 # CI/sandbox tertentu), service ini tidak akan bisa start — itu batasan
 # lingkungan, bukan bug konfigurasi.
+#
+# Secret CTFd (CTFD_SECRET_KEY, CTFD_DB_USER/PASSWORD/NAME) sengaja diisi di
+# infra/.env (bukan file .env.ctfd terpisah seperti disebut
+# docs/05-REPO-STRUCTURE.md) — DATABASE_URL service `ctfd` butuh password yang
+# sama persis dengan MARIADB_PASSWORD di service `ctfd-db`, dan docker compose
+# cuma bisa interpolasi ${VAR} dari .env di root project, bukan dari env_file
+# service lain.
 
 x-logging: &default-logging
   logging:
@@ -76,6 +84,62 @@ services:
     restart: unless-stopped
     <<: *default-logging
 
+  # --- CTFd (lab cybersecurity, Fase 6) ---
+  # Aplikasi & auth terpisah sepenuhnya dari Payload — lihat
+  # docs/12-FEATURE-CYBERSECURITY-LABS.md soal alasan kenapa dipisah.
+  ctfd:
+    image: ctfd/ctfd:3.8.7
+    restart: unless-stopped
+    environment:
+      UPLOAD_FOLDER: /var/uploads
+      DATABASE_URL: mysql+pymysql://${CTFD_DB_USER:-ctfd}:${CTFD_DB_PASSWORD:-CHANGE_ME}@ctfd-db/${CTFD_DB_NAME:-ctfd}
+      REDIS_URL: redis://ctfd-redis:6379
+      SECRET_KEY: ${CTFD_SECRET_KEY:-CHANGE_ME_random_string}
+      WORKERS: 1
+      REVERSE_PROXY: 'true'
+    ports:
+      - '${CTFD_PORT:-8000}:8000'
+    volumes:
+      - ctfd_uploads:/var/uploads
+      - ctfd_logs:/var/log/CTFd
+    depends_on:
+      - ctfd-db
+      - ctfd-redis
+    <<: *default-logging
+
+  ctfd-db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${CTFD_DB_PASSWORD:-CHANGE_ME}
+      MARIADB_USER: ${CTFD_DB_USER:-ctfd}
+      MARIADB_PASSWORD: ${CTFD_DB_PASSWORD:-CHANGE_ME}
+      MARIADB_DATABASE: ${CTFD_DB_NAME:-ctfd}
+    volumes:
+      - ctfd_db_data:/var/lib/mysql
+    command:
+      [
+        'mysqld',
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_unicode_ci',
+        '--wait_timeout=28800',
+        '--log-warnings=0',
+      ]
+    <<: *default-logging
+
+  # Redis modern (bukan redis:4 seperti docker-compose.yml resmi CTFd —
+  # sudah EOL & tidak ada alasan kuat memakainya di sini).
+  ctfd-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - ctfd_redis_data:/data
+    <<: *default-logging
+
 volumes:
   postgres_data:
   judge0_data:
+  ctfd_uploads:
+  ctfd_logs:
+  ctfd_db_data:
+  ctfd_redis_data:
