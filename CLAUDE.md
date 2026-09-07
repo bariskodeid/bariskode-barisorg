@@ -143,6 +143,24 @@ bagian bawah `docs/17-ROADMAP.md`.
   lengkap dengan service `web`+`caddy`, Caddyfile, ci.yml, deploy.yml) sudah
   ditulis & DITES SUNGGUHAN secara lokal (bukan cuma ditulis lalu didiamkan) —
   lihat detail bug yang ketemu & diperbaiki di commit Fase 7.
+- **Checklist keamanan (docs/16-SECURITY-CHECKLIST.md) — sebagian butuh VM
+  asli, belum bisa dikerjakan**: rotate ke secret production yang benar-benar
+  acak (bukan nilai dev di `.env`), set SSL/TLS Cloudflare ke Full (strict),
+  konfigurasi Oracle Security List + `ufw` (cuma 80/443 publik), pasang
+  `infra/backup.sh` sebagai cron (`/etc/cron.d/bariskode-backup`, contoh
+  perintah ada di komentar script-nya) dan **tes restore-nya** — backup yang
+  belum pernah dites restore bukan backup yang bisa diandalkan. Bagian
+  mekanisme dump Postgres di `infra/backup.sh` sendiri sudah dites (bukan
+  cuma ditulis) terhadap Postgres lokal.
+- **2 vulnerability (1 moderate, sisanya transitive) belum ada fix upstream**:
+  `esbuild` (lewat drizzle-kit, dependency `@payloadcms/db-postgres`, dev-time
+  saja) dan DOMPurify (lewat monaco-editor, dependency `@payloadcms/ui`, dipakai
+  admin panel Payload sendiri) — keduanya transitive dependency internal
+  Payload, tidak bisa di-bump manual tanpa upstream Payload merilis versi
+  baru. Juga ada 1 CVE moderate langsung di `payload@3.88.0` sendiri
+  ("default account-unlock access", GHSA-jg8r-5jh2-v2xj) yang per saat ini
+  belum ada versi patch (`pnpm audit` update berkala untuk cek apakah sudah
+  ada rilis baru).
 
 ## Status Implementasi
 
@@ -166,7 +184,24 @@ bagian bawah `docs/17-ROADMAP.md`.
       GitHub Secrets (VM_HOST/VM_USER/VM_SSH_KEY) yang cuma ada setelah Fase
       7 benar-benar dieksekusi, dan repo ini belum pernah di-push ke GitHub
       sama sekali (masih git lokal murni).
-- [ ] Fase 9 — Security Hardening & Launch Checklist
+- [x] Fase 9 — Security Hardening & Launch Checklist — semua item yang bisa
+      dikerjakan tanpa VM/domain asli sudah selesai: rate limit ditambah ke
+      `/api/progress` (sebelumnya cuma `/api/sandbox`), security header
+      dasar (`next.config.ts` headers — sengaja tidak menyentuh
+      script-src/style-src CSP, diverifikasi /admin & login tetap jalan),
+      `pnpm audit` dijalankan & 2 vulnerability actionable (critical vitest,
+      high sharp) di-bump, `infra/backup.sh` ditulis & mekanisme dump
+      Postgres-nya dites nyata, rate limiting login CTFd dikonfirmasi aktif
+      by default dari source code CTFd. Item yang BUTUH VM/domain asli
+      (SSL Cloudflare, firewall Oracle, rotate secret production, tes
+      restore backup) dicatat di "Pending Aksi Manual" di atas — ini bukan
+      "belum selesai", tapi memang tidak bisa dikerjakan sebelum Fase 7
+      benar-benar dieksekusi oleh user.
+
+Semua 9 fase v1 di docs/17-ROADMAP.md sudah dikerjakan sejauh yang bisa
+dilakukan tanpa infrastruktur production asli. Sisa pekerjaan proyek ini
+adalah aksi manual user (lihat "Pending Aksi Manual" di atas) + fase lanjutan
+di luar v1 (bagian bawah docs/17-ROADMAP.md) kalau dibutuhkan nanti.
 
 Update checklist ini setiap fase selesai supaya sesi Claude Code berikutnya tahu
 harus lanjut dari mana.
