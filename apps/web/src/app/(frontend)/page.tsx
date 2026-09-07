@@ -10,7 +10,14 @@ const categoryIcons: Record<string, typeof Code2> = {
   cybersecurity: ShieldCheck,
 }
 
-export const revalidate = 60
+// Bukan ISR (revalidate) — sengaja dynamic. Kalau halaman ini di-static-
+// generate saat build, `next build`/Docker image build butuh koneksi
+// database yang reachable saat itu juga (diverifikasi: gagal ECONNREFUSED
+// kalau tidak). Build image Docker production tidak boleh bergantung pada
+// DB yang reachable saat build time — itu anti-pattern (build & runtime
+// jadi tercampur, secret DB production juga jadi harus di-passing sebagai
+// build-arg yang bocor ke image layer history kalau dipaksakan).
+export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   const payload = await getPayload()

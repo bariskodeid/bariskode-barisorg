@@ -1,0 +1,31 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+# Butuh secrets VM_HOST, VM_USER, VM_SSH_KEY (lihat docs/15-CICD.md) dan VM
+# production yang sudah di-provision (docs/14-DEPLOYMENT-ORACLE-VM.md, Fase
+# 7) — workflow ini tidak akan berjalan sampai secret itu diisi & repo
+# di-push ke GitHub.
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/bariskode
+            git pull origin main
+            docker compose -f infra/docker-compose.yml up -d --build
+            # `exec web pnpm payload migrate` TIDAK bisa dipakai di sini —
+            # image `web` production ramping (Next.js output: standalone)
+            # dan tidak punya pnpm/source lengkap. Lihat komentar service
+            # `web-migrate` di infra/docker-compose.yml.
+            docker compose -f infra/docker-compose.yml run --rm web-migrate migrate

@@ -7,6 +7,9 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // Dibutuhkan Dockerfile (lihat apps/web/Dockerfile) — build production
+  // menghasilkan .next/standalone/server.js yang self-contained.
+  output: 'standalone',
   images: {
     localPatterns: [
       {

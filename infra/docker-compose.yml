@@ -1,11 +1,14 @@
-# Stack infrastruktur bariskode.org.
+# Stack infrastruktur bariskode.org — dipakai untuk DUA hal berbeda:
 #
-# Fase 0: service `postgres` untuk local development (lihat
-# docs/07-LOCAL-DEVELOPMENT.md). Fase 5: service Judge0 (code sandbox) — lihat
-# docs/11-FEATURE-CODE-SANDBOX.md. Fase 6: service CTFd (lab cybersecurity) —
-# lihat docs/12-FEATURE-CYBERSECURITY-LABS.md. Caddy ditambahkan di Fase 7
-# (docs/17-ROADMAP.md) supaya file ini tidak berisi konfigurasi yang belum
-# ada gunanya.
+# 1. Local dev (docs/07-LOCAL-DEVELOPMENT.md): jalankan service satu-satu
+#    sesuai kebutuhan (`docker compose up -d postgres`, dst) — `pnpm dev`
+#    tetap jalan di host, BUKAN di container `web`.
+# 2. Production (docs/14-DEPLOYMENT-ORACLE-VM.md): `docker compose up -d
+#    --build` menjalankan SEMUANYA termasuk `web` & `caddy`, satu-satunya
+#    yang publish port ke internet (80/443).
+#
+# Fase 0: `postgres`. Fase 5: Judge0 (docs/11-FEATURE-CODE-SANDBOX.md).
+# Fase 6: CTFd (docs/12-FEATURE-CYBERSECURITY-LABS.md). Fase 7: `web` & `caddy`.
 #
 # PENTING: judge0-server & judge0-workers butuh `privileged: true` (dipakai
 # oleh sandbox "isolate" milik Judge0 untuk isolasi proses per-submission).
@@ -35,7 +38,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME}
       POSTGRES_DB: ${POSTGRES_DB:-bariskode}
     ports:
-      - '${POSTGRES_PORT:-5432}:5432'
+      # 127.0.0.1 saja — cukup buat `pnpm dev` di host reach lewat localhost,
+      # tidak reachable dari luar VM sekalipun kalau firewall salah setting
+      # (defense-in-depth, lihat docs/16-SECURITY-CHECKLIST.md).
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -51,8 +57,9 @@ services:
     image: judge0/judge0:1.13.1
     volumes:
       - ./judge0/judge0.conf:/judge0.conf:ro
+    # 127.0.0.1 saja — lihat catatan di service `postgres`.
     ports:
-      - '${JUDGE0_PORT:-2358}:2358'
+      - '127.0.0.1:${JUDGE0_PORT:-2358}:2358'
     privileged: true
     restart: unless-stopped
     <<: *default-logging
@@ -97,8 +104,9 @@ services:
       SECRET_KEY: ${CTFD_SECRET_KEY:-CHANGE_ME_random_string}
       WORKERS: 1
       REVERSE_PROXY: 'true'
+    # 127.0.0.1 saja — lihat catatan di service `postgres`.
     ports:
-      - '${CTFD_PORT:-8000}:8000'
+      - '127.0.0.1:${CTFD_PORT:-8000}:8000'
     volumes:
       - ctfd_uploads:/var/uploads
       - ctfd_logs:/var/log/CTFd
@@ -136,6 +144,55 @@ services:
       - ctfd_redis_data:/data
     <<: *default-logging
 
+  # --- Aplikasi utama & reverse proxy (Fase 7, production only) ---
+  # Tidak dipakai saat local dev — `pnpm dev` di host sudah menjalankan ini.
+  web:
+    build:
+      context: ../apps/web
+    restart: unless-stopped
+    env_file: ../apps/web/.env
+    depends_on:
+      - postgres
+    expose:
+      - '3000'
+    <<: *default-logging
+
+  # Jalankan migration lewat `docker compose run --rm web-migrate` (BUKAN
+  # `exec web pnpm payload migrate`, seperti disebut docs/15-CICD.md — image
+  # `web` yang jalan (final stage Dockerfile, `output: standalone`) sengaja
+  # ramping dan tidak menyertakan pnpm/source lengkap, jadi tidak bisa
+  # menjalankan CLI Payload. Service ini pakai stage `builder` yang masih
+  # punya pnpm + source lengkap. Diverifikasi lokal (docker compose run
+  # --rm web-migrate pnpm payload migrate:status) berhasil connect &
+  # baca migration table.
+  web-migrate:
+    build:
+      context: ../apps/web
+      target: builder
+    env_file: ../apps/web/.env
+    depends_on:
+      - postgres
+    entrypoint: ['pnpm', 'payload']
+    profiles: ['migrate']
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAIN: ${DOMAIN:-bariskode.org}
+      CTF_SUBDOMAIN: ${CTF_SUBDOMAIN:-ctf.bariskode.org}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - ctfd
+    <<: *default-logging
+
 volumes:
   postgres_data:
   judge0_data:
@@ -143,3 +200,5 @@ volumes:
   ctfd_logs:
   ctfd_db_data:
   ctfd_redis_data:
+  caddy_data:
+  caddy_config:

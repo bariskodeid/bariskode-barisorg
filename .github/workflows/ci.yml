@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+
+    # docs/15-CICD.md awalnya cuma pakai DATABASE_URI dummy yang tidak
+    # reachable, dengan asumsi build tidak butuh koneksi DB asli — itu SALAH
+    # untuk state proyek saat ini: halaman `/` di-static-prerender saat build
+    # dan melakukan query Payload sungguhan (lihat
+    # src/app/(frontend)/page.tsx), jadi build betulan connect ke Postgres.
+    # Diverifikasi lokal: build dengan DATABASE_URI unreachable gagal dengan
+    # ECONNREFUSED. Perbaikannya: jalankan Postgres asli (ephemeral) + migrate
+    # dulu sebelum build, bukan cuma isi env var kosong.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: bariskode_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URI: postgres://ci:ci@localhost:5432/bariskode_ci
+      PAYLOAD_SECRET: ci-dummy-secret-for-build-only-min-32-chars
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          # Samakan dengan pnpm yang dipakai local dev (lihat pnpm-lock.yaml
+          # lockfileVersion & docs/06-ENVIRONMENT-VARIABLES.md).
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm payload migrate
+      - run: pnpm build

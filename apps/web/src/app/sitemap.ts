@@ -4,6 +4,10 @@ import { getPayload } from '@/lib/payload'
 
 const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
+// Dynamic, bukan di-cache — lihat catatan di app/(frontend)/page.tsx soal
+// kenapa route yang query Payload tidak boleh di-generate saat build time.
+export const dynamic = 'force-dynamic'
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const payload = await getPayload()
 

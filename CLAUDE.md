@@ -132,6 +132,17 @@ bagian bawah `docs/17-ROADMAP.md`.
   contoh — sudah diverifikasi jalan bersih dari instance kosong. Kurikulum
   lab lengkap (di luar 3 challenge bukti-konsep ini) tetap keputusan konten
   terpisah, lihat docs/12-FEATURE-CYBERSECURITY-LABS.md.
+- **Deployment production (Fase 7) & repo GitHub (Fase 8) belum ada sama
+  sekali** — proyek ini masih git lokal murni, belum pernah di-push. Yang
+  perlu user lakukan sendiri (butuh akun/domain asli, tidak bisa Claude Code
+  lakukan): (1) buat repo GitHub & push; (2) provisioning VM Oracle Cloud
+  (docs/14-DEPLOYMENT-ORACLE-VM.md); (3) arahkan domain ke Cloudflare + DNS
+  records ke IP VM (docs/13-DEPLOYMENT-CLOUDFLARE.md); (4) set GitHub Secrets
+  VM_HOST/VM_USER/VM_SSH_KEY (docs/15-CICD.md) baru `deploy.yml` bisa jalan.
+  Semua config/kode sisi bariskode.org sendiri (Dockerfile, docker-compose.yml
+  lengkap dengan service `web`+`caddy`, Caddyfile, ci.yml, deploy.yml) sudah
+  ditulis & DITES SUNGGUHAN secara lokal (bukan cuma ditulis lalu didiamkan) —
+  lihat detail bug yang ketemu & diperbaiki di commit Fase 7.
 
 ## Status Implementasi
 
@@ -142,10 +153,19 @@ bagian bawah `docs/17-ROADMAP.md`.
 - [x] Fase 4 — Blog + Giscus (Giscus butuh setup manual GitHub, lihat catatan di bawah)
 - [x] Fase 5 — Code Sandbox (Judge0) — eksekusi kode live belum dites, lihat catatan di atas
 - [x] Fase 6 — Lab Cybersecurity (CTFd) — diverifikasi penuh end-to-end (lihat
-      di bawah), termasuk 3 challenge contoh & solve lewat akun terpisah
-- [ ] Fase 6 — Lab Cybersecurity (CTFd)
-- [ ] Fase 7 — Deployment Production
-- [ ] Fase 8 — CI/CD
+      di atas), termasuk 3 challenge contoh & solve lewat akun terpisah
+- [x] Fase 7 — Deployment Production — **konfigurasi & image siap + sudah
+      dites lokal (lihat catatan di atas), TAPI belum benar-benar deploy ke
+      VM asli.** Provisioning VM Oracle & setup DNS Cloudflare adalah aksi
+      manual yang cuma bisa dilakukan user (butuh akun & domain asli) — lihat
+      docs/13/14. Kode/config sisi bariskode.org sudah siap dipakai begitu
+      VM & domain ada.
+- [x] Fase 8 — CI/CD — `ci.yml` ditulis & logic-nya diverifikasi identik
+      lewat simulasi lokal (migrate fresh DB lalu build, persis alur CI).
+      `deploy.yml` ditulis sesuai docs/15-CICD.md tapi baru template — perlu
+      GitHub Secrets (VM_HOST/VM_USER/VM_SSH_KEY) yang cuma ada setelah Fase
+      7 benar-benar dieksekusi, dan repo ini belum pernah di-push ke GitHub
+      sama sekali (masih git lokal murni).
 - [ ] Fase 9 — Security Hardening & Launch Checklist
 
 Update checklist ini setiap fase selesai supaya sesi Claude Code berikutnya tahu
