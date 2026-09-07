@@ -39,6 +39,22 @@ docs/           # paket spesifikasi ini
 
 Ikuti persis `docs/05-REPO-STRUCTURE.md` — jangan restrukturisasi tanpa alasan kuat.
 
+## Desain / Tema Frontend
+
+Tema visual frontend publik (`apps/web/src/app/(frontend)/`) sengaja disamakan
+dengan portfolio pribadi di `/home/neko/projects/bariskode/portfolio` (situs
+terpisah, SvelteKit — cuma dijadikan referensi desain, bukan dependency).
+Ciri khasnya: monokrom gelap (background hitam pekat, `--radius: 0rem` di CSS
+vars tapi elemen individual tetap pakai `rounded-lg/xl/full` langsung), font
+Inter untuk body, font mono uppercase tracking-wide untuk nav/label/badge,
+grid background pattern tipis di belakang konten, border putih transparan
+(`border-white/10`), aksen hijau (`green-400/500`) dipakai tipis-tipis untuk
+hover/status. Referensi implementasi: `src/app/(frontend)/globals.css`,
+`src/components/layout/Header.tsx`, `Footer.tsx`,
+`src/components/ui/GridBackground.tsx`. Ikuti pola ini untuk halaman baru
+(blog, my-learning, auth, dst) supaya konsisten — jangan perkenalkan skema
+warna/komponen baru tanpa alasan kuat.
+
 ## Konvensi Kode
 
 - TypeScript **strict mode**, hindari `any` kecuali benar-benar diperlukan.
@@ -94,7 +110,7 @@ bagian bawah `docs/17-ROADMAP.md`.
 
 - [x] Fase 0 — Scaffolding & Dev Environment
 - [x] Fase 1 — Data Model & Admin Panel Dasar
-- [ ] Fase 2 — Frontend Publik: Katalog Course
+- [x] Fase 2 — Frontend Publik: Katalog Course
 - [ ] Fase 3 — Auth & Progress Tracking
 - [ ] Fase 4 — Blog + Giscus
 - [ ] Fase 5 — Code Sandbox (Judge0)

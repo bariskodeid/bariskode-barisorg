@@ -1,58 +1,151 @@
-import { headers as getHeaders } from 'next/headers.js'
-import Image from 'next/image'
-import { getPayload } from 'payload'
-import React from 'react'
-import { fileURLToPath } from 'url'
+import { ArrowRight, Code2, Database, LineChart, ShieldCheck } from 'lucide-react'
+import Link from 'next/link'
 
-import config from '@/payload.config'
-import './styles.css'
+import { getPayload } from '@/lib/payload'
+
+const categoryIcons: Record<string, typeof Code2> = {
+  programming: Code2,
+  database: Database,
+  'data-science': LineChart,
+  cybersecurity: ShieldCheck,
+}
+
+export const revalidate = 60
 
 export default async function HomePage() {
-  const headers = await getHeaders()
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers })
+  const payload = await getPayload()
 
-  const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
+  // overrideAccess: false wajib di setiap query dari halaman publik — Local
+  // API Payload defaultnya overrideAccess: true, yang membypass access
+  // control collection (lihat CLAUDE.md: access control adalah satu-satunya
+  // sumber kebenaran, bukan filter manual di halaman).
+  const [categories, highlightCourses] = await Promise.all([
+    payload.find({
+      collection: 'categories',
+      limit: 4,
+      sort: 'name',
+      overrideAccess: false,
+    }),
+    payload.find({
+      collection: 'courses',
+      where: { status: { equals: 'published' } },
+      limit: 3,
+      sort: 'order',
+      depth: 1,
+      overrideAccess: false,
+    }),
+  ])
 
   return (
-    <div className="home">
-      <div className="content">
-        <picture>
-          <source srcSet="https://raw.githubusercontent.com/payloadcms/payload/3.x/packages/ui/src/assets/payload-favicon.svg" />
-          <Image
-            alt="Payload Logo"
-            height={65}
-            src="https://raw.githubusercontent.com/payloadcms/payload/3.x/packages/ui/src/assets/payload-favicon.svg"
-            width={65}
-          />
-        </picture>
-        {!user && <h1>Welcome to your new project.</h1>}
-        {user && <h1>Welcome back, {user.email}</h1>}
-        <div className="links">
-          <a
-            className="admin"
-            href={payloadConfig.routes.admin}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Go to admin panel
-          </a>
-          <a
-            className="docs"
-            href="https://payloadcms.com/docs"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Documentation
-          </a>
+    <div className="relative overflow-hidden">
+      <div className="container mx-auto px-4 md:px-6 py-12 md:py-24">
+        {/* Hero */}
+        <div className="max-w-3xl mx-auto text-center mb-16 md:mb-24">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-6 md:mb-8">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+              Open source &amp; gratis
+            </span>
+          </div>
+
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 md:mb-8 leading-[1.1] md:leading-[0.9]">
+            Belajar coding, data,
+            <br />
+            <span className="text-muted-foreground">sampai cybersecurity.</span>
+          </h1>
+
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-12 leading-relaxed">
+            Materi terstruktur, lab praktik langsung di browser, dan progress
+            tracking — semuanya gratis dan open source di bariskode.org.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/courses"
+              className="group inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-mono text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors rounded-lg"
+            >
+              Mulai Belajar
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <a
+              href="#kategori"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 bg-white/5 backdrop-blur-sm text-white font-mono text-sm font-bold uppercase tracking-wider hover:bg-white/10 transition-colors rounded-lg"
+            >
+              Lihat Kategori
+            </a>
+          </div>
         </div>
-      </div>
-      <div className="footer">
-        <p>Update this page by editing</p>
-        <a className="codeLink" href={fileURL}>
-          <code>app/(frontend)/page.tsx</code>
-        </a>
+
+        {/* Kategori */}
+        {categories.docs.length > 0 && (
+          <div id="kategori" className="scroll-mt-24 mb-16 md:mb-24">
+            <h2 className="text-sm font-mono uppercase tracking-widest text-muted-foreground mb-6 text-center">
+              Kategori
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+              {categories.docs.map((category) => {
+                const Icon = categoryIcons[category.slug] ?? Code2
+                return (
+                  <Link
+                    key={category.id}
+                    href={`/courses?category=${category.slug}`}
+                    className="group p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors text-center lg:text-left"
+                  >
+                    <div className="mb-4 p-3 inline-block rounded-lg bg-white/5 border border-white/10 group-hover:border-white/30 transition-colors">
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-1">{category.name}</h3>
+                    {category.description && (
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {category.description}
+                      </p>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Kursus pilihan */}
+        {highlightCourses.docs.length > 0 && (
+          <div className="border-t border-white/10 pt-12">
+            <h2 className="text-sm font-mono uppercase tracking-widest text-muted-foreground mb-6 text-center">
+              Kursus Pilihan
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {highlightCourses.docs.map((course) => {
+                const category =
+                  typeof course.category === 'object' ? course.category : undefined
+                return (
+                  <Link
+                    key={course.id}
+                    href={`/courses/${course.slug}`}
+                    className="group p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors h-full flex flex-col"
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      {category && (
+                        <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground">
+                          {category.name}
+                        </span>
+                      )}
+                      <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground capitalize">
+                        {course.level}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-green-400 transition-colors">
+                      {course.title}
+                    </h3>
+                    <div className="mt-auto pt-4 flex items-center gap-2 text-sm text-muted-foreground group-hover:text-white transition-colors">
+                      Lihat kursus
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
