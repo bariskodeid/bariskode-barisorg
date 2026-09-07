@@ -1,0 +1,122 @@
+################################################################################
+# Judge0 Configuration — TEMPLATE
+################################################################################
+# Salin file ini ke `judge0.conf` (di folder yang sama) dan isi nilai
+# CHANGE_ME dengan secret acak sebelum menjalankan stack Judge0.
+# JANGAN commit `judge0.conf` asli — lihat docs/06-ENVIRONMENT-VARIABLES.md
+# soal aturan pengelolaan secret di proyek ini.
+#
+# Referensi lengkap tiap opsi: judge0.conf resmi dari rilis Judge0 CE v1.13.1
+# (https://github.com/judge0/judge0/releases/tag/v1.13.1) — hanya opsi yang
+# relevan untuk bariskode.org yang diisi eksplisit di bawah, sisanya
+# dikosongkan supaya Judge0 pakai default bawaannya.
+
+################################################################################
+# Judge0 Server Configuration
+################################################################################
+JUDGE0_TELEMETRY_ENABLE=false
+RESTART_MAX_TRIES=
+MAINTENANCE_MODE=
+MAINTENANCE_MESSAGE=
+ENABLE_WAIT_RESULT=
+ENABLE_COMPILER_OPTIONS=false
+ALLOWED_LANGUAGES_FOR_COMPILER_OPTIONS=
+ENABLE_COMMAND_LINE_ARGUMENTS=false
+ENABLE_SUBMISSION_DELETE=
+ENABLE_BATCHED_SUBMISSIONS=false
+MAX_SUBMISSION_BATCH_SIZE=
+ENABLE_CALLBACKS=false
+CALLBACKS_MAX_TRIES=
+CALLBACKS_TIMEOUT=
+ENABLE_ADDITIONAL_FILES=false
+SUBMISSION_CACHE_DURATION=
+USE_DOCS_AS_HOMEPAGE=false
+
+################################################################################
+# Judge0 Workers Configuration
+################################################################################
+INTERVAL=
+COUNT=2
+MAX_QUEUE_SIZE=50
+
+################################################################################
+# Judge0 Server Access Configuration
+################################################################################
+# Kosongkan di dev lokal. Di production, Judge0 tidak publish port ke host
+# sama sekali (hanya diakses lewat network Docker internal oleh Next.js),
+# jadi opsi di bawah ini sekunder — proxy Next.js (src/app/api/sandbox) adalah
+# lapisan kontrol akses utama.
+ALLOW_ORIGIN=
+DISALLOW_ORIGIN=
+ALLOW_IP=
+DISALLOW_IP=
+
+################################################################################
+# Judge0 Authentication Configuration
+################################################################################
+# Opsional (defense-in-depth) — kalau diisi, set juga JUDGE0_API_KEY yang
+# sama di apps/web/.env supaya proxy Next.js mengirim token ini.
+AUTHN_HEADER=X-Judge0-Token
+AUTHN_TOKEN=
+
+################################################################################
+# Judge0 Authorization Configuration
+################################################################################
+AUTHZ_HEADER=
+AUTHZ_TOKEN=
+
+################################################################################
+# Redis Configuration
+################################################################################
+REDIS_HOST=judge0-redis
+REDIS_PORT=
+REDIS_PASSWORD=CHANGE_ME_random_string
+
+################################################################################
+# PostgreSQL Configuration
+################################################################################
+POSTGRES_HOST=judge0-db
+POSTGRES_PORT=
+POSTGRES_DB=judge0
+POSTGRES_USER=judge0
+POSTGRES_PASSWORD=CHANGE_ME_random_string
+
+################################################################################
+# Submission Configuration — batasi resource per submission (WAJIB, lihat
+# docs/11-FEATURE-CODE-SANDBOX.md & docs/16-SECURITY-CHECKLIST.md). VM
+# production kecil (Oracle Always Free) & dipakai bersama layanan lain,
+# jadi limit sengaja lebih ketat dari default upstream Judge0.
+################################################################################
+CPU_TIME_LIMIT=5
+MAX_CPU_TIME_LIMIT=10
+CPU_EXTRA_TIME=1
+MAX_CPU_EXTRA_TIME=2
+WALL_TIME_LIMIT=10
+MAX_WALL_TIME_LIMIT=15
+MEMORY_LIMIT=128000
+MAX_MEMORY_LIMIT=256000
+STACK_LIMIT=64000
+MAX_STACK_LIMIT=64000
+MAX_PROCESSES_AND_OR_THREADS=30
+MAX_MAX_PROCESSES_AND_OR_THREADS=60
+ENABLE_PER_PROCESS_AND_THREAD_TIME_LIMIT=
+ALLOW_ENABLE_PER_PROCESS_AND_THREAD_TIME_LIMIT=false
+ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT=
+ALLOW_ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT=false
+MAX_FILE_SIZE=1024
+MAX_MAX_FILE_SIZE=2048
+NUMBER_OF_RUNS=
+MAX_NUMBER_OF_RUNS=
+REDIRECT_STDERR_TO_STDOUT=
+MAX_EXTRACT_SIZE=
+# Jangan izinkan submission melakukan network call sama sekali.
+ALLOW_ENABLE_NETWORK=false
+ENABLE_NETWORK=false
+
+################################################################################
+# Rails Configuration
+################################################################################
+RAILS_ENV=
+RAILS_MAX_THREADS=
+RAILS_SERVER_PROCESSES=
+SECRET_KEY_BASE=

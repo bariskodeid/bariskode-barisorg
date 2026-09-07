@@ -1,9 +1,22 @@
 # Stack infrastruktur bariskode.org.
 #
-# Fase 0: hanya service `postgres` yang dipakai untuk local development
-# (lihat docs/07-LOCAL-DEVELOPMENT.md). Service Judge0, CTFd, dan Caddy
-# ditambahkan pada fase yang relevan (lihat docs/17-ROADMAP.md, Fase 5/6/7)
-# supaya file ini tidak berisi konfigurasi yang belum ada gunanya.
+# Fase 0: service `postgres` untuk local development (lihat
+# docs/07-LOCAL-DEVELOPMENT.md). Fase 5: service Judge0 (code sandbox) — lihat
+# docs/11-FEATURE-CODE-SANDBOX.md. Service CTFd & Caddy ditambahkan pada fase
+# yang relevan (docs/17-ROADMAP.md, Fase 6/7) supaya file ini tidak berisi
+# konfigurasi yang belum ada gunanya.
+#
+# PENTING: judge0-server & judge0-workers butuh `privileged: true` (dipakai
+# oleh sandbox "isolate" milik Judge0 untuk isolasi proses per-submission).
+# Kalau environment kamu tidak mengizinkan privileged container (mis. runner
+# CI/sandbox tertentu), service ini tidak akan bisa start — itu batasan
+# lingkungan, bukan bug konfigurasi.
+
+x-logging: &default-logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100M
 
 services:
   postgres:
@@ -23,5 +36,46 @@ services:
       timeout: 5s
       retries: 10
 
+  # --- Judge0 (code sandbox, Fase 5) ---
+  # Konfigurasi lengkap ada di infra/judge0/judge0.conf (salin dari
+  # judge0.conf.example, isi secret-nya — lihat file itu untuk detail).
+  judge0-server:
+    image: judge0/judge0:1.13.1
+    volumes:
+      - ./judge0/judge0.conf:/judge0.conf:ro
+    ports:
+      - '${JUDGE0_PORT:-2358}:2358'
+    privileged: true
+    restart: unless-stopped
+    <<: *default-logging
+
+  judge0-workers:
+    image: judge0/judge0:1.13.1
+    command: ['./scripts/workers']
+    volumes:
+      - ./judge0/judge0.conf:/judge0.conf:ro
+    privileged: true
+    restart: unless-stopped
+    <<: *default-logging
+
+  judge0-db:
+    # Postgres versi sama dengan service `postgres` utama di atas, bukan
+    # 16.2 spesifik seperti docker-compose.yml resmi Judge0 — lebih mudah
+    # dirawat & tidak menambah image terpisah untuk versi patch yang sama.
+    image: postgres:16-alpine
+    env_file: ./judge0/judge0.conf
+    volumes:
+      - judge0_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    <<: *default-logging
+
+  judge0-redis:
+    image: redis:7.2.4
+    command: ['bash', '-c', 'docker-entrypoint.sh --appendonly no --requirepass "$$REDIS_PASSWORD"']
+    env_file: ./judge0/judge0.conf
+    restart: unless-stopped
+    <<: *default-logging
+
 volumes:
   postgres_data:
+  judge0_data:

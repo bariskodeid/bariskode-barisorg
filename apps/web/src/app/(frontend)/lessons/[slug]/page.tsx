@@ -4,7 +4,9 @@ import { headers as getHeaders } from 'next/headers'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { CodeSandbox } from '@/components/CodeSandbox'
 import { MarkCompleteButton } from '@/components/ui/MarkCompleteButton'
+import { isAllowedLanguage } from '@/lib/judge0'
 import { getPayload } from '@/lib/payload'
 
 // Halaman ini butuh status login (untuk tombol "Tandai Selesai" & status
@@ -35,6 +37,11 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
 
   const mod = typeof lesson.module === 'object' ? lesson.module : undefined
   const course = mod && typeof mod.course === 'object' ? mod.course : undefined
+
+  const normalizedSandboxLanguage = lesson.sandboxLanguage?.toLowerCase().trim()
+  const sandboxLanguage = isAllowedLanguage(normalizedSandboxLanguage)
+    ? normalizedSandboxLanguage
+    : undefined
 
   let alreadyCompleted = false
   if (user && course) {
@@ -83,18 +90,29 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
           )}
 
           {lesson.hasSandbox && (
-            <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-6">
-              <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-3">
-                Sandbox kode ({lesson.sandboxLanguage || 'interaktif'})
-              </p>
-              {lesson.sandboxStarterCode && (
-                <pre className="text-sm font-mono overflow-x-auto text-muted-foreground">
-                  <code>{lesson.sandboxStarterCode}</code>
-                </pre>
+            <div className="mt-8">
+              {!user ? (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+                  <p className="text-sm text-muted-foreground">
+                    <Link href="/login" className="text-white hover:underline">
+                      Masuk
+                    </Link>{' '}
+                    untuk mencoba sandbox kode interaktif di lesson ini.
+                  </p>
+                </div>
+              ) : sandboxLanguage ? (
+                <CodeSandbox
+                  language={sandboxLanguage}
+                  starterCode={lesson.sandboxStarterCode || ''}
+                />
+              ) : (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+                  <p className="text-sm text-muted-foreground">
+                    Bahasa sandbox lesson ini (&quot;{lesson.sandboxLanguage}&quot;) belum
+                    didukung.
+                  </p>
+                </div>
               )}
-              <p className="text-sm text-muted-foreground mt-4">
-                Editor interaktif untuk menjalankan kode ini masih dalam pengembangan (Fase 5).
-              </p>
             </div>
           )}
 

@@ -113,6 +113,19 @@ bagian bawah `docs/17-ROADMAP.md`.
   placeholder. Untuk mengaktifkan: buat repo GitHub publik untuk proyek ini,
   aktifkan Discussions, install app giscus, ikuti langkah lengkap di
   `docs/08-FEATURE-BLOG.md`, lalu isi env var di `apps/web/.env`.
+- **Judge0 (code sandbox) belum pernah benar-benar dites eksekusi kodenya**:
+  `judge0-server`/`judge0-workers` butuh `privileged: true` (sandbox
+  "isolate" milik Judge0 perlu akses kernel low-level) — di lingkungan
+  development Claude Code, container privileged diblokir oleh classifier
+  auto-mode, jadi kedua service ini belum pernah berhasil dinyalakan &
+  end-to-end run kode belum diverifikasi nyata. Yang SUDAH diverifikasi:
+  config compose valid, `judge0-db`/`judge0-redis` (tidak butuh privileged)
+  jalan & auth redis benar, dan seluruh logic proxy `/api/sandbox` (auth
+  gate, validasi input, rate limit, allowlist bahasa, graceful failure saat
+  Judge0 unreachable) via HTTP test langsung. Sebelum anggap Fase 5 selesai
+  total: jalankan `docker compose -f infra/docker-compose.yml up -d
+  judge0-server judge0-workers` di environment yang mengizinkan privileged
+  container, lalu coba tombol Run beneran di lesson dengan `hasSandbox: true`.
 
 ## Status Implementasi
 
@@ -121,7 +134,7 @@ bagian bawah `docs/17-ROADMAP.md`.
 - [x] Fase 2 — Frontend Publik: Katalog Course
 - [x] Fase 3 — Auth & Progress Tracking
 - [x] Fase 4 — Blog + Giscus (Giscus butuh setup manual GitHub, lihat catatan di bawah)
-- [ ] Fase 5 — Code Sandbox (Judge0)
+- [x] Fase 5 — Code Sandbox (Judge0) — eksekusi kode live belum dites, lihat catatan di atas
 - [ ] Fase 6 — Lab Cybersecurity (CTFd)
 - [ ] Fase 7 — Deployment Production
 - [ ] Fase 8 — CI/CD
