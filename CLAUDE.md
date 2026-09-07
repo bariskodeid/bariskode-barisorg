@@ -106,13 +106,21 @@ Pembayaran/course berbayar, aplikasi mobile native, live class terjadwal,
 sertifikat otomatis, multi-bahasa (i18n). Daftar lengkap fase lanjutan ada di
 bagian bawah `docs/17-ROADMAP.md`.
 
+## Pending Aksi Manual dari User
+
+- **Giscus (komentar blog)**: `GiscusComments.tsx` sudah dipasang dan sengaja
+  tidak merender apa pun selama env var `NEXT_PUBLIC_GISCUS_*` masih nilai
+  placeholder. Untuk mengaktifkan: buat repo GitHub publik untuk proyek ini,
+  aktifkan Discussions, install app giscus, ikuti langkah lengkap di
+  `docs/08-FEATURE-BLOG.md`, lalu isi env var di `apps/web/.env`.
+
 ## Status Implementasi
 
 - [x] Fase 0 — Scaffolding & Dev Environment
 - [x] Fase 1 — Data Model & Admin Panel Dasar
 - [x] Fase 2 — Frontend Publik: Katalog Course
 - [x] Fase 3 — Auth & Progress Tracking
-- [ ] Fase 4 — Blog + Giscus
+- [x] Fase 4 — Blog + Giscus (Giscus butuh setup manual GitHub, lihat catatan di bawah)
 - [ ] Fase 5 — Code Sandbox (Judge0)
 - [ ] Fase 6 — Lab Cybersecurity (CTFd)
 - [ ] Fase 7 — Deployment Production

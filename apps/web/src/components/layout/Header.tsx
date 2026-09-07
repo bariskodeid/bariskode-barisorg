@@ -13,6 +13,7 @@ import { LogoutButton } from './LogoutButton'
 const navItems = [
   { href: '/', label: 'Beranda' },
   { href: '/courses', label: 'Kursus' },
+  { href: '/blog', label: 'Blog' },
 ]
 
 export function Header() {

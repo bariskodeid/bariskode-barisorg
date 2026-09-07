@@ -1,29 +1,50 @@
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { ChevronRight, PlayCircle } from 'lucide-react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { cache } from 'react'
 
 import { getPayload } from '@/lib/payload'
 import type { Lesson, Module } from '@/payload-types'
 
 export const revalidate = 60
 
-export default async function CourseDetailPage(props: PageProps<'/courses/[slug]'>) {
-  const { slug } = await props.params
+// overrideAccess: false wajib di setiap query dari halaman publik — lihat
+// catatan di app/(frontend)/page.tsx. `status: published` juga dicek
+// eksplisit di sini (bukan cuma di listing) supaya draft course tidak bisa
+// diakses langsung lewat URL slug-nya oleh pengunjung anonim.
+// React.cache dedup fetch antara generateMetadata & komponen halaman supaya
+// tidak query dua kali per request.
+const getCourse = cache(async (slug: string) => {
   const payload = await getPayload()
-
-  // overrideAccess: false wajib di setiap query dari halaman publik — lihat
-  // catatan di app/(frontend)/page.tsx. `status: published` juga dicek
-  // eksplisit di sini (bukan cuma di listing) supaya draft course tidak bisa
-  // diakses langsung lewat URL slug-nya oleh pengunjung anonim.
-  const courseResult = await payload.find({
+  const result = await payload.find({
     collection: 'courses',
     where: { and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }] },
     depth: 1,
     limit: 1,
     overrideAccess: false,
   })
-  const course = courseResult.docs[0]
+  return result.docs[0]
+})
+
+export async function generateMetadata(
+  props: PageProps<'/courses/[slug]'>,
+): Promise<Metadata> {
+  const { slug } = await props.params
+  const course = await getCourse(slug)
+  if (!course) return {}
+
+  return {
+    title: course.meta?.title || `${course.title} | bariskode.org`,
+    description: course.meta?.description || undefined,
+  }
+}
+
+export default async function CourseDetailPage(props: PageProps<'/courses/[slug]'>) {
+  const { slug } = await props.params
+  const payload = await getPayload()
+  const course = await getCourse(slug)
 
   if (!course) {
     notFound()

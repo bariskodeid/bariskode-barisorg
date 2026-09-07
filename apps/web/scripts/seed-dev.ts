@@ -77,8 +77,12 @@ async function main() {
           version: 1,
         },
       },
+      excerpt: 'Alasan JavaScript masih relevan dipelajari, dan bagaimana memulainya.',
       author: admin.id,
+      tags: [category.id],
+      relatedCourse: course.id,
       status: 'published',
+      publishedAt: new Date().toISOString(),
     },
   })
 

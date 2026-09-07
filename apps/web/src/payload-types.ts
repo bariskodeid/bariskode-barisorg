@@ -236,6 +236,14 @@ export interface Course {
   level?: ('pemula' | 'menengah' | 'lanjutan') | null;
   status?: ('draft' | 'published') | null;
   order?: number | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -331,6 +339,14 @@ export interface Post {
   relatedCourse?: (number | null) | Course;
   status?: ('draft' | 'published') | null;
   publishedAt?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -526,6 +542,13 @@ export interface CoursesSelect<T extends boolean = true> {
   level?: T;
   status?: T;
   order?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -586,6 +609,13 @@ export interface PostsSelect<T extends boolean = true> {
   relatedCourse?: T;
   status?: T;
   publishedAt?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
