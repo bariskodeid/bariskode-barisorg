@@ -27,4 +27,7 @@ services:
       - web
       - ctfd
     mem_limit: 128m
-    <<: *default-logging
+    logging:
+      driver: json-file
+      options:
+        max-size: 100M
