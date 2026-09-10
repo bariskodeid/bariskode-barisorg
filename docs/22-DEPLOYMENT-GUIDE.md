@@ -349,7 +349,7 @@ docker compose -f infra/docker-compose.yml logs -f caddy
 ### 6.4 Jalankan Migration Database
 
 ```bash
-docker compose -f infra/docker-compose.yml run --rm web-migrate pnpm payload migrate
+docker compose -f infra/docker-compose.yml run --rm web-migrate migrate
 ```
 
 > **Penting**: pakai service `web-migrate` (bukan `exec web`).
@@ -543,7 +543,7 @@ jobs:
             cd ~/bariskode
             git pull origin main
             docker compose -f infra/docker-compose.yml up -d --build
-            docker compose -f infra/docker-compose.yml run --rm web-migrate pnpm payload migrate
+            docker compose -f infra/docker-compose.yml run --rm web-migrate migrate
 ```
 
 ### 8.4 Strategi Branching
@@ -764,10 +764,10 @@ CTFD_ADMIN_PASSWORD=<password> infra/ctfd/seed-ctfd.sh
 
 ```bash
 # Cek status migration
-docker compose -f infra/docker-compose.yml run --rm web-migrate pnpm payload migrate:status
+docker compose -f infra/docker-compose.yml run --rm web-migrate migrate:status
 
 # Jalankan migration manual
-docker compose -f infra/docker-compose.yml run --rm web-migrate pnpm payload migrate
+docker compose -f infra/docker-compose.yml run --rm web-migrate migrate
 ```
 
 ### 11.7 Website Lambat

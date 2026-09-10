@@ -146,7 +146,7 @@ Semua service harus running termasuk `cloudflared`. Caddy tetap jalan di interna
 ## Langkah 7: Migration Database
 
 ```bash
-docker compose -f infra/docker-compose.yml -f infra/docker-compose.cloudflared.yml run --rm web-migrate pnpm payload migrate
+docker compose -f infra/docker-compose.yml -f infra/docker-compose.cloudflared.yml run --rm web-migrate migrate
 ```
 
 ## Langkah 8: Verifikasi
@@ -192,7 +192,7 @@ docker compose -f infra/docker-compose.yml -f infra/docker-compose.cloudflared.y
 cd /path/to/bariskode
 git pull origin main
 docker compose -f infra/docker-compose.yml -f infra/docker-compose.cloudflared.yml up -d --build
-docker compose -f infra/docker-compose.yml -f infra/docker-compose.cloudflared.yml run --rm web-migrate pnpm payload migrate
+docker compose -f infra/docker-compose.yml -f infra/docker-compose.cloudflared.yml run --rm web-migrate migrate
 ```
 
 ## Troubleshooting
