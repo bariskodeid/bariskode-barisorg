@@ -12,7 +12,18 @@ import {
 } from '@/lib/judge0'
 import { checkRateLimit } from '@/lib/rateLimit'
 
-const JUDGE0_URL = process.env.JUDGE0_API_URL
+// URL diambil dari Settings Global (admin bisa ubah tanpa rebuild),
+// fallback ke env JUDGE0_API_URL untuk backward compatibility.
+async function getJudge0Url(): Promise<string | null> {
+  try {
+    const payload = await getPayload()
+    const settings = await payload.findGlobal({ slug: 'settings' })
+    if (settings?.judge0ApiUrl) return settings.judge0ApiUrl
+  } catch {
+    // Settings belum tersedia atau error — fallback ke env
+  }
+  return process.env.JUDGE0_API_URL || null
+}
 
 // Lihat docs/11-FEATURE-CODE-SANDBOX.md — proxy ini adalah SATU-SATUNYA jalur
 // ke Judge0. Jangan pernah expose JUDGE0_API_URL langsung ke browser.
@@ -25,6 +36,7 @@ const JUDGE0_URL = process.env.JUDGE0_API_URL
 //   dari client).
 // - cpu_time_limit/memory_limit di-set server-side, bukan dari body request.
 export async function POST(req: NextRequest) {
+  const JUDGE0_URL = await getJudge0Url()
   if (!JUDGE0_URL) {
     return NextResponse.json({ error: 'Sandbox belum dikonfigurasi.' }, { status: 503 })
   }
@@ -95,6 +107,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const JUDGE0_URL = await getJudge0Url()
   if (!JUDGE0_URL) {
     return NextResponse.json({ error: 'Sandbox belum dikonfigurasi.' }, { status: 503 })
   }

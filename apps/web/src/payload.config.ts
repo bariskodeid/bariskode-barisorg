@@ -17,6 +17,7 @@ import {
   Posts,
   Certificates,
 } from './collections'
+import { Settings } from './globals'
 
 const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
@@ -29,8 +30,19 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    dashboard: {
+      widgets: [
+        {
+          slug: 'dashboard-stats',
+          Component: '@/components/admin/DashboardStats#default',
+          minWidth: 'large',
+          maxWidth: 'large',
+        },
+      ],
+    },
   },
   collections: [Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts, Certificates],
+  globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

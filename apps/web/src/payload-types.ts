@@ -101,10 +101,15 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    settings: Setting;
+  };
+  globalsSelect: {
+    settings: SettingsSelect<false> | SettingsSelect<true>;
+  };
   locale: null;
   widgets: {
+    'dashboard-stats': DashboardStatsWidget;
     collections: CollectionsWidget;
   };
   user: User;
@@ -722,6 +727,114 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings".
+ */
+export interface Setting {
+  id: number;
+  /**
+   * Nama situs yang tampil di header, metadata, dll.
+   */
+  siteName: string;
+  /**
+   * Deskripsi singkat situs untuk meta tags & footer.
+   */
+  siteDescription?: string | null;
+  /**
+   * Logo situs — tampil di header.
+   */
+  logo?: (number | null) | Media;
+  /**
+   * Favicon (ICO/PNG, 32x32 recommended).
+   */
+  favicon?: (number | null) | Media;
+  /**
+   * URL GitHub repo/organisasi.
+   */
+  github?: string | null;
+  /**
+   * URL profil Twitter/X.
+   */
+  twitter?: string | null;
+  /**
+   * URL invite Discord.
+   */
+  discord?: string | null;
+  /**
+   * URL channel YouTube.
+   */
+  youtube?: string | null;
+  /**
+   * Teks copyright di footer.
+   */
+  copyrightText?: string | null;
+  /**
+   * Tagline singkat di footer.
+   */
+  footerTagline?: string | null;
+  /**
+   * Aktifkan mode maintenance — publik lihat halaman maintenance saat diakses.
+   */
+  maintenanceMode?: boolean | null;
+  /**
+   * Pesan yang ditampilkan saat maintenance aktif.
+   */
+  maintenanceMessage?: string | null;
+  /**
+   * Aktifkan fitur code sandbox (Judge0) di lesson. Nonaktifkan untuk menyembunyikan tombol Run.
+   */
+  enableSandbox?: boolean | null;
+  /**
+   * Aktifkan link lab cybersecurity (CTFd) di lesson. Nonaktifkan untuk menyembunyikan tombol "Buka Lab".
+   */
+  enableLabs?: boolean | null;
+  /**
+   * URL API Judge0 (server-side only). Kosongkan untuk pakai nilai dari env JUDGE0_API_URL.
+   */
+  judge0ApiUrl?: string | null;
+  /**
+   * URL publik CTFd (contoh: https://ctf.bariskode.org). Kosongkan untuk pakai nilai dari env NEXT_PUBLIC_CTF_URL.
+   */
+  ctfdUrl?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings_select".
+ */
+export interface SettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  siteDescription?: T;
+  logo?: T;
+  favicon?: T;
+  github?: T;
+  twitter?: T;
+  discord?: T;
+  youtube?: T;
+  copyrightText?: T;
+  footerTagline?: T;
+  maintenanceMode?: T;
+  maintenanceMessage?: T;
+  enableSandbox?: T;
+  enableLabs?: T;
+  judge0ApiUrl?: T;
+  ctfdUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dashboard-stats_widget".
+ */
+export interface DashboardStatsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'large';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -1,0 +1,30 @@
+# Override untuk deployment local dengan Cloudflare Tunnel (cloudflared).
+#
+# Pakai:
+#   docker compose -f docker-compose.yml -f docker-compose.cloudflared.yml up -d --build
+#
+# KEUNTUNGAN vs VM deployment:
+# - Tidak perlu buka port di router (no port forwarding)
+# - TLS diurus Cloudflare (tidak perlu Caddy/Let's Encrypt)
+# - IP publik tidak perlu statis
+# - Cloudflare DDoS protection otomatis
+#
+# PENTING: Cloudflared butuh TUNNEL_TOKEN dari Cloudflare dashboard.
+# Buat tunnel di https://dash.cloudflare.com → Networks → Tunnels → Create a tunnel.
+#
+# Catatan: Caddy tetap jalan di internal (untuk local access via localhost).
+# Cloudflared menghandle traffic eksternal dari Cloudflare edge.
+
+services:
+  # Cloudflared — tunnel outbound ke Cloudflare edge
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - web
+      - ctfd
+    mem_limit: 128m
+    <<: *default-logging

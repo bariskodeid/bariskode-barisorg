@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 
 import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher'
 import { useLocale } from '@/lib/i18n/LocaleContext'
+import { useSettings } from '@/lib/useSettings'
 import { cn } from '@/lib/utils'
 
 import { LogoutButton } from './LogoutButton'
@@ -13,6 +14,7 @@ import { LogoutButton } from './LogoutButton'
 export function Header() {
   const pathname = usePathname()
   const { t } = useLocale()
+  const { settings } = useSettings()
 
   // Nav item ditambah bertahap seiring fase roadmap selesai (lihat
   // docs/17-ROADMAP.md) — jangan link ke rute yang belum dibangun.
@@ -44,7 +46,7 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="text-sm font-mono font-bold tracking-tighter uppercase">
-          bariskode.org
+          {settings?.siteName || 'bariskode.org'}
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
@@ -61,15 +63,26 @@ export function Header() {
             </Link>
           ))}
           {isLoggedIn && (
-            <Link
-              href="/my-learning"
-              className={cn(
-                'text-xs font-mono uppercase tracking-widest transition-colors hover:text-white',
-                pathname === '/my-learning' ? 'text-white' : 'text-muted-foreground',
-              )}
-            >
-              {t.nav.myLearning}
-            </Link>
+            <>
+              <Link
+                href="/my-learning"
+                className={cn(
+                  'text-xs font-mono uppercase tracking-widest transition-colors hover:text-white',
+                  pathname === '/my-learning' ? 'text-white' : 'text-muted-foreground',
+                )}
+              >
+                {t.nav.myLearning}
+              </Link>
+              <Link
+                href="/settings"
+                className={cn(
+                  'text-xs font-mono uppercase tracking-widest transition-colors hover:text-white',
+                  pathname === '/settings' ? 'text-white' : 'text-muted-foreground',
+                )}
+              >
+                {t.nav.settings}
+              </Link>
+            </>
           )}
         </nav>
 

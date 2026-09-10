@@ -24,6 +24,12 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
   const t = dictionaries[locale]
   const { user } = await payload.auth({ headers: await getHeaders() })
 
+  // Fetch settings untuk toggle feature & integrasi URL
+  const settings = await payload.findGlobal({ slug: 'settings' })
+  const enableSandbox = settings?.enableSandbox !== false // default true
+  const enableLabs = settings?.enableLabs !== false // default true
+  const ctfdUrl = settings?.ctfdUrl || process.env.NEXT_PUBLIC_CTF_URL || ''
+
   // overrideAccess: false wajib di setiap query dari halaman publik — lihat
   // catatan di app/(frontend)/page.tsx. depth: 3 supaya course.category ikut
   // ter-resolve jadi objek (dibutuhkan untuk cek kategori cybersecurity).
@@ -107,7 +113,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
             </div>
           )}
 
-          {lesson.hasSandbox && (
+          {lesson.hasSandbox && enableSandbox && (
             <div className="mt-8">
               {!user ? (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-6">
@@ -133,9 +139,9 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
             </div>
           )}
 
-          {isCybersecurityLesson && (
+          {isCybersecurityLesson && enableLabs && (
             <a
-              href={`${process.env.NEXT_PUBLIC_CTF_URL}/challenges`}
+              href={`${ctfdUrl}/challenges`}
               target="_blank"
               rel="noreferrer"
               className="group mt-8 flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors p-6"
