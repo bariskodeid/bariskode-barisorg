@@ -5,6 +5,8 @@ export const Users: CollectionConfig = {
   auth: true,
   admin: { useAsTitle: 'email' },
   access: {
+    // Hanya admin yang bisa akses admin panel
+    admin: ({ req: { user } }) => user?.role === 'admin',
     read: () => true,
     create: () => true, // registrasi publik untuk role student
     update: ({ req: { user }, id }) => user?.role === 'admin' || user?.id === id,
