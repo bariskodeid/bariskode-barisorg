@@ -27,7 +27,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
   // Fetch settings untuk toggle feature & integrasi URL
   const settings = await payload.findGlobal({ slug: 'settings' })
   const enableSandbox = settings?.enableSandbox !== false // default true
-  const enableLabs = settings?.enableLabs !== false // default true
+  const ctfdEnabled = settings?.ctfdEnabled !== false // default true
   const ctfdUrl = settings?.ctfdUrl || process.env.NEXT_PUBLIC_CTF_URL || ''
 
   // overrideAccess: false wajib di setiap query dari halaman publik — lihat
@@ -139,7 +139,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
             </div>
           )}
 
-          {isCybersecurityLesson && enableLabs && (
+          {isCybersecurityLesson && ctfdEnabled && (
             <a
               href={`${ctfdUrl}/challenges`}
               target="_blank"

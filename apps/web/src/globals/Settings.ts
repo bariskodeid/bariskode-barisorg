@@ -115,12 +115,12 @@ export const Settings: GlobalConfig = {
               },
             },
             {
-              name: 'enableLabs',
+              name: 'ctfdEnabled',
               type: 'checkbox',
               defaultValue: true,
               admin: {
                 description:
-                  'Aktifkan link lab cybersecurity (CTFd) di lesson. Nonaktifkan untuk menyembunyikan tombol "Buka Lab".',
+                  'Aktifkan CTFd (lab cybersecurity). Nonaktifkan untuk menyembunyikan semua link "Buka Lab" di seluruh situs.',
               },
             },
           ],

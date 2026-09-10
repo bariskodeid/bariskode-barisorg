@@ -787,9 +787,9 @@ export interface Setting {
    */
   enableSandbox?: boolean | null;
   /**
-   * Aktifkan link lab cybersecurity (CTFd) di lesson. Nonaktifkan untuk menyembunyikan tombol "Buka Lab".
+   * Aktifkan CTFd (lab cybersecurity). Nonaktifkan untuk menyembunyikan semua link "Buka Lab" di seluruh situs.
    */
-  enableLabs?: boolean | null;
+  ctfdEnabled?: boolean | null;
   /**
    * URL API Judge0 (server-side only). Kosongkan untuk pakai nilai dari env JUDGE0_API_URL.
    */
@@ -819,7 +819,7 @@ export interface SettingsSelect<T extends boolean = true> {
   maintenanceMode?: T;
   maintenanceMessage?: T;
   enableSandbox?: T;
-  enableLabs?: T;
+  ctfdEnabled?: T;
   judge0ApiUrl?: T;
   ctfdUrl?: T;
   updatedAt?: T;
