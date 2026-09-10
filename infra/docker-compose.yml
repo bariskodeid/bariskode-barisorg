@@ -167,11 +167,12 @@ services:
 
   # --- Aplikasi utama & reverse proxy (Fase 7, production only) ---
   # Tidak dipakai saat local dev — `pnpm dev` di host sudah menjalankan ini.
+  # Pakai .env.docker (bukan .env) — host postgres = "postgres" (service name).
   web:
     build:
       context: ../apps/web
     restart: unless-stopped
-    env_file: ../apps/web/.env
+    env_file: ../apps/web/.env.docker
     depends_on:
       - postgres
     expose:
@@ -179,19 +180,18 @@ services:
     mem_limit: 600m
     <<: *default-logging
 
-  # Jalankan migration lewat `docker compose run --rm web-migrate` (BUKAN
+  # Jalankan migration lewat `docker compose run --rm web-migrate migrate` (BUKAN
   # `exec web pnpm payload migrate`, seperti disebut docs/15-CICD.md — image
   # `web` yang jalan (final stage Dockerfile, `output: standalone`) sengaja
   # ramping dan tidak menyertakan pnpm/source lengkap, jadi tidak bisa
   # menjalankan CLI Payload. Service ini pakai stage `builder` yang masih
   # punya pnpm + source lengkap. Diverifikasi lokal (docker compose run
-  # --rm web-migrate pnpm payload migrate:status) berhasil connect &
-  # baca migration table.
+  # --rm web-migrate migrate:status) berhasil connect & baca migration table.
   web-migrate:
     build:
       context: ../apps/web
       target: builder
-    env_file: ../apps/web/.env
+    env_file: ../apps/web/.env.docker
     depends_on:
       - postgres
     entrypoint: ['pnpm', 'payload']
@@ -206,7 +206,7 @@ services:
     build:
       context: ../apps/web
       target: builder
-    env_file: ../apps/web/.env
+    env_file: ../apps/web/.env.docker
     depends_on:
       - postgres
     entrypoint: ['pnpm', 'payload', 'run']
