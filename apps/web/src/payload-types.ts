@@ -297,7 +297,9 @@ export interface Lesson {
    * Aktifkan editor kode interaktif (Judge0) di lesson ini
    */
   hasSandbox?: boolean | null;
-  sandboxLanguage?: string | null;
+  sandboxLanguage?:
+    | ('bash' | 'c' | 'cpp' | 'go' | 'java' | 'javascript' | 'php' | 'python' | 'ruby' | 'rust' | 'sql' | 'typescript')
+    | null;
   sandboxStarterCode?: string | null;
   /**
    * Aktifkan quiz pilihan ganda di akhir lesson ini

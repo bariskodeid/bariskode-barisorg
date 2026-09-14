@@ -1,17 +1,36 @@
 'use client'
 
+import { cpp } from '@codemirror/lang-cpp'
+import { go } from '@codemirror/lang-go'
+import { java } from '@codemirror/lang-java'
 import { javascript } from '@codemirror/lang-javascript'
+import { php } from '@codemirror/lang-php'
 import { python } from '@codemirror/lang-python'
+import { rust } from '@codemirror/lang-rust'
+import { sql } from '@codemirror/lang-sql'
+import { StreamLanguage } from '@codemirror/language'
+import { shell } from '@codemirror/legacy-modes/mode/shell'
 import { oneDark } from '@codemirror/theme-one-dark'
 import CodeMirror from '@uiw/react-codemirror'
 import { Play } from 'lucide-react'
 import { useRef, useState } from 'react'
 
 import type { AllowedLanguageKey } from '@/lib/judge0'
+import type { Extension } from '@codemirror/state'
 
-const languageExtensions: Record<AllowedLanguageKey, ReturnType<typeof python | typeof javascript>> = {
-  python: python(),
+const languageExtensions: Record<AllowedLanguageKey, Extension> = {
+  bash: StreamLanguage.define(shell),
+  c: cpp(),
+  cpp: cpp(),
+  go: go(),
+  java: java(),
   javascript: javascript(),
+  php: php(),
+  python: python(),
+  ruby: python(), // fallback — no @codemirror/lang-ruby
+  rust: rust(),
+  sql: sql(),
+  typescript: javascript({ typescript: true }),
 }
 
 // Status id dari Judge0 (docs/api/statuses_and_languages) — 1/2 berarti

@@ -1,11 +1,19 @@
-// Bahasa sengaja dibatasi ke yang benar-benar dipakai di kurikulum (lihat
-// docs/11-FEATURE-CODE-SANDBOX.md — "jangan aktifkan semua ~60 bahasa bawaan
-// Judge0 kalau tidak perlu, mengurangi permukaan serangan"). ID diverifikasi
-// dari db/languages/active.rb rilis Judge0 CE v1.13.1 (image yang dipakai di
-// infra/docker-compose.yml), bukan ditebak dari memori.
+// Bahasa dibatasi ke yang relevan untuk kurikulum (lihat
+// docs/11-FEATURE-CODE-SANDBOX.md). ID diverifikasi dari
+// db/languages/active.rb rilis Judge0 — bukan ditebak dari memori.
 export const ALLOWED_LANGUAGES = {
-  python: { id: 71, label: 'Python 3.8' },
+  bash: { id: 46, label: 'Bash 5.0' },
+  c: { id: 50, label: 'C (GCC 9.2.0)' },
+  cpp: { id: 54, label: 'C++ (GCC 9.2.0)' },
+  go: { id: 60, label: 'Go 1.13.5' },
+  java: { id: 62, label: 'Java (OpenJDK 13)' },
   javascript: { id: 63, label: 'JavaScript (Node.js 12)' },
+  php: { id: 68, label: 'PHP 7.4.1' },
+  python: { id: 71, label: 'Python 3.8' },
+  ruby: { id: 72, label: 'Ruby 2.7.0' },
+  rust: { id: 73, label: 'Rust 1.40.0' },
+  sql: { id: 82, label: 'SQL (SQLite 3.27.2)' },
+  typescript: { id: 74, label: 'TypeScript 3.7.4' },
 } as const
 
 export type AllowedLanguageKey = keyof typeof ALLOWED_LANGUAGES
