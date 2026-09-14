@@ -173,7 +173,7 @@ services:
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       MEILI_ENV: production
     volumes:
-      - meilisearch_data:/meilisearch/data
+      - ./meilisearch_data:/meilisearch/data
     expose:
       - '7700'
     mem_limit: 100m
@@ -254,6 +254,5 @@ volumes:
   ctfd_logs:
   ctfd_db_data:
   ctfd_redis_data:
-  meilisearch_data:
   caddy_data:
   caddy_config:
