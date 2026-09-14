@@ -172,8 +172,9 @@ services:
     environment:
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       MEILI_ENV: production
+      MEILI_DATA_DIR: /meili_data
     volumes:
-      - ./meilisearch_data:/meilisearch/data
+      - ./meilisearch_data:/meili_data
     expose:
       - '7700'
     mem_limit: 100m
