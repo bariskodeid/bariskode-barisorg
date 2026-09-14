@@ -14,11 +14,37 @@ import { checkRateLimit } from '@/lib/rateLimit'
 
 // URL diambil dari Settings Global (admin bisa ubah tanpa rebuild),
 // fallback ke env JUDGE0_API_URL untuk backward compatibility.
+// Validasi: hanya http/https dan blokir IP internal/link-local supaya admin
+// tidak bisa mengarahkan proxy ke layanan internal (SSRF mitigation).
+function isInternalHost(hostname: string): boolean {
+  if (hostname === 'localhost' || hostname === '0.0.0.0') return true
+  // IPv4 private / loopback / link-local / carrier-grade NAT
+  if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|169\.254\.|100\.(6[4-9]|[7-9]\d|1\d{2})\.)/.test(hostname)) return true
+  // IPv6 loopback / link-local / unique-local
+  if (/^(::1$|fe80:|fc|fd)/i.test(hostname)) return true
+  return false
+}
+
 async function getJudge0Url(): Promise<string | null> {
   try {
     const payload = await getPayload()
     const settings = await payload.findGlobal({ slug: 'settings' })
-    if (settings?.judge0ApiUrl) return settings.judge0ApiUrl
+    if (settings?.judge0ApiUrl) {
+      try {
+        const parsed = new URL(settings.judge0ApiUrl)
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+          console.warn('[sandbox] judge0ApiUrl protocol blocked:', parsed.protocol)
+          return process.env.JUDGE0_API_URL || null
+        }
+        if (isInternalHost(parsed.hostname)) {
+          console.warn('[sandbox] judge0ApiUrl internal host blocked:', parsed.hostname)
+          return process.env.JUDGE0_API_URL || null
+        }
+        return settings.judge0ApiUrl
+      } catch {
+        // URL malformed — fallback ke env
+      }
+    }
   } catch {
     // Settings belum tersedia atau error — fallback ke env
   }
@@ -36,106 +62,145 @@ async function getJudge0Url(): Promise<string | null> {
 //   dari client).
 // - cpu_time_limit/memory_limit di-set server-side, bukan dari body request.
 export async function POST(req: NextRequest) {
-  const JUDGE0_URL = await getJudge0Url()
-  if (!JUDGE0_URL) {
-    return NextResponse.json({ error: 'Sandbox belum dikonfigurasi.' }, { status: 503 })
-  }
-
-  const payload = await getPayload()
-  const { user } = await payload.auth({ headers: req.headers })
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { allowed, retryAfterMs } = checkRateLimit(`sandbox:${user.id}`, {
-    limit: 10,
-    windowMs: 60_000,
-  })
-  if (!allowed) {
-    return NextResponse.json(
-      { error: 'Terlalu banyak eksekusi, coba lagi sebentar lagi.' },
-      { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) } },
-    )
-  }
-
-  const body = await req.json().catch(() => null)
-  const sourceCode = body?.source_code
-  const language = body?.language
-  const stdin = body?.stdin
-
-  if (typeof sourceCode !== 'string' || sourceCode.length === 0) {
-    return NextResponse.json({ error: 'source_code wajib diisi' }, { status: 400 })
-  }
-  if (sourceCode.length > MAX_SOURCE_CODE_LENGTH) {
-    return NextResponse.json({ error: 'source_code terlalu panjang' }, { status: 400 })
-  }
-  if (stdin !== undefined && stdin !== null) {
-    if (typeof stdin !== 'string' || stdin.length > MAX_STDIN_LENGTH) {
-      return NextResponse.json({ error: 'stdin tidak valid' }, { status: 400 })
-    }
-  }
-  if (!isAllowedLanguage(language)) {
-    return NextResponse.json(
-      { error: `language harus salah satu dari: ${Object.keys(ALLOWED_LANGUAGES).join(', ')}` },
-      { status: 400 },
-    )
-  }
-
-  let res: Response
   try {
-    res = await fetch(`${JUDGE0_URL}/submissions?base64_encoded=false&wait=false`, {
-      method: 'POST',
-      headers: judge0Headers(),
-      body: JSON.stringify({
-        source_code: sourceCode,
-        language_id: ALLOWED_LANGUAGES[language].id,
-        stdin: stdin || '',
-        cpu_time_limit: SANDBOX_CPU_TIME_LIMIT,
-        memory_limit: SANDBOX_MEMORY_LIMIT,
-      }),
+    const JUDGE0_URL = await getJudge0Url()
+    if (!JUDGE0_URL) {
+      return NextResponse.json({ error: 'Sandbox belum dikonfigurasi.' }, { status: 503 })
+    }
+
+    let payload
+    try {
+      payload = await getPayload()
+    } catch (e) {
+      console.error('[sandbox] Failed to initialise Payload', e)
+      return NextResponse.json({ error: 'Gagal menginisialisasi layanan.' }, { status: 503 })
+    }
+
+    let user
+    try {
+      ;({ user } = await payload.auth({ headers: req.headers }))
+    } catch (e) {
+      console.error('[sandbox] Auth check failed', e)
+      return NextResponse.json({ error: 'Gagal memverifikasi sesi.' }, { status: 401 })
+    }
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { allowed, retryAfterMs } = checkRateLimit(`sandbox:${user.id}`, {
+      limit: 10,
+      windowMs: 60_000,
     })
-  } catch {
-    return NextResponse.json({ error: 'Sandbox sedang tidak bisa diakses.' }, { status: 502 })
-  }
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Terlalu banyak eksekusi, coba lagi sebentar lagi.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) } },
+      )
+    }
 
-  if (!res.ok) {
-    return NextResponse.json({ error: 'Gagal membuat submission' }, { status: 502 })
-  }
+    const body = await req.json().catch(() => null)
+    const sourceCode = body?.source_code
+    const language = body?.language
+    const stdin = body?.stdin
 
-  const data = await res.json()
-  return NextResponse.json(data) // { token: "..." }
+    if (typeof sourceCode !== 'string' || sourceCode.length === 0) {
+      return NextResponse.json({ error: 'source_code wajib diisi' }, { status: 400 })
+    }
+    if (sourceCode.length > MAX_SOURCE_CODE_LENGTH) {
+      return NextResponse.json({ error: 'source_code terlalu panjang' }, { status: 400 })
+    }
+    if (stdin !== undefined && stdin !== null) {
+      if (typeof stdin !== 'string' || stdin.length > MAX_STDIN_LENGTH) {
+        return NextResponse.json({ error: 'stdin tidak valid' }, { status: 400 })
+      }
+    }
+    if (!isAllowedLanguage(language)) {
+      return NextResponse.json(
+        { error: `language harus salah satu dari: ${Object.keys(ALLOWED_LANGUAGES).join(', ')}` },
+        { status: 400 },
+      )
+    }
+
+    let res: Response
+    try {
+      res = await fetch(`${JUDGE0_URL}/submissions?base64_encoded=false&wait=false`, {
+        method: 'POST',
+        headers: judge0Headers(),
+        body: JSON.stringify({
+          source_code: sourceCode,
+          language_id: ALLOWED_LANGUAGES[language].id,
+          stdin: stdin || '',
+          cpu_time_limit: SANDBOX_CPU_TIME_LIMIT,
+          memory_limit: SANDBOX_MEMORY_LIMIT,
+        }),
+      })
+    } catch {
+      return NextResponse.json({ error: 'Sandbox sedang tidak bisa diakses.' }, { status: 502 })
+    }
+
+    if (!res.ok) {
+      return NextResponse.json({ error: 'Gagal membuat submission' }, { status: 502 })
+    }
+
+    const data = await res.json()
+    return NextResponse.json(data) // { token: "..." }
+  } catch (e) {
+    console.error('[sandbox] Unexpected POST error', e)
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 })
+  }
 }
 
 export async function GET(req: NextRequest) {
-  const JUDGE0_URL = await getJudge0Url()
-  if (!JUDGE0_URL) {
-    return NextResponse.json({ error: 'Sandbox belum dikonfigurasi.' }, { status: 503 })
-  }
-
-  const payload = await getPayload()
-  const { user } = await payload.auth({ headers: req.headers })
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const token = req.nextUrl.searchParams.get('token')
-  if (!token) {
-    return NextResponse.json({ error: 'token wajib diisi' }, { status: 400 })
-  }
-
-  let res: Response
   try {
-    res = await fetch(`${JUDGE0_URL}/submissions/${token}?base64_encoded=false`, {
-      headers: judge0Headers(),
-    })
-  } catch {
-    return NextResponse.json({ error: 'Sandbox sedang tidak bisa diakses.' }, { status: 502 })
-  }
+    const JUDGE0_URL = await getJudge0Url()
+    if (!JUDGE0_URL) {
+      return NextResponse.json({ error: 'Sandbox belum dikonfigurasi.' }, { status: 503 })
+    }
 
-  if (!res.ok) {
-    return NextResponse.json({ error: 'Gagal mengambil hasil submission' }, { status: 502 })
-  }
+    let payload
+    try {
+      payload = await getPayload()
+    } catch (e) {
+      console.error('[sandbox] Failed to initialise Payload', e)
+      return NextResponse.json({ error: 'Gagal menginisialisasi layanan.' }, { status: 503 })
+    }
 
-  const data = await res.json()
-  return NextResponse.json(data)
+    let user
+    try {
+      ;({ user } = await payload.auth({ headers: req.headers }))
+    } catch (e) {
+      console.error('[sandbox] Auth check failed', e)
+      return NextResponse.json({ error: 'Gagal memverifikasi sesi.' }, { status: 401 })
+    }
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const token = req.nextUrl.searchParams.get('token')
+    if (!token) {
+      return NextResponse.json({ error: 'token wajib diisi' }, { status: 400 })
+    }
+    if (!/^[0-9a-f-]{36}$/i.test(token)) {
+      return NextResponse.json({ error: 'token tidak valid' }, { status: 400 })
+    }
+
+    let res: Response
+    try {
+      res = await fetch(`${JUDGE0_URL}/submissions/${token}?base64_encoded=false`, {
+        headers: judge0Headers(),
+      })
+    } catch {
+      return NextResponse.json({ error: 'Sandbox sedang tidak bisa diakses.' }, { status: 502 })
+    }
+
+    if (!res.ok) {
+      return NextResponse.json({ error: 'Gagal mengambil hasil submission' }, { status: 502 })
+    }
+
+    const data = await res.json()
+    return NextResponse.json(data)
+  } catch (e) {
+    console.error('[sandbox] Unexpected GET error', e)
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 })
+  }
 }
