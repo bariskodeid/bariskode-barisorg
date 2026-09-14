@@ -64,7 +64,7 @@ services:
   # Konfigurasi lengkap ada di infra/judge0/judge0.conf (salin dari
   # judge0.conf.example, isi secret-nya — lihat file itu untuk detail).
   judge0-server:
-    image: judge0/judge0:1.13.1
+    image: mrkushalsm/judge0:latest
     volumes:
       - ./judge0/judge0.conf:/judge0.conf:ro
     # 127.0.0.1 saja — lihat catatan di service `postgres`.
@@ -76,7 +76,7 @@ services:
     <<: *default-logging
 
   judge0-workers:
-    image: judge0/judge0:1.13.1
+    image: mrkushalsm/judge0:latest
     command: ['./scripts/workers']
     volumes:
       - ./judge0/judge0.conf:/judge0.conf:ro
