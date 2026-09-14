@@ -16,6 +16,7 @@ import {
   Progress,
   Posts,
   Certificates,
+  Bookmarks,
 } from './collections'
 import { Settings } from './globals'
 
@@ -41,7 +42,7 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts, Certificates],
+  collections: [Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts, Certificates, Bookmarks],
   globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

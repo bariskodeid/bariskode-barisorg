@@ -18,7 +18,7 @@ export function Footer() {
   ].filter((link) => link.url)
 
   return (
-    <footer className="border-t border-white/10 bg-background py-12 mt-auto">
+    <footer className="border-t border-border bg-background py-12 mt-auto">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="col-span-1 md:col-span-2">
@@ -36,7 +36,7 @@ export function Footer() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-white transition-colors"
+                    className="text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {link.label}
                   </a>
@@ -61,7 +61,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted-foreground font-mono">
             {settings?.copyrightText || t.footer.license(currentYear)}
           </p>

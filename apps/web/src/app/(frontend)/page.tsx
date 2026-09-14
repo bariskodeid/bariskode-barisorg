@@ -52,7 +52,7 @@ export default async function HomePage() {
       <div className="container mx-auto px-4 md:px-6 py-12 md:py-24">
         {/* Hero */}
         <div className="max-w-3xl mx-auto text-center mb-16 md:mb-24">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-6 md:mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-secondary/50 backdrop-blur-sm mb-6 md:mb-8">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
               {t.home.badge}
@@ -72,14 +72,14 @@ export default async function HomePage() {
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               href="/courses"
-              className="group inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-mono text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors rounded-lg"
+              className="group inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-white text-black font-mono text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors rounded-lg"
             >
               {t.home.startLearning}
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <a
               href="#kategori"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 bg-white/5 backdrop-blur-sm text-white font-mono text-sm font-bold uppercase tracking-wider hover:bg-white/10 transition-colors rounded-lg"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-border bg-secondary/50 backdrop-blur-sm text-foreground font-mono text-sm font-bold uppercase tracking-wider hover:bg-secondary transition-colors rounded-lg"
             >
               {t.home.viewCategories}
             </a>
@@ -93,33 +93,33 @@ export default async function HomePage() {
               {t.home.categories}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-              {categories.docs.map((category) => {
-                const Icon = categoryIcons[category.slug] ?? Code2
-                return (
-                  <Link
-                    key={category.id}
-                    href={`/courses?category=${category.slug}`}
-                    className="group p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors text-center lg:text-left"
-                  >
-                    <div className="mb-4 p-3 inline-block rounded-lg bg-white/5 border border-white/10 group-hover:border-white/30 transition-colors">
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold mb-1">{category.name}</h3>
-                    {category.description && (
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {category.description}
-                      </p>
-                    )}
-                  </Link>
-                )
-              })}
+          {categories.docs.map((category) => {
+            const Icon = categoryIcons[category.slug] ?? Code2
+            return (
+              <Link
+                key={category.id}
+                href={`/courses?category=${category.slug}`}
+                className="group p-6 rounded-xl border border-border bg-card/50 backdrop-blur-sm hover:bg-secondary/50 transition-colors text-center lg:text-left"
+              >
+                <div className="mb-4 p-3 inline-block rounded-lg bg-secondary/50 border border-border group-hover:border-primary/30 transition-colors">
+                  <Icon className="w-6 h-6 text-foreground" />
+                </div>
+                <h3 className="text-lg font-bold mb-1">{category.name}</h3>
+                {category.description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {category.description}
+                  </p>
+                )}
+              </Link>
+            )
+          })}
             </div>
           </div>
         )}
 
         {/* Kursus pilihan */}
         {highlightCourses.docs.length > 0 && (
-          <div className="border-t border-white/10 pt-12">
+          <div className="border-t border-border pt-12">
             <h2 className="text-sm font-mono uppercase tracking-widest text-muted-foreground mb-6 text-center">
               {t.home.featuredCourses}
             </h2>
@@ -131,22 +131,22 @@ export default async function HomePage() {
                   <Link
                     key={course.id}
                     href={`/courses/${course.slug}`}
-                    className="group p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors h-full flex flex-col"
+                    className="group p-6 rounded-xl border border-border bg-card/50 backdrop-blur-sm hover:bg-secondary/50 transition-colors h-full flex flex-col"
                   >
                     <div className="flex items-center gap-2 mb-4">
                       {category && (
-                        <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground">
+                        <span className="text-xs font-mono px-2 py-1 rounded bg-secondary text-muted-foreground">
                           {category.name}
                         </span>
                       )}
-                      <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground capitalize">
+                      <span className="text-xs font-mono px-2 py-1 rounded bg-secondary text-muted-foreground capitalize">
                         {course.level}
                       </span>
                     </div>
                     <h3 className="text-xl font-bold mb-2 group-hover:text-green-400 transition-colors">
                       {course.title}
                     </h3>
-                    <div className="mt-auto pt-4 flex items-center gap-2 text-sm text-muted-foreground group-hover:text-white transition-colors">
+                    <div className="mt-auto pt-4 flex items-center gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                       {t.home.viewCourse}
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </div>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { CodeSandbox } from '@/components/CodeSandbox'
+import { BookmarkButton } from '@/components/ui/BookmarkButton'
 import { MarkCompleteButton } from '@/components/ui/MarkCompleteButton'
 import { Quiz } from '@/components/ui/Quiz'
 import { dictionaries } from '@/lib/i18n/dictionaries'
@@ -67,16 +68,27 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
 
   let alreadyCompleted = false
   let existingScore: number | null = null
+  let isBookmarked = false
   if (user && course) {
-    const existing = await payload.find({
-      collection: 'progress',
-      where: { and: [{ user: { equals: user.id } }, { lesson: { equals: lesson.id } }] },
-      limit: 1,
-      overrideAccess: false,
-      user,
-    })
-    alreadyCompleted = existing.docs.length > 0
-    existingScore = existing.docs[0]?.score ?? null
+    const [existingProgress, existingBookmark] = await Promise.all([
+      payload.find({
+        collection: 'progress',
+        where: { and: [{ user: { equals: user.id } }, { lesson: { equals: lesson.id } }] },
+        limit: 1,
+        overrideAccess: false,
+        user,
+      }),
+      payload.find({
+        collection: 'bookmarks',
+        where: { and: [{ user: { equals: user.id } }, { lesson: { equals: lesson.id } }] },
+        limit: 1,
+        overrideAccess: false,
+        user,
+      }),
+    ])
+    alreadyCompleted = existingProgress.docs.length > 0
+    existingScore = existingProgress.docs[0]?.score ?? null
+    isBookmarked = existingBookmark.docs.length > 0
   }
 
   return (
@@ -95,8 +107,14 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
 
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter mb-8">{lesson.title}</h1>
 
+          {user && (
+            <div className="mb-8">
+              <BookmarkButton lessonId={lesson.id} initialBookmarked={isBookmarked} />
+            </div>
+          )}
+
           {lesson.videoUrl && (
-            <div className="aspect-video mb-8 rounded-xl overflow-hidden border border-white/10">
+            <div className="aspect-video mb-8 rounded-xl overflow-hidden border border-border">
               <iframe
                 src={lesson.videoUrl}
                 title={lesson.title}
@@ -116,9 +134,9 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
           {lesson.hasSandbox && enableSandbox && (
             <div className="mt-8">
               {!user ? (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+                <div className="rounded-xl border border-border bg-card/50 p-6">
                   <p className="text-sm text-muted-foreground">
-                    <Link href="/login" className="text-white hover:underline">
+                    <Link href="/login" className="text-foreground hover:underline">
                       {t.nav.login}
                     </Link>{' '}
                     {t.lesson.loginToSandbox}
@@ -130,7 +148,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
                   starterCode={lesson.sandboxStarterCode || ''}
                 />
               ) : (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+                <div className="rounded-xl border border-border bg-card/50 p-6">
                   <p className="text-sm text-muted-foreground">
                     {t.lesson.sandboxUnsupported(lesson.sandboxLanguage ?? '')}
                   </p>
@@ -144,7 +162,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
               href={`${ctfdUrl}/challenges`}
               target="_blank"
               rel="noreferrer"
-              className="group mt-8 flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors p-6"
+              className="group mt-8 flex items-center justify-between gap-4 rounded-xl border border-border bg-card/50 backdrop-blur-sm hover:bg-secondary/50 transition-colors p-6"
             >
               <div>
                 <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">
@@ -155,11 +173,11 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">{t.lesson.labDesc}</p>
               </div>
-              <ExternalLink className="w-5 h-5 shrink-0 text-muted-foreground group-hover:text-white transition-colors" />
+              <ExternalLink className="w-5 h-5 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
             </a>
           )}
 
-          <div className="mt-12 pt-8 border-t border-white/10">
+          <div className="mt-12 pt-8 border-t border-border">
             {user && course ? (
               lesson.hasQuiz && quizQuestions.length > 0 ? (
                 <Quiz
@@ -178,7 +196,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
               )
             ) : (
               <p className="text-sm text-muted-foreground">
-                <Link href="/login" className="text-white hover:underline">
+                <Link href="/login" className="text-foreground hover:underline">
                   {t.nav.login}
                 </Link>{' '}
                 {t.lesson.loginToComplete}

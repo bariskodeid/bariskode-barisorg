@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import { GridBackground } from '@/components/ui/GridBackground'
 import { LocaleProvider } from '@/lib/i18n/LocaleContext'
+import { ThemeProvider } from '@/lib/theme/ThemeContext'
 
 import './globals.css'
 
@@ -25,19 +26,28 @@ export const metadata: Metadata = {
 // island (komponen <T>), bukan di sini — lihat lib/i18n/LocaleContext.tsx.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={inter.variable}>
+    <html lang="id" className={inter.variable} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=document.cookie.match(/theme=(dark|light)/);if(t&&t[1]==='light')document.documentElement.classList.add('light')})();`,
+          }}
+        />
+      </head>
       <body>
-        <LocaleProvider>
-          <GridBackground />
-          <div
-            className="min-h-screen flex flex-col font-sans text-foreground selection:bg-white selection:text-black relative"
-            style={{ zIndex: 1 }}
-          >
-            <Header />
-            <main className="flex-1 pt-16">{children}</main>
-            <Footer />
-          </div>
-        </LocaleProvider>
+        <ThemeProvider>
+          <LocaleProvider>
+            <GridBackground />
+            <div
+              className="min-h-screen flex flex-col font-sans text-foreground selection:bg-white selection:text-black relative"
+              style={{ zIndex: 1 }}
+            >
+              <Header />
+              <main className="flex-1 pt-16">{children}</main>
+              <Footer />
+            </div>
+          </LocaleProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

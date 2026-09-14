@@ -127,9 +127,27 @@ migrate:create` dan diverifikasi jalan lokal.
 
 ---
 
+## Fase 11 — Search, Dark Mode, Lesson Bookmarking
+
+Diangkat dari backlog atas permintaan eksplisit user.
+
+- **Full-text search**: Meilisearch self-hosted (satu container Docker),
+  sync engine via afterChange hooks, search bar Cmd+K di navigation.
+  Lihat `docs/25-FEATURE-SEARCH.md`.
+- **Dark mode toggle**: Cookie-based, class `light` di `<html>`,
+  light mode CSS variables, ThemeProvider + ThemeToggle di Header.
+  Lihat `docs/24-PLAN-SEARCH-DARKMODE-BOOKMARK.md`.
+- **Lesson bookmarking**: collection `Bookmarks`, toggle button di lesson
+  page, tab Bookmark di `/my-learning`. Lihat
+  `docs/24-PLAN-SEARCH-DARKMODE-BOOKMARK.md`.
+
+**Definition of done**: ketiga fitur lolos `pnpm lint && pnpm typecheck &&
+pnpm build`, migration Bookmarks dibuat, Meilisearch container jalan.
+
+---
+
 ## Fase Lanjutan (Backlog, di luar v1)
 
 Dicatat di sini supaya tidak hilang, tapi **tidak dikerjakan sampai v1 stabil**:
 
-- Search full-text (Meilisearch/Typesense self-hosted).
 - SSO antara Payload dan CTFd.

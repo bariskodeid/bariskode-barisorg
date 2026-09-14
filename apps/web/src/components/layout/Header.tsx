@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher'
+import { SearchButton } from '@/components/ui/SearchDialog'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useLocale } from '@/lib/i18n/LocaleContext'
 import { useSettings } from '@/lib/useSettings'
 import { cn } from '@/lib/utils'
@@ -43,7 +45,7 @@ export function Header() {
   }, [])
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-md">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="text-sm font-mono font-bold tracking-tighter uppercase">
           {settings?.siteName || 'bariskode.org'}
@@ -55,8 +57,8 @@ export function Header() {
               key={item.href}
               href={item.href}
               className={cn(
-                'text-xs font-mono uppercase tracking-widest transition-colors hover:text-white',
-                pathname === item.href ? 'text-white' : 'text-muted-foreground',
+                'text-xs font-mono uppercase tracking-widest transition-colors hover:text-foreground',
+                pathname === item.href ? 'text-foreground' : 'text-muted-foreground',
               )}
             >
               {item.label}
@@ -67,8 +69,8 @@ export function Header() {
               <Link
                 href="/my-learning"
                 className={cn(
-                  'text-xs font-mono uppercase tracking-widest transition-colors hover:text-white',
-                  pathname === '/my-learning' ? 'text-white' : 'text-muted-foreground',
+                  'text-xs font-mono uppercase tracking-widest transition-colors hover:text-foreground',
+                  pathname === '/my-learning' ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
                 {t.nav.myLearning}
@@ -76,8 +78,8 @@ export function Header() {
               <Link
                 href="/settings"
                 className={cn(
-                  'text-xs font-mono uppercase tracking-widest transition-colors hover:text-white',
-                  pathname === '/settings' ? 'text-white' : 'text-muted-foreground',
+                  'text-xs font-mono uppercase tracking-widest transition-colors hover:text-foreground',
+                  pathname === '/settings' ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
                 {t.nav.settings}
@@ -87,6 +89,8 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
+          <SearchButton />
+          <ThemeToggle />
           <LocaleSwitcher />
           {isLoggedIn ? (
             <LogoutButton />
@@ -94,13 +98,13 @@ export function Header() {
             <>
               <Link
                 href="/login"
-                className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-white transition-colors"
+                className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t.nav.login}
               </Link>
               <Link
                 href="/register"
-                className="text-xs font-mono uppercase tracking-widest px-3 py-1.5 rounded-lg bg-white text-black font-bold hover:bg-gray-200 transition-colors"
+                className="text-xs font-mono uppercase tracking-widest px-3 py-1.5 rounded-lg bg-foreground text-background font-bold hover:opacity-90 transition-opacity"
               >
                 {t.nav.register}
               </Link>

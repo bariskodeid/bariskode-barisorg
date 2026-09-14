@@ -76,6 +76,7 @@ export interface Config {
     progress: Progress;
     posts: Post;
     certificates: Certificate;
+    bookmarks: Bookmark;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +93,7 @@ export interface Config {
     progress: ProgressSelect<false> | ProgressSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     certificates: CertificatesSelect<false> | CertificatesSelect<true>;
+    bookmarks: BookmarksSelect<false> | BookmarksSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -394,6 +396,17 @@ export interface Certificate {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bookmarks".
+ */
+export interface Bookmark {
+  id: number;
+  user: number | User;
+  lesson: number | Lesson;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -451,6 +464,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'certificates';
         value: number | Certificate;
+      } | null)
+    | ({
+        relationTo: 'bookmarks';
+        value: number | Bookmark;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -689,6 +706,16 @@ export interface CertificatesSelect<T extends boolean = true> {
   issuedAt?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bookmarks_select".
+ */
+export interface BookmarksSelect<T extends boolean = true> {
+  user?: T;
+  lesson?: T;
+  createdAt?: T;
+  updatedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

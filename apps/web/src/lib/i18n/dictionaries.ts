@@ -157,6 +157,28 @@ const id = {
     },
   },
   contentNotice: 'Konten kursus, lesson, dan blog saat ini hanya tersedia dalam Bahasa Indonesia.',
+  theme: {
+    toggle: 'Ganti tema',
+    dark: 'Gelap',
+    light: 'Terang',
+  },
+  search: {
+    title: 'Pencarian',
+    placeholder: 'Cari course, materi, artikel...',
+    noResults: 'Tidak ditemukan',
+    course: 'Course',
+    lesson: 'Materi',
+    post: 'Artikel',
+  },
+  bookmark: {
+    add: 'Bookmark',
+    remove: 'Hapus Bookmark',
+    title: 'Bookmark Saya',
+    empty: 'Belum ada bookmark',
+    added: 'Ditambahkan ke bookmark',
+    removed: 'Dihapus dari bookmark',
+    tab: 'Bookmark',
+  },
 }
 
 const en: typeof id = {
@@ -307,6 +329,28 @@ const en: typeof id = {
     },
   },
   contentNotice: 'Course, lesson, and blog content is currently only available in Indonesian.',
+  theme: {
+    toggle: 'Toggle theme',
+    dark: 'Dark',
+    light: 'Light',
+  },
+  search: {
+    title: 'Search',
+    placeholder: 'Search courses, materials, articles...',
+    noResults: 'No results found',
+    course: 'Course',
+    lesson: 'Material',
+    post: 'Article',
+  },
+  bookmark: {
+    add: 'Bookmark',
+    remove: 'Remove Bookmark',
+    title: 'My Bookmarks',
+    empty: 'No bookmarks yet',
+    added: 'Added to bookmarks',
+    removed: 'Removed from bookmarks',
+    tab: 'Bookmarks',
+  },
 }
 
 export const dictionaries = { id, en }

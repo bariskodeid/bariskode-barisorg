@@ -165,6 +165,20 @@ services:
     mem_limit: 48m
     <<: *default-logging
 
+  # --- Meilisearch (full-text search, docs/24-PLAN-SEARCH-DARKMODE-BOOKMARK.md) ---
+  meilisearch:
+    image: getmeili/meilisearch:v1.12
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+      MEILI_ENV: production
+    volumes:
+      - meilisearch_data:/meilisearch/data
+    expose:
+      - '7700'
+    mem_limit: 100m
+    <<: *default-logging
+
   # --- Aplikasi utama & reverse proxy (Fase 7, production only) ---
   # Tidak dipakai saat local dev — `pnpm dev` di host sudah menjalankan ini.
   # Pakai .env.docker (bukan .env) — host postgres = "postgres" (service name).
@@ -175,6 +189,7 @@ services:
     env_file: ../apps/web/.env.docker
     depends_on:
       - postgres
+      - meilisearch
     expose:
       - '3000'
     mem_limit: 600m
@@ -239,5 +254,6 @@ volumes:
   ctfd_logs:
   ctfd_db_data:
   ctfd_redis_data:
+  meilisearch_data:
   caddy_data:
   caddy_config:
