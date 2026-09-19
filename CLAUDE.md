@@ -240,5 +240,60 @@ dilakukan tanpa infrastruktur production asli. Sisa pekerjaan proyek ini
 adalah aksi manual user (lihat "Pending Aksi Manual" di atas) + fase lanjutan
 di luar v1 (bagian bawah docs/17-ROADMAP.md) kalau dibutuhkan nanti.
 
+## Konten: Course "Linux from Zero"
+
+Course produksi pertama non-dummy sudah di-seed: **Linux from Zero**
+(`apps/web/scripts/seed-linux-from-zero.ts`, jalankan `pnpm seed:linux` dari
+`apps/web`) — 1 course (kategori baru "Sistem & Linux", slug
+`sistem-linux`), 5 module, 18 lesson. 14 lesson pakai code sandbox (bahasa
+`bash`), 11 lesson pakai quiz pilihan ganda — dipilih campuran wajar per
+topik, bukan dipaksa tiap lesson punya keduanya (topik yang butuh
+network/root sungguhan seperti package manager & cron sengaja quiz-only,
+bukan sandbox, karena Judge0 sandbox stateless tanpa akses jaringan/root).
+Diverifikasi lewat query langsung ke DB setelah seed: 5 module + 18 lesson
+tersambung benar, semua 18 slug lesson baru unik terhadap seluruh DB
+(termasuk 2 lesson dummy `seed-dev.ts`), dan tiap quiz question punya tepat
+satu `isCorrect: true` (lolos validasi collection-level `Lessons.ts`).
+Belum dites: eksekusi nyata tombol Run di sandbox (blocker sama dengan
+catatan Judge0 di "Pending Aksi Manual" di atas — container privileged
+belum bisa dinyalakan di environment ini) dan smoke test submit quiz lewat
+UI browser sungguhan untuk lesson baru ini (pola submit-quiz sendiri sudah
+diverifikasi umum bekerja saat Fase 10).
+
+Course kedua: **Python from Zero**
+(`apps/web/scripts/seed-python-from-zero.ts`, `pnpm seed:python`) — 1 course
+(pakai kategori existing "Programming"/`programming`, di-reuse bukan
+dibuat duplikat — script cek `payload.find` dulu sebelum `create`), 5
+module, 18 lesson, 16 lesson sandbox (bahasa `python`), 11 lesson quiz.
+Topik abstrak yang sulit didemonstrasikan lewat satu skrip singkat (scope
+variabel local/global) sengaja quiz-only. Diverifikasi sama seperti Linux
+from Zero: query DB — 5 module/18 lesson tersambung benar, `sandboxLanguage`
+konsisten `python` di semua lesson sandbox, tiap quiz question tepat satu
+`isCorrect: true`, 0 slug lesson bentrok di seluruh DB (38 lesson total
+setelah kedua course + fixture dummy). Sandbox real-execution & quiz submit
+lewat UI browser: belum dites, blocker/alasan sama seperti Linux from Zero
+di atas.
+
+**10 course tambahan, satu per bahasa Judge0 sandbox yang tersisa** (semua
+12 bahasa allowlist Judge0 kini punya course "dari nol"): C, C++, Go, Java,
+JavaScript, PHP, Ruby, Rust, SQL, TypeScript — masing-masing
+`apps/web/scripts/seed-<bahasa>-from-zero.ts` + `pnpm seed:<bahasa>`,
+kategori `programming` di-reuse (bukan duplikat) di semua 10, level
+`pemula`, status `published`. Dibuat lewat 10 subagent paralel (tiap
+subagent 1 file, tidak saling sentuh) mengikuti pola persis
+seed-python-from-zero.ts, lalu diverifikasi ulang gabungan setelah semua
+selesai: `pnpm lint`/`pnpm typecheck` penuh 0 error dengan ke-10 file
+sekaligus ada, dan query DB gabungan konfirmasi ke-12 course "from Zero"
+(termasuk Linux & Python) semua persis 5 module/18 lesson, 0 slug lesson
+bentrok di antara 218 lesson total di DB, 0 quiz question tanpa tepat satu
+`isCorrect`, 0 lesson sandbox tanpa `sandboxLanguage`. Total gabungan
+ke-12 course: 216 lesson, 181 sandbox, 134 quiz. Satu bug transient ketemu
+& diperbaiki sendiri oleh subagent PHP saat proses: unescaped apostrophe
+dalam string literal TS memutus parsing (`tsc`/`eslint` sempat gagal
+project-wide selagi file itu belum selesai ditulis) — sudah diperbaiki,
+dikonfirmasi hilang di verifikasi gabungan akhir. Sandbox real-execution &
+quiz submit UI: sama seperti course lain, belum dites (blocker Judge0
+privileged container).
+
 Update checklist ini setiap fase selesai supaya sesi Claude Code berikutnya tahu
 harus lanjut dari mana.
