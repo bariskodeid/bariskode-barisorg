@@ -9,7 +9,7 @@ const modules: ModuleDef[] = [
         slug: 'cppfz-apa-itu-cpp',
         content: [
           'C++ adalah bahasa pemrograman yang dibuat oleh Bjarne Stroustrup di Bell Labs, mulai dikembangkan sekitar tahun 1979 sebagai "C with Classes" dan dirilis dengan nama C++ pada tahun 1985. C++ dibangun di atas bahasa C dengan menambahkan konsep Object-Oriented Programming (OOP).',
-          'Karena berakar dari C, C++ tetap mendukung hampir seluruh sintaks C, tapi menambahkan fitur seperti class, object, template, dan standard library (STL) yang jauh lebih kaya. Bisa dibilang C++ adalah "superset" dari C dengan tambahan kemampuan OOP.',
+          'Karena berakar dari C, C++ mendukung sebagian besar sintaks C, lalu menambahkan fitur seperti class, object, template, dan standard library (STL) yang jauh lebih kaya. Tapi C++ bukan "superset" ketat dari C: ada kode C yang valid namun ditolak compiler C++. Contohnya `int* p = malloc(sizeof(int));` boleh di C, tapi di C++ error karena `void*` tidak otomatis dikonversi ke `int*`; dan `int new = 5;` valid di C, tapi di C++ `new` adalah kata kunci.',
           'C++ dikenal sebagai bahasa compiled (bukan interpreted seperti Python) yang menghasilkan kode mesin native, sehingga sangat cepat dan efisien. C++ dipakai luas untuk game engine (Unreal Engine), sistem operasi, driver, aplikasi finansial berkecepatan tinggi, dan software embedded.',
           'Belajar C++ juga membantu memahami konsep dasar komputer lebih dalam, seperti manajemen memori manual, pointer, dan cara compiler bekerja — pengetahuan yang berguna bahkan kalau nanti pindah ke bahasa lain.',
         ],
@@ -37,7 +37,13 @@ const modules: ModuleDef[] = [
             ['Object-Oriented Programming (class & object)', true],
             ['Garbage collection otomatis penuh', false],
             ['Dynamic typing', false],
-            ['Tidak butuh compiler', false],
+            ['Pointer dan manajemen memori manual', false],
+          ]),
+          q('Bagaimana hubungan sintaks C dan C++?', [
+            ['Sebagian besar kode C bisa di-compile C++, tapi tidak semua', true],
+            ['Semua kode C yang valid otomatis bisa di-compile sebagai C++', false],
+            ['C++ sudah menggantikan C sehingga sintaks C tidak berlaku lagi', false],
+            ['C dan C++ tidak punya kesamaan sintaks sama sekali', false],
           ]),
         ],
       },
@@ -46,12 +52,15 @@ const modules: ModuleDef[] = [
         slug: 'cppfz-struktur-program-cout-cin',
         content: [
           'Setiap program C++ punya struktur dasar yang wajib ada: header yang di-include (misal `#include <iostream>`), dan fungsi `main()` sebagai titik masuk (entry point) program — di sinilah eksekusi program dimulai.',
-          '`#include <iostream>` mengimpor pustaka input/output standar, yang menyediakan `std::cout` untuk mencetak output ke layar dan `std::cin` untuk membaca input dari pengguna. Operator `<<` dipakai untuk mengirim data ke `cout`, sedangkan `>>` dipakai untuk mengambil data dari `cin`.',
+          '`#include <iostream>` mengimpor pustaka input/output standar, yang menyediakan `std::cout` untuk mencetak output ke layar dan `std::cin` untuk membaca input dari pengguna. Operator `<<` dipakai untuk mengirim data ke `cout`, sedangkan `>>` dipakai untuk mengambil data dari `cin`. `std::endl` mengakhiri baris (pindah ke baris baru).',
           'Fungsi `main()` harus mengembalikan nilai bertipe `int` — nilai `0` menandakan program selesai tanpa error. Setiap statement di C++ diakhiri titik koma (`;`), berbeda dengan Python yang tidak memakainya.',
+          'Setiap pustaka punya header sendiri. Untuk memakai `std::string` (tipe untuk teks, dibahas lengkap di lesson Array & std::string), tambahkan `#include <string>`:',
+          '```cpp\n#include <iostream>\n#include <string>\n\nint main() {\n    std::string nama = "Budi";\n    std::cout << "Halo, " << nama << std::endl;\n    return 0;\n}\n```',
           'Karena sandbox latihan tidak menyediakan input interaktif lewat stdin, contoh kode di sini akan menghardcode nilai yang biasanya diminta dari `cin`, supaya program tetap bisa langsung dijalankan dan diperiksa hasilnya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
+#include <string>
 
 int main() {
     std::cout << "Halo, C++!" << std::endl;
@@ -64,14 +73,37 @@ int main() {
     return 0;
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Fungsi mana yang menjadi titik masuk (entry point) program C++?', [
+            ['main()', true],
+            ['start()', false],
+            ['begin()', false],
+            ['run()', false],
+          ]),
+          q('Operator mana yang dipakai untuk mengirim data ke std::cout?', [
+            ['<<', true],
+            ['>>', false],
+            ['->', false],
+            ['<-', false],
+          ]),
+          q('Apa arti return 0; di akhir fungsi main()?', [
+            ['Program selesai tanpa error', true],
+            ['Program berhenti karena terjadi error', false],
+            ['Angka 0 dicetak ke layar sebagai hasil program', false],
+            ['Semua variabel di program diisi nilai awal 0', false],
+          ]),
+        ],
       },
       {
         title: 'Compile & Namespace',
         slug: 'cppfz-compile-namespace',
         content: [
           'Berbeda dengan Python yang langsung dijalankan interpreter, kode C++ harus di-compile dulu jadi kode mesin sebelum bisa dieksekusi. Compiler populer di antaranya GCC (`g++`) dan Clang. Perintah dasar: `g++ nama_file.cpp -o program`, lalu jalankan hasilnya dengan `./program`.',
+          '```bash\ng++ main.cpp -o program\n./program\n```',
+          'Jangan tertukar: compiler (`g++`, Clang) yang menerjemahkan kode. Editor seperti VS Code hanya tempat menulis kode, `make` mengotomatiskan perintah build, dan `gdb` adalah debugger untuk melacak bug — alat-alat itu memanggil atau melengkapi compiler, bukan menggantikannya.',
           'Proses compile ini penting karena compiler memeriksa kesalahan sintaks dan tipe data sebelum program pernah dijalankan sama sekali — berbeda dengan bahasa interpreted yang baru ketahuan error saat baris itu dieksekusi.',
-          '`namespace` adalah cara mengelompokkan nama (fungsi, class, variabel) supaya tidak bentrok antar pustaka. Statement `using namespace std;` membuat kita bisa menulis `cout` langsung tanpa awalan `std::` — tapi menulis `std::cout` secara eksplisit tetap dianggap praktik yang lebih aman di proyek besar.',
+          '`namespace` adalah cara mengelompokkan nama (fungsi, class, variabel) supaya tidak bentrok antar pustaka. Statement `using namespace std;` membuat kita bisa menulis `cout` langsung tanpa awalan `std::` — tapi menulis `std::cout` secara eksplisit tetap dianggap praktik yang lebih aman di proyek besar, karena nama dari `std` bisa bentrok dengan nama buatan kita sendiri. Perhatikan juga: `using namespace std;` hanya soal cara menulis nama, ia tidak menggantikan `#include` — header seperti `<iostream>` tetap harus ditulis.',
           'Sandbox Judge0 yang dipakai di platform ini otomatis menjalankan proses compile (`g++`) di belakang layar sebelum mengeksekusi program, jadi kita cukup fokus menulis kode C++-nya saja.',
         ],
         hasSandbox: true,
@@ -87,23 +119,23 @@ int main() {
 `,
         hasQuiz: true,
         quizQuestions: [
-          q('Apa yang harus dilakukan sebelum kode C++ bisa dijalankan?', [
-            ['Di-compile dulu jadi kode mesin', true],
-            ['Langsung dijalankan interpreter seperti Python', false],
-            ['Tidak perlu proses apa pun', false],
-            ['Dikirim ke server khusus', false],
+          q('Apa yang terjadi pada file .cpp sebelum programnya bisa dijalankan?', [
+            ['Compiler menerjemahkannya jadi file executable berisi kode mesin', true],
+            ['Interpreter membaca dan menjalankan barisnya satu per satu seperti Python', false],
+            ['Tidak ada proses apa pun, file .cpp langsung dijalankan sistem operasi', false],
+            ['File diubah jadi bytecode yang dijalankan oleh virtual machine C++', false],
           ]),
-          q('Compiler C++ yang umum dipakai adalah?', [
+          q('Mana yang berfungsi sebagai compiler C++?', [
             ['g++ (GCC)', true],
-            ['pip', false],
-            ['node', false],
-            ['python3', false],
+            ['VS Code (editor tempat menulis kode)', false],
+            ['make (otomatisasi perintah build)', false],
+            ['gdb (debugger untuk melacak bug)', false],
           ]),
           q('Fungsi statement using namespace std; adalah?', [
-            ['Supaya tidak perlu menulis awalan std:: setiap kali', true],
-            ['Meng-import pustaka dari internet', false],
-            ['Mengubah bahasa C++ jadi C', false],
-            ['Menghapus fungsi main()', false],
+            ['Supaya nama dari std (misal cout dan endl) bisa ditulis tanpa awalan std::', true],
+            ['Menggantikan #include <iostream> sehingga header tidak perlu ditulis lagi', false],
+            ['Membuat program ter-compile lebih cepat karena pustaka di-cache', false],
+            ['Menjamin nama di program kita tidak akan pernah bentrok dengan nama pustaka', false],
           ]),
         ],
       },
@@ -119,7 +151,10 @@ int main() {
           'C++ adalah bahasa statically typed — tipe data setiap variabel harus dideklarasikan eksplisit saat pembuatan, dan tidak bisa berubah tipe setelahnya. Contoh: `int umur = 20;` mendeklarasikan variabel `umur` bertipe integer.',
           'Tipe data dasar di C++: `int` (bilangan bulat), `float` (desimal presisi tunggal), `double` (desimal presisi ganda, lebih akurat), `char` (satu karakter, ditulis dengan kutip tunggal `\'a\'`), dan `bool` (`true`/`false`).',
           'Deklarasi variabel di C++ mengikuti pola `tipe nama_variabel = nilai;`. Nama variabel harus diawali huruf atau underscore, tidak boleh diawali angka, dan bersifat case-sensitive.',
-          'Karena statically typed, compiler akan langsung menolak (error saat compile) kalau kita mencoba memasukkan nilai dengan tipe yang tidak cocok ke sebuah variabel — ini membantu menangkap bug lebih awal dibanding bahasa dynamically typed.',
+          'Karena statically typed, tipe setiap variabel dicek compiler saat compile. Nilai yang sama sekali tidak cocok dengan tipenya — misalnya teks `"halo"` untuk variabel `int` — langsung ditolak dengan error. Tapi antar tipe angka, C++ melakukan implicit conversion secara otomatis: `int x = 3.7;` TIDAK error. Compiler diam-diam membuang bagian desimalnya (dipotong, bukan dibulatkan), jadi `x` bernilai `3`. Ini sumber bug yang halus karena tidak ada pesan apa pun, kecuali kamu menyalakan warning khusus seperti `-Wconversion`.',
+          'Kalau ingin compiler menjaga dari konversi yang menghilangkan data, pakai brace initialization (kurung kurawal): `int y{3.7};` ditolak dengan error "narrowing conversion". Hanya sintaks `{}` yang menolak narrowing; sintaks `=` dan `()` tetap mengizinkannya.',
+          '```cpp\n#include <iostream>\nusing namespace std;\n\nint main() {\n    int a = 3.7;       // compile, a bernilai 3 (desimal dibuang)\n    double b = 3;      // compile, b bernilai 3\n    int c{3};          // compile, 3 muat di int\n    // int d{3.7};     // error: narrowing conversion\n    // int e = "halo"; // error: teks tidak bisa jadi int\n    cout << a << " " << b << " " << c << endl;  // 3 3 3\n    return 0;\n}\n```',
+          'Nilai `bool` dicetak oleh `cout` sebagai `1` (untuk `true`) atau `0` (untuk `false`). Kalau ingin tercetak sebagai teks `true`/`false`, kirim `boolalpha` ke `cout` dulu: `cout << boolalpha;`. Pengaturan ini berlaku untuk semua cetakan `bool` setelahnya, sampai diganti dengan `noboolalpha`.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
@@ -132,11 +167,25 @@ int main() {
     char inisial = 'B';
     bool sudahLulus = true;
 
+    // Tanpa boolalpha, bool dicetak sebagai 1 (true) atau 0 (false).
+    cout << "Sudah lulus (tanpa boolalpha): " << sudahLulus << endl;
+
+    // Setelah baris ini, bool dicetak sebagai teks true / false.
+    cout << boolalpha;
+
     cout << "Umur: " << umur << endl;
     cout << "Tinggi: " << tinggi << endl;
     cout << "Berat: " << berat << endl;
     cout << "Inisial: " << inisial << endl;
     cout << "Sudah lulus: " << sudahLulus << endl;
+
+    // Implicit conversion: double -> int, desimal dibuang (bukan dibulatkan).
+    int hasilKonversi = 3.7;
+    cout << "int hasilKonversi = 3.7 -> " << hasilKonversi << endl;
+
+    // Brace initialization menolak narrowing. Hapus tanda // di bawah untuk
+    // melihat compiler menolaknya (error: narrowing conversion).
+    // int ditolak{3.7};
 
     return 0;
 }
@@ -155,11 +204,23 @@ int main() {
             ['string', false],
             ['bool', false],
           ]),
-          q('Apa yang terjadi kalau memasukkan nilai bertipe salah ke variabel di C++?', [
-            ['Compiler akan menolak/error saat compile', true],
-            ['Otomatis diubah tipenya tanpa masalah', false],
-            ['Program tetap jalan normal', false],
-            ['Hanya muncul warning, tidak berpengaruh', false],
+          q('Apa yang terjadi pada baris int x = 3.7; ?', [
+            ['Compile berhasil, x bernilai 3 karena desimalnya dibuang', true],
+            ['Compile error karena double tidak boleh dimasukkan ke int', false],
+            ['Compile berhasil, x bernilai 4 karena dibulatkan', false],
+            ['Compile berhasil, x tetap menyimpan 3.7 karena otomatis berubah jadi double', false],
+          ]),
+          q('Baris mana yang ditolak compiler (error)?', [
+            ['int a{3.7};', true],
+            ['int b = 3.7;', false],
+            ['double c = 3;', false],
+            ['char d = 65;', false],
+          ]),
+          q('Apa yang dicetak cout << true; kalau boolalpha belum dipakai?', [
+            ['1', true],
+            ['true', false],
+            ['True', false],
+            ['Tidak mencetak apa pun', false],
           ]),
         ],
       },
@@ -167,10 +228,11 @@ int main() {
         title: 'Operator',
         slug: 'cppfz-operator',
         content: [
-          'Operator aritmatika di C++ mirip banyak bahasa lain: `+` tambah, `-` kurang, `*` kali, `/` bagi, `%` sisa bagi (modulo, hanya untuk integer). Perlu diingat: pembagian antar dua `int` menghasilkan `int` (desimal dibuang), berbeda dengan Python yang selalu float.',
-          'Operator perbandingan: `==` sama dengan, `!=` tidak sama, `>`, `<`, `>=`, `<=` — semuanya menghasilkan nilai `bool` (`true`/`false`).',
+          'Operator aritmatika di C++ mirip banyak bahasa lain: `+` tambah, `-` kurang, `*` kali, `/` bagi, `%` sisa bagi (modulo, hanya untuk integer). Perlu diingat: pembagian antar dua `int` menghasilkan `int` (desimal dibuang), berbeda dengan Python yang selalu float. Kalau salah satu operand bertipe `double`, hasilnya `double`: `10 / 3` adalah `3`, tapi `10 / 3.0` adalah `3.33333`.',
+          'Operator perbandingan: `==` sama dengan, `!=` tidak sama, `>`, `<`, `>=`, `<=` — semuanya menghasilkan nilai `bool` (`true`/`false`). Saat dicetak dengan `cout`, hasil `bool` tampil sebagai `1` (true) atau `0` (false), kecuali kamu menulis `cout << boolalpha;` lebih dulu — setelah itu yang tampil adalah teks `true`/`false`.',
           'Operator logika: `&&` (AND/dan), `||` (OR/atau), `!` (NOT/negasi) — dipakai menggabungkan beberapa kondisi boolean. Berbeda dengan Python yang menulis kata `and`/`or`/`not`, C++ memakai simbol.',
           'C++ juga punya operator increment/decrement pendek `++` dan `--`, misal `angka++;` setara dengan `angka = angka + 1;`.',
+          '```cpp\n#include <iostream>\nusing namespace std;\n\nint main() {\n    int a = 10;\n    int b = 3;\n    cout << (a / b) << endl;    // 3\n    cout << (a / 3.0) << endl;  // 3.33333\n    cout << (a % b) << endl;    // 1\n    cout << (a > b) << endl;    // 1\n    cout << boolalpha;\n    cout << (a > b) << endl;    // true\n    return 0;\n}\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
@@ -182,8 +244,13 @@ int main() {
 
     cout << "Penjumlahan: " << (a + b) << endl;
     cout << "Pembagian integer: " << (a / b) << " (desimal dibuang)" << endl;
+    cout << "Pembagian dengan double: " << (a / 3.0) << endl;
     cout << "Sisa bagi: " << (a % b) << endl;
 
+    // Hasil perbandingan bertipe bool; tanpa boolalpha tercetak 1 atau 0.
+    cout << "Perbandingan a > b (tanpa boolalpha): " << (a > b) << endl;
+
+    cout << boolalpha;
     cout << "Perbandingan a > b: " << (a > b) << endl;
     cout << "Logika a > b && b > 0: " << (a > b && b > 0) << endl;
 
@@ -193,6 +260,27 @@ int main() {
     return 0;
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Berapa hasil 7 / 2 di C++ kalau keduanya bertipe int?', [
+            ['3', true],
+            ['3.5', false],
+            ['4', false],
+            ['3.0', false],
+          ]),
+          q('Apa yang dicetak cout << (5 > 3); kalau boolalpha belum dipakai?', [
+            ['1', true],
+            ['true', false],
+            ['True', false],
+            ['5', false],
+          ]),
+          q('Apa hasil operator % pada dua bilangan bulat?', [
+            ['Sisa bagi', true],
+            ['Persentase dari bilangan pertama', false],
+            ['Hasil bagi yang dibulatkan', false],
+            ['Hasil bagi dalam bentuk desimal', false],
+          ]),
+        ],
       },
       {
         title: 'Array & std::string',
@@ -200,7 +288,7 @@ int main() {
         content: [
           'Array di C++ adalah kumpulan data dengan tipe sama yang ukurannya tetap (fixed-size), dideklarasikan dengan `tipe nama[ukuran]`, misal `int nilai[3] = {80, 90, 75};`. Akses elemen lewat index mulai dari 0: `nilai[0]`.',
           'Ukuran array C++ murni (native array) tidak bisa berubah setelah dibuat — berbeda dengan list Python yang bisa `append()`. Untuk kebutuhan ukuran dinamis, C++ modern lebih sering memakai `std::vector` dari STL (dibahas di modul terakhir).',
-          '`std::string` (dari header `<string>`, biasanya sudah ikut ter-include lewat `<iostream>`) adalah tipe untuk menyimpan teks, jauh lebih mudah dipakai dibanding array `char` mentah dari C. Operator `+` bisa dipakai untuk menggabungkan (concatenate) dua `string`.',
+          '`std::string` adalah tipe untuk menyimpan teks, jauh lebih mudah dipakai dibanding array `char` mentah dari C. Ia didefinisikan di header `<string>`, jadi tulis `#include <string>` setiap kali memakainya. Di beberapa compiler, `<iostream>` kebetulan ikut menyertakan `<string>`, sehingga kode tanpa include itu kadang tetap bisa compile — tapi standar C++ tidak menjamin hal itu, dan kode yang sama bisa gagal di compiler lain. Operator `+` bisa dipakai untuk menggabungkan (concatenate) dua `string`.',
           'Method umum `std::string`: `.length()` mengembalikan jumlah karakter, `.substr(mulai, panjang)` mengambil sebagian teks, dan operator `[]` untuk mengakses karakter tertentu seperti array.',
         ],
         hasSandbox: true,
@@ -241,6 +329,12 @@ int main() {
             ['.size_of()', false],
             ['.count()', false],
             ['.total()', false],
+          ]),
+          q('Programmu memakai std::string. Apa yang sebaiknya selalu kamu lakukan?', [
+            ['Menulis #include <string> sendiri, walau kadang compiler tetap menerima tanpa itu', true],
+            ['Tidak perlu apa-apa karena #include <iostream> pasti menyertakan <string> di semua compiler', false],
+            ['Cukup menulis using namespace std; tanpa #include apa pun', false],
+            ['Menulis #include <char> karena string adalah kumpulan karakter', false],
           ]),
         ],
       },
@@ -290,10 +384,11 @@ int main() {
         content: [
           'Percabangan `if`/`else if`/`else` di C++ mirip banyak bahasa lain, tapi kondisinya wajib ditulis dalam tanda kurung `()` dan blok kodenya dalam kurung kurawal `{}` (bukan indentasi seperti Python).',
           '`switch` adalah alternatif untuk percabangan dengan banyak nilai diskrit dari satu variabel, memakai `case` untuk tiap kemungkinan nilai dan `break` untuk menghentikan eksekusi supaya tidak "jatuh" (fall-through) ke `case` berikutnya. `default` menangani nilai yang tidak cocok dengan `case` mana pun.',
-          'C++ juga punya conditional (ternary) operator: `hasil = (nilai >= 60) ? "lulus" : "gagal";` — satu baris menggantikan if/else sederhana, mirip konsep di Python tapi dengan sintaks `? :`.',
+          'C++ juga punya conditional (ternary) operator: `hasil = (nilai >= 60) ? "lulus" : "gagal";` — satu baris menggantikan if/else sederhana, mirip konsep di Python tapi dengan sintaks `? :`. Kalau hasilnya disimpan ke `std::string`, ingat menulis `#include <string>` di bagian atas program.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
+#include <string>
 using namespace std;
 
 int main() {
@@ -357,7 +452,10 @@ int main() {
         slug: 'cppfz-perulangan-for-while',
         content: [
           '`for` di C++ punya bentuk klasik tiga bagian: `for (inisialisasi; kondisi; increment) { ... }`, misal `for (int i = 0; i < 5; i++)` mengulang 5 kali dengan `i` bernilai 0 sampai 4.',
-          '`while` mengulang selama kondisi masih `true`, cocok kalau jumlah pengulangan tidak diketahui di awal. Ada juga `do-while` yang menjalankan blok kode minimal satu kali sebelum mengecek kondisi.',
+          '`while` mengulang selama kondisi masih `true`, cocok kalau jumlah pengulangan tidak diketahui di awal. Kondisinya dicek sebelum blok dijalankan, jadi kalau kondisi sudah `false` sejak awal, isi `while` tidak dijalankan sama sekali.',
+          '## do-while',
+          '`do-while` kebalikannya: blok kode dijalankan dulu, baru kondisi dicek. Akibatnya blok `do-while` selalu berjalan minimal satu kali, meski kondisinya sudah `false` sejak awal. Perhatikan titik koma (`;`) yang wajib ada setelah `while (...)`.',
+          '```cpp\n#include <iostream>\nusing namespace std;\n\nint main() {\n    int percobaan = 10;\n\n    do {\n        cout << "do-while jalan, percobaan = " << percobaan << endl;\n        percobaan++;\n    } while (percobaan < 5);\n\n    while (percobaan < 5) {\n        cout << "while ini tidak pernah jalan" << endl;\n    }\n\n    return 0;\n}\n```',
           '`break` menghentikan loop lebih awal (keluar sepenuhnya dari loop), `continue` melompati sisa iterasi saat ini dan lanjut ke iterasi berikutnya — sama persis konsepnya dengan bahasa lain.',
         ],
         hasSandbox: true,
@@ -378,20 +476,56 @@ int main() {
         hitung++;
     }
 
+    // do-while: blok jalan dulu, baru kondisi dicek. Kondisinya (percobaan < 5)
+    // sudah false sejak awal, tapi blok tetap berjalan satu kali.
+    int percobaan = 10;
+    do {
+        cout << "do-while jalan, percobaan = " << percobaan << endl;
+        percobaan++;
+    } while (percobaan < 5);
+
+    // while dengan kondisi yang sama: blok tidak dijalankan sama sekali.
+    while (percobaan < 5) {
+        cout << "while ini tidak pernah jalan" << endl;
+    }
+
     return 0;
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Berapa kali isi loop for (int i = 0; i < 5; i++) dijalankan?', [
+            ['5 kali', true],
+            ['4 kali karena i berhenti di 4', false],
+            ['6 kali karena i = 5 juga ikut dijalankan', false],
+            ['Tak terhingga karena tidak ada break', false],
+          ]),
+          q('Berapa kali blok do-while dijalankan kalau kondisinya sudah false sejak awal?', [
+            ['Tepat satu kali', true],
+            ['Nol kali, sama seperti while', false],
+            ['Terus-menerus tanpa henti', false],
+            ['Tidak jalan karena compile error', false],
+          ]),
+          q('Apa yang dilakukan continue di dalam loop?', [
+            ['Melompati sisa iterasi ini dan lanjut ke iterasi berikutnya', true],
+            ['Menghentikan seluruh loop dan langsung keluar ke baris setelah loop', false],
+            ['Mengulang iterasi yang sama lagi dari awal tanpa menambah counter', false],
+            ['Menghentikan seluruh program dan kembali ke sistem operasi', false],
+          ]),
+        ],
       },
       {
         title: 'Fungsi & Function Overloading',
         slug: 'cppfz-fungsi-overloading',
         content: [
           'Fungsi di C++ dideklarasikan dengan format `tipe_return nama_fungsi(parameter) { ... }`. Berbeda dengan Python, tipe return dan tipe tiap parameter harus dituliskan eksplisit. Kalau fungsi tidak mengembalikan nilai, tipe returnnya `void`.',
-          '`return` mengembalikan nilai dari fungsi sekaligus menghentikan eksekusinya. Fungsi harus dipanggil sebelum dipakai, atau dideklarasikan (function prototype) di atas `main()` kalau definisinya ditulis setelah `main()`.',
-          'Function overloading adalah fitur khas C++: kita bisa membuat beberapa fungsi dengan nama sama tapi jumlah/tipe parameter berbeda — compiler otomatis memilih versi yang cocok berdasarkan argumen yang diberikan saat pemanggilan.',
+          '`return` mengembalikan nilai dari fungsi sekaligus menghentikan eksekusinya. Compiler membaca kode dari atas ke bawah, jadi fungsi harus sudah dideklarasikan sebelum dipakai: tulis definisinya di atas `main()`, atau tulis function prototype (baris deklarasi tanpa isi, diakhiri `;`) di atas `main()` kalau definisinya ditulis setelah `main()`.',
+          '```cpp\n#include <iostream>\nusing namespace std;\n\nint kuadrat(int x);  // prototype: fungsi sudah dikenal compiler\n\nint main() {\n    cout << kuadrat(4) << endl;  // 16\n    return 0;\n}\n\nint kuadrat(int x) {  // definisi ditulis setelah main()\n    return x * x;\n}\n```',
+          'Function overloading adalah fitur khas C++: kita bisa membuat beberapa fungsi dengan nama sama tapi jumlah/tipe parameter berbeda — compiler otomatis memilih versi yang cocok berdasarkan argumen yang diberikan saat pemanggilan. Perbedaan tipe return saja tidak cukup untuk membedakan dua fungsi.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
+#include <string>
 using namespace std;
 
 int tambah(int a, int b) {
@@ -434,6 +568,12 @@ int main() {
             ['Fungsi yang memanggil dirinya sendiri', false],
             ['Fungsi tanpa parameter sama sekali', false],
           ]),
+          q('Fungsi tambah didefinisikan SETELAH main(), tanpa prototype, tapi dipanggil di dalam main(). Apa yang terjadi?', [
+            ['Compile error karena compiler belum mengenal tambah saat membaca main()', true],
+            ['Program jalan normal karena compiler mencari fungsi ke seluruh isi file', false],
+            ['Compile berhasil, tapi error saat baris pemanggilan itu dijalankan', false],
+            ['Compile berhasil dengan warning, lalu fungsi dipanggil dari bagian bawah file', false],
+          ]),
         ],
       },
     ],
@@ -446,15 +586,18 @@ int main() {
         slug: 'cppfz-class-object',
         content: [
           'Class di C++ adalah blueprint/cetakan untuk membuat object, dideklarasikan dengan kata kunci `class`. Class berisi atribut (data yang dimiliki object) dan method (fungsi yang dimiliki object).',
+          'Anggota class (atribut dan method) punya tingkat akses. Secara default, anggota `class` bersifat `private`: hanya bisa dipakai dari dalam class itu sendiri. Label `public:` membuat semua anggota setelahnya bisa diakses dari luar class, misalnya dari `main()` lewat titik. Di contoh sandbox, semua anggota `Siswa` ditulis setelah `public:` supaya bisa langsung diisi dari `main()`. Tingkat akses selengkapnya (`private`, `protected`) dibahas di lesson Encapsulation.',
           'Object dibuat dari class dengan cara mendeklarasikan variabel bertipe class tersebut, misal `Siswa siswa1;` — mirip mendeklarasikan variabel bertipe `int`, tapi tipe di sini adalah class buatan sendiri.',
-          'Akses atribut dan method sebuah object memakai titik (`.`), misal `siswa1.nama` atau `siswa1.perkenalan()`. Ini konsep dasar yang sama di hampir semua bahasa OOP, termasuk Python.',
+          'Akses atribut dan method sebuah object memakai titik (`.`), misal `siswa1.nama` atau `siswa1.perkenalan()`. Ini konsep dasar yang sama di hampir semua bahasa OOP, termasuk Python. Atribut hanya bisa diakses lewat titik dari luar class kalau berstatus `public`:',
+          '```cpp\n#include <iostream>\nusing namespace std;\n\nclass Kotak {\n    int panjang;  // tanpa label: otomatis private\npublic:\n    int lebar;    // public\n};\n\nint main() {\n    Kotak k;\n    k.lebar = 5;      // OK\n    // k.panjang = 3; // error: panjang bersifat private\n    cout << k.lebar << endl;\n    return 0;\n}\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
+#include <string>
 using namespace std;
 
 class Siswa {
-public:
+public:  // anggota di bawah label ini bisa diakses dari luar class (mis. dari main)
     string nama;
     int umur;
 
@@ -475,6 +618,9 @@ int main() {
     siswa1.perkenalan();
     siswa2.perkenalan();
 
+    // Coba hapus baris "public:" di atas: siswa1.nama = ... jadi error
+    // karena anggota class secara default private.
+
     return 0;
 }
 `,
@@ -486,17 +632,23 @@ int main() {
             ['Object dibuat sebelum class', false],
             ['Class hanya bisa dipakai sekali saja', false],
           ]),
-          q('Kata kunci apa untuk mendeklarasikan class di C++?', [
-            ['class', true],
-            ['struct only', false],
-            ['object', false],
-            ['type', false],
+          q('Apa fungsi label public: pada class Siswa di lesson ini?', [
+            ['Membuat anggota di bawahnya bisa diakses dari luar class', true],
+            ['Membuat class ini bisa dipakai juga oleh file program lain', false],
+            ['Membuat compiler otomatis membuatkan constructor untuk class ini', false],
+            ['Wajib ditulis, tanpa itu class tidak bisa di-compile sama sekali', false],
           ]),
-          q('Bagaimana cara mengakses atribut sebuah object?', [
-            ['Dengan titik, misal object.atribut', true],
-            ['Dengan kurung siku, misal object[atribut]', false],
-            ['Dengan panah wajib, misal object->atribut', false],
-            ['Atribut tidak bisa diakses dari luar class', false],
+          q('Class Kotak punya int panjang; tanpa label apa pun. Apa yang terjadi saat main() menulis k.panjang = 5; ?', [
+            ['Compile error karena anggota class secara default private', true],
+            ['Berjalan normal karena atribut selalu bisa diakses dengan titik', false],
+            ['Compile berhasil, tapi nilai panjang tetap tidak berubah', false],
+            ['Compile berhasil dengan warning, lalu nilainya berubah', false],
+          ]),
+          q('Bagaimana cara mengakses atribut public nama dari object siswa1?', [
+            ['siswa1.nama', true],
+            ['siswa1->nama', false],
+            ['siswa1[nama]', false],
+            ['Siswa::nama', false],
           ]),
         ],
       },
@@ -506,10 +658,13 @@ int main() {
         content: [
           'Constructor adalah method khusus yang otomatis dijalankan saat object baru dibuat, dipakai untuk mengisi nilai awal atribut. Nama constructor harus sama persis dengan nama class-nya, dan tidak punya tipe return (bahkan bukan `void`).',
           'Constructor bisa menerima parameter, sehingga kita bisa langsung membuat object dengan nilai awal tertentu, misal `Siswa siswa1("Budi", 20);` — ini menghindari perlu mengisi atribut satu per satu setelah object dibuat.',
-          'Destructor adalah kebalikan dari constructor — otomatis dijalankan saat object dihancurkan/keluar dari scope, ditulis dengan tanda `~` di depan nama class, misal `~Siswa()`. Berguna untuk "membersihkan" resource yang dipakai object (misal memori yang dialokasikan manual).',
+          'Ada cara kedua untuk mengisi atribut: member initializer list, ditulis setelah tanda `:` di antara kurung parameter dan `{`, misal `Siswa(string n, int u) : nama(n), umur(u) {}`. Atribut langsung dibuat dengan nilai itu, bukan dibuat kosong dulu lalu diisi ulang di dalam body. Initializer list juga wajib dipakai untuk mengisi atribut `const` atau referensi dari parameter constructor, dan untuk memanggil constructor class induk yang butuh argumen (dipakai di lesson Inheritance). Atribut selalu diinisialisasi sesuai urutan deklarasinya di class, bukan urutan penulisan di list.',
+          '```cpp\n#include <iostream>\n#include <string>\nusing namespace std;\n\nclass Siswa {\npublic:\n    string nama;\n    int umur;\n    Siswa(string namaAwal, int umurAwal) : nama(namaAwal), umur(umurAwal) {}\n};\n\nint main() {\n    Siswa s("Budi", 20);\n    cout << s.nama << " " << s.umur << endl;\n    return 0;\n}\n```',
+          'Destructor adalah kebalikan dari constructor — otomatis dijalankan saat object dihancurkan/keluar dari scope, ditulis dengan tanda `~` di depan nama class, misal `~Siswa()`. Berguna untuk "membersihkan" resource yang dipakai object (misal memori yang dialokasikan manual). Object yang dibuat di dalam blok `{ }` dihancurkan saat blok berakhir, sedangkan object di `main()` dihancurkan saat `main()` selesai, dengan urutan terbalik dari urutan pembuatannya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
+#include <string>
 using namespace std;
 
 class Siswa {
@@ -517,10 +672,8 @@ public:
     string nama;
     int umur;
 
-    // Constructor: dijalankan otomatis saat object dibuat
-    Siswa(string namaAwal, int umurAwal) {
-        nama = namaAwal;
-        umur = umurAwal;
+    // Constructor dengan member initializer list: dijalankan otomatis saat object dibuat
+    Siswa(string namaAwal, int umurAwal) : nama(namaAwal), umur(umurAwal) {
         cout << "Object Siswa " << nama << " dibuat" << endl;
     }
 
@@ -532,17 +685,47 @@ public:
 
 int main() {
     Siswa siswa1("Budi", 20);
+
+    {
+        Siswa siswa2("Siti", 22);
+        cout << "Di dalam blok" << endl;
+    }  // siswa2 keluar dari scope: destructor jalan di sini
+
+    Siswa siswa3("Andi", 21);
     cout << "Nama: " << siswa1.nama << ", Umur: " << siswa1.umur << endl;
+
+    // Di akhir main(): siswa3 dihancurkan dulu, baru siswa1 (urutan terbalik).
     return 0;
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang benar tentang constructor di C++?', [
+            ['Namanya sama dengan nama class dan tidak punya tipe return', true],
+            ['Namanya bebas, tapi harus bertipe return void di semua class', false],
+            ['Harus dipanggil manual lewat method setelah object dibuat', false],
+            ['Namanya selalu constructor() sama di semua class', false],
+          ]),
+          q('Apa fungsi bagian : nama(n), umur(u) pada Siswa(string n, int u) : nama(n), umur(u) {} ?', [
+            ['Mengisi atribut nama dan umur langsung dengan nilai n dan u', true],
+            ['Mendeklarasikan ulang nama dan umur sebagai variabel lokal', false],
+            ['Membuat nama dan umur menjadi atribut milik class induk', false],
+            ['Menyalin seluruh object Siswa lain ke object yang baru dibuat', false],
+          ]),
+          q('Kapan destructor ~Siswa() dijalankan untuk object yang dibuat di dalam blok { }?', [
+            ['Saat blok itu berakhir dan object keluar dari scope', true],
+            ['Saat program selesai sepenuhnya, setelah main() berakhir', false],
+            ['Saat object dibuat, tepat sebelum constructor-nya jalan', false],
+            ['Hanya kalau kita memanggil ~Siswa() secara manual', false],
+          ]),
+        ],
       },
       {
         title: 'Encapsulation & Access Modifier',
         slug: 'cppfz-encapsulation-access-modifier',
         content: [
           'Encapsulation adalah prinsip OOP yang membungkus data (atribut) dan menyembunyikannya dari akses langsung dari luar class, hanya bisa diakses lewat method tertentu — tujuannya menjaga data tetap valid dan konsisten.',
-          'C++ punya tiga access modifier: `public` (bisa diakses dari mana saja), `private` (hanya bisa diakses dari dalam class itu sendiri), dan `protected` (bisa diakses dari dalam class dan class turunannya/inheritance).',
+          'C++ punya tiga access modifier: `public` (bisa diakses dari mana saja), `private` (hanya bisa diakses dari dalam class itu sendiri), dan `protected` (bisa diakses dari dalam class dan class turunannya/inheritance, tapi tidak dari luar). Anggota `class` yang tidak diberi label apa pun otomatis `private`.',
           'Pola umum encapsulation: atribut dibuat `private`, lalu disediakan method `public` untuk membaca (getter) dan mengubah (setter) nilainya — setter bisa menambahkan validasi sebelum benar-benar mengubah data, sesuatu yang tidak bisa dilakukan kalau atribut diakses langsung.',
         ],
         hasSandbox: true,
@@ -587,11 +770,10 @@ int main() {
 `,
         hasQuiz: true,
         quizQuestions: [
-          q('Access modifier mana yang hanya bisa diakses dari dalam class itu sendiri?', [
+          q('Access modifier mana yang hanya bisa diakses dari dalam class itu sendiri, tidak dari luar maupun dari class turunan?', [
             ['private', true],
+            ['protected', false],
             ['public', false],
-            ['protected juga dari luar bebas', false],
-            ['global', false],
           ]),
           q('Apa tujuan utama encapsulation?', [
             ['Menyembunyikan data & menjaganya tetap valid lewat method', true],
@@ -599,11 +781,11 @@ int main() {
             ['Menghapus kebutuhan constructor', false],
             ['Mengizinkan semua atribut diakses bebas dari luar', false],
           ]),
-          q('Access modifier apa yang bisa diakses class turunan (inheritance)?', [
+          q('Access modifier mana yang bisa diakses dari class turunan, tapi tidak dari kode di luar class (misal dari main())?', [
             ['protected', true],
             ['private', false],
-            ['hanya public', false],
-            ['tidak ada yang bisa', false],
+            ['public', false],
+            ['Tidak ada, class turunan selalu punya akses yang sama dengan kode luar', false],
           ]),
         ],
       },
@@ -612,20 +794,23 @@ int main() {
         slug: 'cppfz-inheritance-dasar',
         content: [
           'Inheritance (pewarisan) memungkinkan sebuah class (child/derived class) mewarisi atribut dan method dari class lain (parent/base class), sehingga kode tidak perlu ditulis ulang untuk hal-hal yang sudah sama.',
-          'Sintaks inheritance di C++: `class Anak : public Induk { ... };` — dengan ini, class `Anak` otomatis punya semua anggota `public`/`protected` milik `Induk`, ditambah anggota barunya sendiri.',
-          'Child class bisa menambahkan method baru atau meng-override (menimpa) method milik parent dengan mendefinisikan ulang method bernama sama — ini dasar dari konsep polymorphism yang lebih lanjut di OOP.',
+          'Sintaks inheritance di C++: `class Anak : public Induk { ... };` — dengan ini, class `Anak` otomatis punya semua anggota `public`/`protected` milik `Induk`, ditambah anggota barunya sendiri. Anggota `private` milik `Induk` tetap ada di dalam object, tapi tidak bisa diakses langsung dari `Anak`.',
+          'Constructor tidak otomatis diwariskan. Constructor class turunan memanggil constructor induk lewat initializer list (dibahas di lesson Constructor & Destructor), misal `Kucing(string namaKucing) : Hewan(namaKucing) {}`. Bagian induk selalu dibuat lebih dulu, baru body constructor turunan dijalankan.',
+          'Class turunan juga bisa mendefinisikan ulang method milik induk dengan nama yang sama, seperti `bersuara()` di contoh sandbox. Tapi hati-hati: kalau method di induk tidak ditandai `virtual`, versi di turunan hanya menyembunyikan (name hiding) versi induk, bukan meng-override-nya. Lewat object bertipe `Kucing`, yang terpanggil memang versi `Kucing`. Tapi lewat referensi bertipe `Hewan`, yang terpanggil tetap versi `Hewan`, karena compiler memilih versi berdasarkan tipe referensinya, bukan object aslinya.',
+          'Intinya (potongan dari contoh sandbox di bawah, bukan program utuh):',
+          '```cpp\nKucing kucing("Kitty");\nkucing.bersuara();          // versi Kucing\n\nHewan& ref = kucing;\nref.bersuara();             // versi Hewan: name hiding, bukan override\n```',
+          'Supaya versi yang terpanggil ditentukan oleh object aslinya (bukan tipe referensinya), method di induk harus ditandai `virtual`. Itulah override yang sebenarnya, dan menjadi dasar dari polymorphism.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
+#include <string>
 using namespace std;
 
 class Hewan {
 public:
     string nama;
 
-    Hewan(string namaHewan) {
-        nama = namaHewan;
-    }
+    Hewan(string namaHewan) : nama(namaHewan) {}
 
     void bersuara() {
         cout << nama << " mengeluarkan suara" << endl;
@@ -635,9 +820,11 @@ public:
 // Kucing mewarisi semua anggota public dari Hewan
 class Kucing : public Hewan {
 public:
+    // Memanggil constructor Hewan lewat initializer list
     Kucing(string namaKucing) : Hewan(namaKucing) {}
 
-    // Meng-override method bersuara() milik parent
+    // bersuara() di Hewan TIDAK virtual, jadi ini hanya menyembunyikan
+    // (name hiding) versi milik Hewan, bukan meng-override-nya.
     void bersuara() {
         cout << nama << " berkata: Meong!" << endl;
     }
@@ -650,9 +837,33 @@ int main() {
     Kucing kucing("Kitty");
     kucing.bersuara();
 
+    // Lewat referensi bertipe Hewan, yang terpanggil tetap versi Hewan.
+    Hewan& ref = kucing;
+    ref.bersuara();
+
     return 0;
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa fungsi bagian : Hewan(namaKucing) pada constructor Kucing?', [
+            ['Memanggil constructor induk Hewan sebelum body constructor Kucing jalan', true],
+            ['Menyalin semua method Hewan ke dalam Kucing saat program berjalan', false],
+            ['Menandai constructor Kucing sebagai override dari constructor Hewan', false],
+            ['Mengisi semua atribut Hewan dengan nilai default 0 secara otomatis', false],
+          ]),
+          q('Hewan& ref = kucing; ref.bersuara(); Method bersuara() di Hewan TIDAK virtual. Versi mana yang dijalankan?', [
+            ['Versi Hewan, karena versi Kucing hanya menyembunyikannya (name hiding)', true],
+            ['Versi milik Kucing, karena object yang sebenarnya adalah Kucing', false],
+            ['Compile error karena referensi Hewan tidak boleh merujuk ke Kucing', false],
+            ['Kedua versi dijalankan berurutan, versi Hewan dulu baru versi Kucing', false],
+          ]),
+          q('Anggota Induk yang mana yang tidak bisa diakses langsung dari class Anak (class Anak : public Induk)?', [
+            ['Anggota private milik Induk', true],
+            ['Anggota protected milik Induk', false],
+            ['Anggota public milik Induk', false],
+          ]),
+        ],
       },
     ],
   },
@@ -663,11 +874,49 @@ int main() {
         title: 'Pointer & Referensi Lanjutan',
         slug: 'cppfz-pointer-referensi-lanjutan',
         content: [
-          'Pointer adalah variabel yang menyimpan alamat memori dari variabel lain, dideklarasikan dengan tanda `*`, misal `int* p;`. Operator `&` di depan variabel mengambil alamat memori variabel tersebut, sedangkan `*` di depan pointer men-dereference (mengambil nilai yang ditunjuk).',
+          '## Pointer ke variabel',
+          'Pointer adalah variabel yang menyimpan alamat memori dari variabel lain, dideklarasikan dengan tanda `*`, misal `int* p;`. Operator `&` di depan variabel mengambil alamat memori variabel tersebut, sedangkan `*` di depan pointer men-dereference (mengambil nilai yang ditunjuk). Pointer boleh diarahkan ulang (rebind) ke variabel lain kapan saja, misal `p = &b;`.',
+          '## Memori dinamis: new dan delete',
           'Selain menunjuk ke variabel yang sudah ada, pointer juga bisa menunjuk ke memori yang dialokasikan secara dinamis (di runtime) memakai `new`, misal `int* p = new int(10);`. Memori seperti ini harus dibebaskan manual dengan `delete p;` setelah tidak dipakai lagi, kalau tidak akan terjadi memory leak.',
-          'Ini berbeda dari referensi (`&` di deklarasi variabel, dibahas di Modul 2) yang tidak bisa `nullptr` dan tidak bisa dialokasikan ulang. Pointer lebih fleksibel tapi juga lebih berisiko: pointer yang tidak diinisialisasi atau sudah di-`delete` tapi masih dipakai (dangling pointer) adalah sumber bug klasik di C++.',
-          'Karena topik alokasi memori manual ini krusial dipahami secara konsep sebelum dipraktikkan bebas, dan berisiko menimbulkan kebingungan kalau langsung dipraktikkan tanpa konteks lengkap, lesson ini dipelajari lewat penjelasan dan quiz konsep terlebih dahulu.',
+          '```cpp\n#include <iostream>\n\nint main() {\n    int* p = new int(10);   // alokasi dinamis, nilai awal 10\n    std::cout << *p << std::endl;\n    delete p;               // bebaskan memori\n    p = nullptr;            // tandai: tidak menunjuk apa pun\n    return 0;\n}\n```',
+          'Setelah `delete p;`, variabel `p` masih menyimpan alamat lama yang sudah tidak valid (dangling pointer), dan memakainya lagi adalah bug klasik di C++. Kebiasaan baik: langsung isi `p = nullptr;`. Men-`delete` pointer yang bernilai `nullptr` aman (tidak melakukan apa-apa), tapi men-`delete` alamat yang sama dua kali adalah bug.',
+          '## Pointer vs referensi',
+          'Berbeda dari referensi (`&` di deklarasi variabel, dibahas di Modul 2) yang tidak bisa `nullptr` dan tidak bisa diarahkan ulang (rebind) ke variabel lain setelah dibuat, pointer bisa keduanya. Pointer lebih fleksibel tapi juga lebih berisiko: pointer yang tidak diinisialisasi atau menjadi dangling tidak ditolak compiler, dan baru menimbulkan masalah saat program berjalan. Karena itu, mulailah dengan referensi, dan pakai pointer kalau memang butuh fleksibilitas itu.',
         ],
+        hasSandbox: true,
+        sandboxStarterCode: `#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 10;
+    int b = 20;
+
+    // Pointer ke variabel yang sudah ada
+    int* p = &a;  // p menyimpan alamat a
+    cout << "Nilai a lewat p: " << *p << endl;
+    *p = 11;      // mengubah a lewat pointer
+    cout << "a sekarang: " << a << endl;
+
+    // Pointer boleh diarahkan ulang (rebind) ke variabel lain
+    p = &b;
+    cout << "Setelah diarahkan ulang, *p = " << *p << endl;
+
+    // Memori dinamis: new mengalokasikan, delete membebaskan
+    int* dinamis = new int(42);
+    cout << "Nilai di memori dinamis: " << *dinamis << endl;
+    *dinamis = *dinamis + 8;
+    cout << "Setelah diubah: " << *dinamis << endl;
+
+    delete dinamis;     // wajib, kalau tidak terjadi memory leak
+    dinamis = nullptr;  // hindari dangling pointer
+
+    if (dinamis == nullptr) {
+        cout << "dinamis sudah nullptr, aman dicek sebelum dipakai" << endl;
+    }
+
+    return 0;
+}
+`,
         hasQuiz: true,
         quizQuestions: [
           q('Apa yang disimpan oleh sebuah pointer?', [
@@ -679,8 +928,8 @@ int main() {
           q('Kata kunci apa untuk mengalokasikan memori dinamis di C++?', [
             ['new', true],
             ['alloc', false],
-            ['malloc_cpp', false],
             ['create', false],
+            ['make', false],
           ]),
           q('Apa yang wajib dilakukan setelah selesai memakai memori dari new?', [
             ['Membebaskannya dengan delete', true],
@@ -693,6 +942,12 @@ int main() {
             ['Referensi bisa nullptr, pointer tidak', false],
             ['Keduanya persis identik tanpa perbedaan', false],
             ['Pointer hanya bisa dipakai di dalam class', false],
+          ]),
+          q('Setelah delete p;, apa kebiasaan baik berikutnya terhadap pointer p?', [
+            ['Mengisinya dengan nullptr supaya tidak menjadi dangling pointer', true],
+            ['Memanggil delete p; sekali lagi untuk memastikan memorinya bersih', false],
+            ['Tidak perlu apa-apa, p otomatis berubah jadi nullptr setelah delete', false],
+            ['Membaca *p sekali lagi untuk memeriksa bahwa nilainya sudah hilang', false],
           ]),
         ],
       },
@@ -760,6 +1015,7 @@ int main() {
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
+#include <string>
 #include <vector>
 using namespace std;
 
@@ -804,7 +1060,9 @@ int main() {
         slug: 'cppfz-ringkasan-best-practice',
         content: [
           'RAII (Resource Acquisition Is Initialization) adalah prinsip penting di C++: sebuah resource (memori, file, koneksi) sebaiknya diikat ke lifetime sebuah object — dialokasikan saat object dibuat (constructor) dan dibebaskan otomatis saat object hancur (destructor). Ini mencegah lupa membersihkan resource secara manual.',
-          'Aturan praktis memilih referensi vs pointer: pakai referensi (`&`) sebagai default untuk parameter fungsi, karena lebih aman (tidak bisa `nullptr`, tidak bisa "menggantung"). Baru pakai pointer kalau memang butuh merepresentasikan "mungkin tidak ada nilai" (`nullptr`) atau butuh mengubah target yang ditunjuk di tengah jalan.',
+          'Aturan praktis memilih referensi vs pointer: pakai referensi (`&`) sebagai default untuk parameter fungsi, karena lebih sederhana dan tidak bisa `nullptr`. Tapi referensi bukan tanpa risiko: ia bisa menggantung (dangling) kalau objek yang dirujuk sudah hancur, misalnya fungsi yang mengembalikan referensi ke variabel lokalnya sendiri. Baru pakai pointer kalau memang butuh merepresentasikan "mungkin tidak ada nilai" (`nullptr`) atau butuh mengubah target yang ditunjuk di tengah jalan.',
+          'Contoh referensi menggantung (SALAH, jangan ditiru):',
+          '```cpp\nint& salah() {\n    int lokal = 5;\n    return lokal;  // lokal hancur saat fungsi selesai: referensi menggantung\n}\n```',
           'C++ modern (C++11 ke atas) menyediakan "smart pointer" (`std::unique_ptr`, `std::shared_ptr`) yang otomatis menerapkan RAII untuk memori dinamis, sehingga `delete` manual jarang dibutuhkan lagi di kode modern — meski penting tetap memahami `new`/`delete` mentah sebagai fondasi.',
           'Sepanjang course ini kita sudah belajar dari struktur program dasar, tipe data, operator, kontrol alur, fungsi, OOP (class, constructor, encapsulation, inheritance), hingga pointer dan STL (`std::vector`) — fondasi yang cukup untuk mulai membangun program C++ yang lebih kompleks dan mengeksplorasi topik lanjutan seperti template dan smart pointer.',
         ],
@@ -828,6 +1086,12 @@ int main() {
             ['Penghapusan otomatis semua variabel', false],
             ['Fitur ini tidak tersedia di C++', false],
           ]),
+          q('Mana pernyataan yang benar tentang referensi di C++?', [
+            ['Referensi bisa menggantung kalau objek yang dirujuk sudah hancur, misal variabel lokal', true],
+            ['Referensi selalu aman dipakai karena tidak mungkin menggantung seperti pointer', false],
+            ['Referensi ke variabel lokal otomatis memperpanjang umur variabel itu setelah fungsinya selesai', false],
+            ['Referensi hanya bisa menggantung kalau lebih dulu diubah menjadi pointer', false],
+          ]),
         ],
       },
     ],
@@ -839,7 +1103,11 @@ const course: CourseDef = {
   slug: 'cpp-from-zero',
   category: { name: 'Programming', slug: 'programming' },
   level: 'pemula',
-  description: '',
+  description: [
+    'C++ from Zero adalah course pengantar untuk kamu yang belum pernah menulis kode sama sekali, maupun yang sudah kenal bahasa lain seperti Python dan ingin memahami bahasa yang dekat dengan mesin. C++ dipakai di balik game engine, sistem operasi, driver, dan software yang butuh kecepatan tinggi, jadi belajar C++ juga membantumu memahami apa yang terjadi di balik bahasa pemrograman yang lebih tinggi.',
+    'Di sini kamu belajar dari dasar: struktur program dan proses compile, variabel dan tipe data (termasuk implicit conversion dan narrowing), operator, array dan `std::string`, referensi, percabangan, perulangan (`for`, `while`, dan `do-while`), fungsi dan function overloading, OOP (class, constructor dan destructor, encapsulation, inheritance), pointer dengan alokasi memori dinamis (`new` dan `delete`), `std::vector`, hingga studi kasus gabungan dan best practice seperti RAII dan smart pointer. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Sandbox di course ini menjalankan kode dengan GCC 9.2 (mode C++14, `gnu++14`), tanpa akses jaringan dan tanpa input keyboard, jadi `std::cin` tidak bisa dicoba di sana dan fitur C++17 ke atas (misalnya `std::optional` dan structured bindings) tidak tersedia. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun dan tidak perlu pengalaman programming sebelumnya.',
+  ].join('\n\n'),
   sandboxLanguage: 'cpp',
   modules,
 }
