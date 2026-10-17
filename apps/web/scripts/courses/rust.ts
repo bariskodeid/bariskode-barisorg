@@ -8,30 +8,30 @@ const modules: ModuleDef[] = [
         title: 'Apa itu Rust?',
         slug: 'rustfz-apa-itu-rust',
         content: [
-          'Rust adalah bahasa pemrograman sistem yang dirancang untuk performa setara C/C++ tapi dengan jaminan memory safety (keamanan memori) tanpa memerlukan garbage collector. Rust pertama kali dikembangkan oleh Mozilla, dan sejak itu diadopsi luas oleh perusahaan seperti Microsoft, Amazon, Google, hingga masuk ke kernel Linux.',
+          'Rust adalah bahasa pemrograman sistem yang dirancang untuk performa setara C/C++ tapi dengan jaminan memory safety (keamanan memori) tanpa memerlukan garbage collector. Rust dimulai sekitar tahun 2006 sebagai proyek pribadi Graydon Hoare, lalu Mozilla mulai mensponsorinya pada 2009; versi stabil 1.0 dirilis tahun 2015. Sejak itu Rust diadopsi luas oleh perusahaan seperti Microsoft, Amazon, Google, hingga masuk ke kernel Linux.',
           'Keunikan utama Rust ada pada sistem "ownership" (kepemilikan) yang dicek langsung oleh compiler saat proses kompilasi (disebut borrow checker). Kalau ada potensi bug memori seperti use-after-free atau data race, compiler akan menolak mengkompilasi kode tersebut — bug ditangkap sebelum program pernah dijalankan.',
           'Karena tidak ada garbage collector, program Rust yang sudah berhasil dikompilasi biasanya berjalan sangat cepat dan efisien, mendekati performa C, sehingga cocok dipakai untuk sistem operasi, web browser engine, blockchain, hingga tools command-line performa tinggi.',
           'Rust memang punya kurva belajar yang lebih curam dibanding bahasa seperti Python, terutama karena konsep ownership dan borrowing yang tidak ada di kebanyakan bahasa lain — tapi begitu terbiasa, konsep ini justru membantu menulis kode yang jauh lebih aman dari bug tersembunyi.',
         ],
         hasQuiz: true,
         quizQuestions: [
-          q('Siapa yang pertama kali mengembangkan bahasa Rust?', [
-            ['Mozilla', true],
-            ['Google', false],
-            ['Microsoft', false],
-            ['Facebook', false],
+          q('Siapa yang memulai pengembangan bahasa Rust?', [
+            ['Graydon Hoare, sebagai proyek pribadi sekitar tahun 2006', true],
+            ['Tim engineer Mozilla yang dibentuk khusus untuk membuat Rust sejak awal', false],
+            ['Google, sebagai pengganti C++ untuk Android', false],
+            ['Microsoft, sebagai bahasa untuk menulis ulang Windows', false],
           ]),
           q('Apa yang membuat Rust unik dibanding bahasa lain?', [
             ['Sistem ownership & borrow checker untuk memory safety tanpa garbage collector', true],
-            ['Rust punya garbage collector tercepat di dunia', false],
-            ['Rust hanya bisa dipakai untuk web development', false],
-            ['Rust tidak punya compiler, langsung diinterpretasi', false],
+            ['Memory safety dijamin lewat garbage collector yang berjalan saat program dijalankan', false],
+            ['Rust diinterpretasi baris demi baris, jadi tidak butuh proses kompilasi', false],
+            ['Rust dirancang khusus untuk web frontend dan tidak cocok untuk sistem operasi', false],
           ]),
           q('Kapan borrow checker mendeteksi potensi bug memori di Rust?', [
             ['Saat proses kompilasi, sebelum program dijalankan', true],
-            ['Hanya saat program sedang berjalan (runtime)', false],
-            ['Setelah program selesai dijalankan', false],
-            ['Rust tidak punya mekanisme deteksi bug memori', false],
+            ['Saat program berjalan, dengan memeriksa setiap akses memori', false],
+            ['Hanya saat programmer menjalankan perintah cargo test', false],
+            ['Saat garbage collector membersihkan memori yang tidak terpakai', false],
           ]),
         ],
       },
@@ -58,7 +58,8 @@ const modules: ModuleDef[] = [
           'Cargo adalah package manager sekaligus build tool resmi Rust, otomatis terpasang bersama toolchain Rust (`rustup`). Cargo mengurus dependency (disebut "crate"), proses compile, hingga menjalankan test, semuanya lewat satu perintah.',
           'Proyek Rust baru dibuat dengan `cargo new nama_proyek`, menghasilkan struktur folder standar: file `Cargo.toml` (berisi metadata proyek & daftar dependency) dan folder `src/` berisi kode sumber, dimulai dari `src/main.rs`.',
           'Perintah `cargo build` mengkompilasi proyek jadi binary di folder `target/`, sedangkan `cargo run` mengkompilasi sekaligus langsung menjalankan hasilnya — perintah yang paling sering dipakai saat development.',
-          'Selain `rustc` (compiler mentah) dan `cargo`, ekosistem Rust punya crates.io sebagai registry publik untuk crate pihak ketiga, mirip `pip` untuk Python atau `npm` untuk JavaScript — tinggal ditambahkan ke `Cargo.toml` lalu Cargo yang mengurus download & compile-nya.',
+          'Selain `rustc` (compiler mentah) dan `cargo`, ekosistem Rust punya crates.io sebagai registry publik untuk crate pihak ketiga, mirip `pip` untuk Python atau `npm` untuk JavaScript — tinggal ditambahkan ke `Cargo.toml` lalu Cargo yang mengurus download & compile-nya. Situs docs.rs otomatis menampilkan dokumentasi tiap crate yang dipublikasikan ke crates.io, sedangkan `rustup` hanya memasang dan memperbarui toolchain (`rustc`, `cargo`), bukan tempat mencari crate.',
+          'Di code sandbox bariskode.org, kode dikompilasi sebagai satu file tanpa Cargo, jadi perintah `cargo` tidak bisa dicoba di sana — tapi hampir semua proyek Rust sungguhan memakainya.',
         ],
         hasQuiz: true,
         quizQuestions: [
@@ -82,9 +83,8 @@ const modules: ModuleDef[] = [
           ]),
           q('Apa nama registry publik untuk crate (library) pihak ketiga Rust?', [
             ['crates.io', true],
-            ['npmjs.com', false],
-            ['pypi.org', false],
-            ['rustlib.org', false],
+            ['docs.rs', false],
+            ['rustup.rs', false],
           ]),
         ],
       },
@@ -97,10 +97,10 @@ const modules: ModuleDef[] = [
         title: 'Variabel & Mutability',
         slug: 'rustfz-variabel-mutability',
         content: [
-          'Variabel di Rust dibuat dengan kata kunci `let`, misal `let umur = 20;`. Berbeda dari kebanyakan bahasa lain, variabel di Rust bersifat immutable (tidak bisa diubah) secara default — mencoba mengubah nilainya setelah dibuat akan menghasilkan error saat kompilasi.',
+          'Variabel di Rust dibuat dengan kata kunci `let`, misal `let umur = 20;`. Berbeda dari kebanyakan bahasa lain, variabel di Rust bersifat immutable (tidak bisa diubah) secara default — mencoba mengubah nilainya setelah dibuat akan menghasilkan error saat kompilasi. Untuk menampilkan nilai variabel, `println!` memakai `{}` sebagai placeholder yang diisi argumen berikutnya sesuai urutan, misal `println!("Umur: {}", umur);`.',
           'Untuk membuat variabel yang nilainya bisa diubah, tambahkan kata kunci `mut` setelah `let`, misal `let mut umur = 20;` — baru setelah itu `umur = 21;` diperbolehkan.',
           'Keputusan desain "immutable by default" ini sengaja dibuat supaya programmer secara eksplisit menandai bagian mana dari kode yang memang butuh nilainya berubah, membuat kode lebih mudah dinalar dan mengurangi bug akibat perubahan nilai yang tidak disengaja.',
-          'Rust juga mendukung "shadowing" — membuat variabel baru dengan nama sama memakai `let` lagi, yang secara efektif menggantikan variabel lama tanpa perlu `mut`, sering dipakai untuk mengubah tipe data dari nilai yang sama.',
+          'Rust juga mendukung "shadowing" — membuat variabel baru dengan nama sama memakai `let` lagi, yang secara efektif menggantikan variabel lama tanpa perlu `mut`. Karena yang dibuat variabel baru, tipenya boleh berbeda: teks `"   "` bisa diganti menjadi angka jumlah byte-nya lewat `.len()`. Sebaliknya, `mut` hanya mengubah nilai dengan tipe yang sama — `let mut x = "teks"; x = 5;` ditolak compiler.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `fn main() {
@@ -112,10 +112,10 @@ const modules: ModuleDef[] = [
     skor = 10;
     println!("Skor setelah diubah: {}", skor);
 
-    // Shadowing: membuat variabel baru dengan nama sama
-    let teks_angka = "42";
-    let teks_angka: i32 = teks_angka.parse().unwrap();
-    println!("Hasil shadowing jadi angka: {}", teks_angka);
+    // Shadowing: membuat variabel baru dengan nama sama (tipenya boleh berbeda)
+    let spasi = "   "; // tipe &str (teks)
+    let spasi = spasi.len(); // tipe usize (angka): jumlah byte teks tadi
+    println!("Jumlah spasi (hasil shadowing jadi angka): {}", spasi);
 }
 `,
         hasQuiz: true,
@@ -144,10 +144,15 @@ const modules: ModuleDef[] = [
         title: 'Tipe Data Dasar',
         slug: 'rustfz-tipe-data-dasar',
         content: [
-          'Rust adalah bahasa statically typed — tipe data setiap variabel ditentukan saat kompilasi, walau sering tidak perlu ditulis eksplisit karena compiler bisa menebaknya (type inference) dari nilai yang diberikan.',
-          'Tipe integer paling umum adalah `i32` (bilangan bulat 32-bit bertanda), ada juga `i8`, `i16`, `i64`, serta versi unsigned (`u32`, `u64`, dst) untuk bilangan bulat tanpa tanda negatif.',
-          'Tipe `f64` dipakai untuk bilangan desimal (floating point) dengan presisi tinggi, `bool` untuk nilai benar/salah (`true`/`false`), dan `char` untuk satu karakter Unicode, ditulis dengan kutip tunggal seperti `\'A\'`.',
-          'Berbeda dari string biasa, `char` di Rust selalu tepat satu karakter dan ditulis dengan kutip tunggal — kutip ganda (`"..."`) dipakai untuk string literal (`&str`), bukan `char`.',
+          'Rust adalah bahasa statically typed — tipe data setiap variabel ditentukan saat kompilasi, walau sering tidak perlu ditulis eksplisit karena compiler bisa menebaknya (type inference) dari nilai yang diberikan. Kalau tidak ada petunjuk lain, compiler memilih `i32` untuk bilangan bulat dan `f64` untuk bilangan desimal.',
+          '## Integer',
+          'Tipe integer paling umum adalah `i32` (bilangan bulat 32-bit bertanda), ada juga `i8`, `i16`, `i64`, serta versi unsigned (`u8`, `u32`, `u64`, dst) untuk bilangan bulat tanpa tanda negatif. Awalan `i` berarti signed (bisa negatif), awalan `u` berarti unsigned, dan angkanya adalah jumlah bit. Jadi `u8` menyimpan 0 sampai 255, sedangkan `i8` menyimpan -128 sampai 127. Mengisi tipe unsigned dengan nilai negatif, misal `let x: u32 = -1;`, ditolak compiler.',
+          'Angka panjang boleh dipisah dengan underscore supaya mudah dibaca (`1_000_000`), dan tipenya bisa ditulis sebagai akhiran literal (`42u8`, `7i64`) sebagai ganti anotasi `: tipe`.',
+          '## Floating point, bool, dan char',
+          'Tipe `f64` dipakai untuk bilangan desimal (floating point) dengan presisi tinggi (ada juga `f32` yang lebih hemat memori tapi kurang presisi), `bool` untuk nilai benar/salah (`true`/`false`), dan `char` untuk satu karakter Unicode, ditulis dengan kutip tunggal seperti `\'A\'`.',
+          'Berbeda dari string biasa, `char` di Rust selalu tepat satu karakter dan ditulis dengan kutip tunggal — kutip ganda (`"..."`) dipakai untuk string literal (`&str`), bukan `char`. Satu `char` menyimpan satu Unicode scalar value (4 byte), bukan 1 byte seperti `char` di C, sehingga `\'é\'` atau `\'日\'` juga valid.',
+          '## Anotasi tipe dan inference',
+          '```rust\nlet a = 42; // tanpa anotasi: i32\nlet b = 3.14; // tanpa anotasi: f64\nlet c: u8 = 255; // tipe ditulis eksplisit\nlet d = 1_000_000i64; // underscore + akhiran tipe\nlet e: bool = false;\nlet f: char = \'R\';\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `fn main() {
@@ -160,14 +165,50 @@ const modules: ModuleDef[] = [
     println!("Float (f64): {}", bilangan_desimal);
     println!("Boolean: {}", benar_salah);
     println!("Char: {}", satu_huruf);
+
+    // Tanpa anotasi tipe, compiler memilih i32 dan f64
+    let otomatis_bulat = 7;
+    let otomatis_desimal = 2.5;
+    println!("Tanpa anotasi: {} dan {}", otomatis_bulat, otomatis_desimal);
+
+    // Tipe lain ditulis eksplisit; underscore memudahkan membaca angka besar
+    let kecil: u8 = 255;
+    let besar = 1_000_000i64;
+    println!("u8 terbesar: {}, i64: {}", kecil, besar);
+
+    // char menyimpan satu karakter Unicode, bukan hanya ASCII
+    let huruf_lain: char = 'é';
+    println!("Char Unicode: {}", huruf_lain);
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Tipe apa yang dipilih compiler untuk let x = 42; kalau tidak ada anotasi tipe?', [
+            ['i32', true],
+            ['i64, karena mengikuti ukuran CPU modern', false],
+            ['u32, karena 42 bukan bilangan negatif', false],
+            ['Tidak bisa dikompilasi sebelum tipenya ditulis eksplisit', false],
+          ]),
+          q('Mana yang merupakan literal char yang valid di Rust?', [
+            ["'R'", true],
+            ['"R"', false],
+            ["'Rust'", false],
+            ['R', false],
+          ]),
+          q('Apa yang terjadi pada let x: u32 = -1;?', [
+            ['Gagal kompilasi, karena tipe unsigned tidak bisa menyimpan nilai negatif', true],
+            ['Dikompilasi dan nilainya menjadi 4294967295 (wrap-around seperti di C)', false],
+            ['Dikompilasi, tapi program panic saat baris itu dijalankan', false],
+            ['Dikompilasi dan tipenya otomatis berubah menjadi i32', false],
+          ]),
+        ],
       },
       {
         title: 'Operator',
         slug: 'rustfz-operator',
         content: [
-          'Operator aritmatika di Rust mirip bahasa C-style pada umumnya: `+` tambah, `-` kurang, `*` kali, `/` bagi, `%` sisa bagi (modulo). Penting dicatat: pembagian antar integer (`i32 / i32`) menghasilkan integer juga (dibulatkan ke bawah), bukan otomatis jadi desimal.',
+          'Operator aritmatika di Rust mirip bahasa C-style pada umumnya: `+` tambah, `-` kurang, `*` kali, `/` bagi, `%` sisa bagi (remainder). Penting dicatat: pembagian antar integer (`i32 / i32`) menghasilkan integer juga, bukan otomatis jadi desimal — hasilnya dipotong ke arah nol (truncate toward zero), jadi `7 / 2` adalah `3` dan `-7 / 2` adalah `-3` (bukan `-4`). Sisa baginya mengikuti tanda bilangan yang dibagi, jadi `-7 % 2` adalah `-1`.',
+          '```rust\nprintln!("{}", 7 / 2); // 3\nprintln!("{}", -7 / 2); // -3 (dipotong ke arah nol, bukan ke bawah)\nprintln!("{}", -7 % 2); // -1\n```',
           'Operator perbandingan (`==`, `!=`, `>`, `<`, `>=`, `<=`) selalu menghasilkan tipe `bool`. Operator logika `&&` (dan), `||` (atau), `!` (negasi) dipakai untuk menggabungkan kondisi boolean.',
           'Rust sangat ketat soal tipe data — mencoba menjumlahkan `i32` dengan `f64` langsung tanpa konversi eksplisit akan ditolak compiler, berbeda dari beberapa bahasa lain yang otomatis melakukan konversi tipe (implicit casting).',
         ],
@@ -177,8 +218,13 @@ const modules: ModuleDef[] = [
     let b = 3;
 
     println!("Penjumlahan: {}", a + b);
-    println!("Pembagian integer (dibulatkan ke bawah): {}", a / b);
+    println!("Pembagian integer (dipotong ke arah nol): {}", a / b);
     println!("Sisa bagi: {}", a % b);
+
+    // Bilangan negatif: dipotong ke arah nol, bukan dibulatkan ke bawah
+    let negatif = -7;
+    println!("-7 / 2 = {} (bukan -4)", negatif / 2);
+    println!("-7 % 2 = {} (tanda mengikuti bilangan yang dibagi)", negatif % 2);
 
     let hasil_perbandingan = a > b;
     println!("a > b: {}", hasil_perbandingan);
@@ -193,7 +239,7 @@ const modules: ModuleDef[] = [
         slug: 'rustfz-tuple-array',
         content: [
           'Tuple mengelompokkan beberapa nilai dengan tipe data yang boleh berbeda-beda ke dalam satu variabel, ditulis dengan tanda kurung, misal `let titik = (10, 20.5, true);`. Elemen tuple diakses dengan notasi titik dan index dimulai dari 0: `titik.0`, `titik.1`.',
-          'Array menyimpan sekumpulan nilai dengan tipe data yang sama dan panjang tetap (fixed-length, tidak bisa ditambah/dikurangi setelah dibuat), ditulis dengan kurung siku: `let angka = [1, 2, 3, 4, 5];`. Akses elemen array pakai index seperti kebanyakan bahasa lain: `angka[0]`.',
+          'Array menyimpan sekumpulan nilai dengan tipe data yang sama dan panjang tetap (fixed-length, tidak bisa ditambah/dikurangi setelah dibuat), ditulis dengan kurung siku: `let angka = [1, 2, 3, 4, 5];`. Akses elemen array pakai index seperti kebanyakan bahasa lain: `angka[0]`. Walau dideklarasikan `let mut`, panjang array tetap sama — `mut` hanya mengizinkan mengubah isi elemennya, misal `angka[0] = 10;`.',
           'Karena panjangnya tetap, tipe array lengkap ditulis sebagai `[T; N]`, misal `[i32; 5]` berarti array berisi 5 elemen bertipe `i32`. Kalau butuh koleksi yang bisa berubah ukuran, Rust punya `Vec<T>` (vector) yang akan dibahas di modul selanjutnya.',
         ],
         hasSandbox: true,
@@ -228,11 +274,10 @@ const modules: ModuleDef[] = [
             ['Bisa menyimpan tipe data campuran', false],
             ['Tidak bisa diakses lewat index', false],
           ]),
-          q('Tipe koleksi apa yang dipakai kalau butuh ukuran yang bisa berubah-ubah?', [
+          q('Apa yang dipakai kalau butuh koleksi yang ukurannya bisa berubah-ubah?', [
             ['Vec<T> (vector)', true],
-            ['Array biasa', false],
-            ['Tuple', false],
-            ['char', false],
+            ['Array yang dideklarasikan dengan let mut, lalu menambah elemen lewat .push()', false],
+            ['Tuple, lalu menambah elemen baru lewat titik.3 = nilai', false],
           ]),
         ],
       },
@@ -380,9 +425,11 @@ const modules: ModuleDef[] = [
         title: 'Fungsi & Parameter',
         slug: 'rustfz-fungsi-parameter',
         content: [
-          'Fungsi di Rust didefinisikan dengan kata kunci `fn`, diikuti nama fungsi, parameter dalam kurung (wajib disertai tipe data tiap parameter), dan opsional tipe nilai kembalian setelah tanda panah `->`.',
+          'Fungsi di Rust didefinisikan dengan kata kunci `fn`, diikuti nama fungsi, parameter dalam kurung (tiap parameter wajib ditulis beserta tipe datanya), dan — kalau fungsi itu mengembalikan nilai — tipe nilai kembalian setelah tanda panah `->`. Fungsi yang tidak mengembalikan apa-apa boleh tidak punya `->`; tipe kembaliannya otomatis `()` (disebut unit, artinya "tidak ada nilai berarti").',
           'Baris terakhir dalam sebuah fungsi tanpa titik koma di akhirnya otomatis menjadi nilai kembalian (implicit return) — bisa juga memakai kata kunci `return` eksplisit untuk keluar lebih awal dari fungsi.',
-          'Berbeda dari variabel biasa yang bisa memakai type inference, parameter fungsi dan tipe nilai kembalian di Rust wajib ditulis eksplisit — ini membantu compiler (dan pembaca kode) memahami kontrak fungsi tanpa harus melihat isi fungsinya.',
+          'Hati-hati dengan titik koma: kalau baris terakhir diberi `;`, ia menjadi statement biasa sehingga fungsi mengembalikan `()`, dan compiler menolaknya kalau signature menjanjikan tipe lain. Kode berikut sengaja salah dan gagal dikompilasi dengan `error[E0308]: mismatched types`:',
+          '```rust\nfn tambah(a: i32, b: i32) -> i32 {\n    a + b; // titik koma ini membuat fungsi mengembalikan (), bukan i32\n}\n```',
+          'Berbeda dari variabel biasa yang bisa memakai type inference, signature fungsi tidak pernah ditebak compiler dari isi fungsinya: tipe tiap parameter wajib ditulis, dan tipe kembalian wajib ditulis kalau fungsi mengembalikan nilai (tanpa `->` berarti `()`). Ini membantu compiler dan pembaca kode memahami kontrak fungsi tanpa harus melihat isinya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `fn tambah(a: i32, b: i32) -> i32 {
@@ -416,8 +463,14 @@ fn main() {
           q('Apa yang wajib ditulis eksplisit pada parameter fungsi Rust?', [
             ['Tipe data tiap parameter', true],
             ['Nilai default tiap parameter', false],
+            ['Tidak wajib: compiler menebak tipe parameter dari nilai yang dikirim saat fungsi dipanggil', false],
             ['Jumlah maksimal parameter', false],
-            ['Tidak ada yang wajib eksplisit', false],
+          ]),
+          q('Fungsi fn tambah(a: i32, b: i32) -> i32 { a + b; } gagal dikompilasi. Apa penyebabnya?', [
+            ['Titik koma setelah a + b membuat fungsi mengembalikan (), bukan i32', true],
+            ['Rust mewajibkan kata kunci return di setiap fungsi yang punya tipe kembalian', false],
+            ['Dua parameter i32 tidak boleh dijumlahkan di dalam fungsi', false],
+            ['Tipe i32 tidak bisa dipakai sebagai tipe nilai kembalian', false],
           ]),
         ],
       },
@@ -425,18 +478,24 @@ fn main() {
         title: 'Ownership Dasar',
         slug: 'rustfz-ownership-dasar',
         content: [
-          'Ownership adalah konsep paling fundamental (dan paling unik) di Rust: setiap nilai di memori punya tepat satu variabel yang menjadi "pemiliknya" (owner) pada satu waktu. Saat owner keluar dari scope (blok kode berakhir), Rust otomatis membersihkan memori nilai itu — tanpa perlu garbage collector.',
-          'Untuk tipe data yang disimpan di heap seperti `String`, memindahkan (assign) nilai dari satu variabel ke variabel lain akan "memindahkan kepemilikan" (move), bukan menyalin — setelah dipindah, variabel lama tidak bisa dipakai lagi dan compiler akan menolak kalau tetap dipakai.',
-          'Tipe data sederhana yang ukurannya tetap dan disimpan di stack, seperti `i32`, `f64`, `bool`, `char`, justru otomatis di-copy (bukan move) saat di-assign ke variabel lain — karena menyalinnya jauh lebih murah daripada memindahkan kepemilikan.',
+          'Ownership adalah konsep paling fundamental (dan paling unik) di Rust. Compiler memeriksa tiga aturan ini saat kompilasi:',
+          '- Setiap nilai di memori punya tepat satu variabel yang menjadi "pemiliknya" (owner) pada satu waktu.\n- Saat owner keluar dari scope (blok kode berakhir), Rust otomatis membersihkan memori nilai itu (di-drop), tanpa perlu garbage collector.\n- Memberikan nilai ke variabel atau fungsi lain bisa memindahkan owner-nya (move) atau menyalinnya (copy), tergantung tipe nilainya.',
+          '## Move',
+          'Untuk tipe yang datanya disimpan di heap seperti `String`, memindahkan (assign) nilai dari satu variabel ke variabel lain akan memindahkan kepemilikan (move), bukan menyalin data. Setelah dipindah, variabel lama tidak valid lagi dan compiler menolak kode yang tetap memakainya. Alasannya: `String` menyimpan pointer ke data di heap, dan kalau dua variabel sama-sama dianggap pemilik, keduanya akan mencoba membebaskan memori yang sama saat keluar scope (bug double free di C/C++). Kode berikut sengaja gagal dikompilasi:',
+          '```rust\nlet s1 = String::from("Rust");\nlet s2 = s1; // kepemilikan pindah dari s1 ke s2\nprintln!("{}", s1); // error[E0382]: borrow of moved value: `s1`\n```',
+          'Hal yang sama terjadi saat sebuah `String` dikirim sebagai argumen fungsi: parameter fungsi menjadi owner baru, sehingga variabel asli tidak bisa dipakai lagi setelah pemanggilan. Cara agar variabel asli tetap valid, yaitu meminjam lewat reference, dibahas di lesson Borrowing.',
+          '## Copy dan clone',
+          'Tipe sederhana yang ukurannya tetap dan disimpan di stack, seperti `i32`, `f64`, `bool`, dan `char`, otomatis di-copy (bukan move) saat di-assign, karena menyalinnya sangat murah, jadi kedua variabel tetap valid. Kalau kamu memang ingin dua `String` terpisah, panggil `.clone()` untuk menyalin datanya di heap secara eksplisit — lebih mahal, jadi dilakukan dengan sadar, bukan otomatis.',
+          '```rust\nlet a = 5;\nlet b = a; // i32 di-copy, a tetap valid\n\nlet s1 = String::from("Rust");\nlet s2 = s1.clone(); // salinan terpisah, s1 tetap valid\nprintln!("{} {} {} {}", a, b, s1, s2);\n```',
           'Aturan ownership ini terdengar rumit di awal, tapi tujuannya sederhana: mencegah dua bagian kode berbeda sama-sama mengira mereka "memiliki" dan berhak menghapus data yang sama, yang di bahasa lain sering menyebabkan bug memori serius.',
         ],
         hasQuiz: true,
         quizQuestions: [
           q('Berapa banyak owner yang boleh dimiliki sebuah nilai di Rust pada satu waktu?', [
             ['Tepat satu', true],
-            ['Sebanyak-banyaknya', false],
-            ['Minimal dua', false],
-            ['Tidak ada konsep owner', false],
+            ['Sebanyak variabel yang menyimpan nilainya, semuanya setara', false],
+            ['Dua: owner asli dan satu salinan cadangan', false],
+            ['Tidak ada konsep owner, memori dikelola garbage collector', false],
           ]),
           q('Apa yang terjadi saat sebuah owner keluar dari scope?', [
             ['Rust otomatis membersihkan memori nilai itu', true],
@@ -456,19 +515,41 @@ fn main() {
             ['Hanya String', false],
             ['Hanya Vec<T>', false],
           ]),
+          q('Apa yang terjadi pada kode ini? let s1 = String::from("Rust"); let s2 = s1; println!("{}", s1);', [
+            ['Gagal dikompilasi karena s1 sudah dipindah (move) ke s2', true],
+            ['Mencetak Rust, karena s2 hanyalah salinan dari s1', false],
+            ['Dikompilasi, tapi program panic saat baris println! dijalankan', false],
+            ['Mencetak teks kosong, karena isi s1 dikosongkan saat dipindah', false],
+          ]),
         ],
         hasSandbox: true,
-        sandboxStarterCode: `fn main() {
+        sandboxStarterCode: `fn ambil_alih(teks: String) {
+    println!("Fungsi ambil_alih menerima: {}", teks);
+} // teks keluar scope di sini dan memorinya dibersihkan
+
+fn main() {
     // Tipe sederhana (stack) otomatis di-copy, bukan move
     let a = 5;
     let b = a;
     println!("a = {}, b = {} (keduanya masih valid)", a, b);
 
-    // String (heap) akan dipindah kepemilikannya (move) kalau di-assign langsung.
-    // Di sini kita pakai .clone() supaya s1 tetap valid dan mudah dipahami pemula.
+    // String (heap): assign langsung = MOVE. Kepemilikan pindah dari s1 ke s2.
     let s1 = String::from("Rust");
-    let s2 = s1.clone();
-    println!("s1 = {}, s2 = {} (dua String terpisah lewat clone)", s1, s2);
+    let s2 = s1;
+    println!("s2 = {} (s1 sudah dipindah ke s2)", s2);
+
+    // Baris di bawah GAGAL dikompilasi karena s1 sudah dipindah.
+    // Hapus tanda // di depannya untuk melihat error-nya:
+    // println!("s1 = {}", s1);
+    // error[E0382]: borrow of moved value: \`s1\`
+
+    // clone() menyalin data di heap: s2 tetap valid dan s3 jadi String terpisah
+    let s3 = s2.clone();
+    println!("s2 = {}, s3 = {} (dua String terpisah lewat clone)", s2, s3);
+
+    // Mengirim String ke fungsi juga memindahkan kepemilikannya
+    ambil_alih(s3);
+    // println!("{}", s3); // error[E0382]: borrow of moved value: \`s3\`
 }
 `,
       },
@@ -527,8 +608,15 @@ fn main() {
         slug: 'rustfz-struct',
         content: [
           'Struct (structure) mengelompokkan beberapa nilai terkait dengan nama field masing-masing ke dalam satu tipe data kustom, didefinisikan dengan kata kunci `struct`, misal `struct Siswa { nama: String, umur: u32 }`.',
+          '## Instance dan field',
           'Instance (object) dari struct dibuat dengan menyebut nama struct diikuti nilai tiap field dalam kurung kurawal, misal `let siswa1 = Siswa { nama: String::from("Budi"), umur: 20 };`. Akses field lewat notasi titik: `siswa1.nama`.',
-          'Method (fungsi yang "menempel" pada struct) didefinisikan dalam blok `impl NamaStruct { ... }`, dengan parameter pertama biasanya `&self` — merujuk ke instance struct itu sendiri, mirip `self` di Python atau `this` di bahasa lain.',
+          '```rust\nstruct Siswa {\n    nama: String,\n    umur: u32,\n}\n\nfn main() {\n    let mut siswa = Siswa {\n        nama: String::from("Budi"),\n        umur: 20,\n    };\n    println!("{} berumur {}", siswa.nama, siswa.umur);\n\n    siswa.umur = 21; // boleh, karena siswa dideklarasikan let mut\n    println!("Sekarang berumur {}", siswa.umur);\n}\n```',
+          'Untuk mengubah sebuah field, seluruh instance harus dideklarasikan `let mut`. Rust tidak punya `mut` per field: kita tidak bisa membuat hanya sebagian field yang boleh diubah.',
+          '## Method dan associated function',
+          'Method (fungsi yang "menempel" pada struct) didefinisikan dalam blok `impl NamaStruct { ... }`, dengan parameter pertama biasanya `&self` — merujuk ke instance struct itu sendiri, mirip `self` di Python atau `this` di bahasa lain. Karena `&self` hanya meminjam instance, instance tetap bisa dipakai setelah method dipanggil.',
+          'Blok `impl` juga bisa berisi associated function: fungsi tanpa parameter `self`, dipanggil lewat nama tipe dengan `::`, bukan lewat instance, misal `Siswa::baru("Siti", 22)`. Kamu sudah sering memakainya: `String::from(...)` adalah associated function milik `String`. Rust tidak punya kata kunci constructor; `baru` (atau `new`) hanyalah nama fungsi biasa yang dipakai sebagai konvensi.',
+          'Lanjutan dari definisi `Siswa` di atas, berisi satu associated function dan satu method:',
+          '```rust\nimpl Siswa {\n    // associated function: tanpa self, dipanggil Siswa::baru(...)\n    fn baru(nama: &str, umur: u32) -> Siswa {\n        Siswa {\n            nama: String::from(nama),\n            umur, // shorthand untuk umur: umur\n        }\n    }\n\n    // method: parameter pertama &self, dipanggil siswa.perkenalan()\n    fn perkenalan(&self) {\n        println!("Halo, saya {}", self.nama);\n    }\n}\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `struct Siswa {
@@ -537,6 +625,15 @@ fn main() {
 }
 
 impl Siswa {
+    // Associated function (tanpa self): dipanggil dengan Siswa::baru(...)
+    fn baru(nama: &str, umur: u32) -> Siswa {
+        Siswa {
+            nama: String::from(nama),
+            umur, // shorthand untuk umur: umur
+        }
+    }
+
+    // Method (parameter pertama &self): dipanggil dengan siswa.perkenalan()
     fn perkenalan(&self) {
         println!("Halo, saya {}, umur {} tahun", self.nama, self.umur);
     }
@@ -547,15 +644,37 @@ fn main() {
         nama: String::from("Budi"),
         umur: 20,
     };
-    let siswa2 = Siswa {
-        nama: String::from("Siti"),
-        umur: 22,
-    };
+    let mut siswa2 = Siswa::baru("Siti", 22);
 
     siswa1.perkenalan();
     siswa2.perkenalan();
+
+    // Mengubah field butuh instance yang dideklarasikan let mut
+    siswa2.umur = 23;
+    siswa2.perkenalan();
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang dibutuhkan agar field umur milik sebuah instance Siswa bisa diubah setelah dibuat?', [
+            ['Instance-nya dideklarasikan dengan let mut', true],
+            ['Field-nya ditulis mut umur: u32 di definisi struct', false],
+            ['Struct-nya ditulis mut struct Siswa', false],
+            ['Tidak bisa: field struct selalu immutable setelah instance dibuat', false],
+          ]),
+          q('Apa arti &self sebagai parameter pertama sebuah method?', [
+            ['Method meminjam instance yang memanggilnya, tanpa mengambil kepemilikan', true],
+            ['Method mengambil alih kepemilikan instance, jadi instance tidak bisa dipakai lagi setelahnya', false],
+            ['Instance disalin ke method, jadi perubahan field tidak pernah terlihat di luar method', false],
+            ['Method menjadi milik tipe, bukan milik instance, jadi tidak boleh membaca field', false],
+          ]),
+          q('Bagaimana cara memanggil associated function baru milik struct Siswa?', [
+            ['Siswa::baru("Siti", 22)', true],
+            ['siswa1.baru("Siti", 22)', false],
+            ['Siswa.baru("Siti", 22)', false],
+            ['new Siswa("Siti", 22)', false],
+          ]),
+        ],
       },
     ],
   },
@@ -569,6 +688,7 @@ fn main() {
           'Enum (enumeration) mendefinisikan sebuah tipe data yang nilainya harus salah satu dari beberapa kemungkinan (variant) yang sudah ditentukan, ditulis dengan kata kunci `enum`, misal `enum Arah { Utara, Selatan, Timur, Barat }`.',
           'Enum di Rust jauh lebih kuat dari sekadar daftar konstanta — tiap variant bisa menyimpan data tambahan dengan tipe berbeda-beda, misal `enum Bentuk { Lingkaran(f64), Persegi(f64, f64) }`, di mana `Lingkaran` menyimpan radius dan `Persegi` menyimpan panjang & lebar.',
           'Kombinasi enum dengan `match` sangat umum dipakai di Rust — `match` memaksa semua variant enum ditangani, sehingga compiler akan mengingatkan kalau ada satu variant yang lupa ditangani, mengurangi bug akibat kasus yang terlewat.',
+          'Di starter, `&\'static str` pada tipe kembalian berarti teks literal yang tersimpan selama program berjalan; pembahasan lengkap tentang `&str` ada di lesson lain. Starter juga memakai setiap variant minimal sekali: variant yang tidak pernah dibuat memunculkan warning `dead_code` dari compiler.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `enum Arah {
@@ -587,9 +707,27 @@ fn deskripsi_arah(arah: Arah) -> &'static str {
     }
 }
 
+// Variant enum bisa menyimpan data dengan tipe berbeda-beda
+enum Bentuk {
+    Lingkaran(f64),    // menyimpan radius
+    Persegi(f64, f64), // menyimpan panjang dan lebar
+}
+
+fn luas(bentuk: Bentuk) -> f64 {
+    match bentuk {
+        Bentuk::Lingkaran(radius) => 3.14 * radius * radius,
+        Bentuk::Persegi(panjang, lebar) => panjang * lebar,
+    }
+}
+
 fn main() {
-    let arah_sekarang = Arah::Timur;
-    println!("Arah saat ini: {}", deskripsi_arah(arah_sekarang));
+    println!("Utara: {}", deskripsi_arah(Arah::Utara));
+    println!("Selatan: {}", deskripsi_arah(Arah::Selatan));
+    println!("Timur: {}", deskripsi_arah(Arah::Timur));
+    println!("Barat: {}", deskripsi_arah(Arah::Barat));
+
+    println!("Luas lingkaran (radius 2.0): {}", luas(Bentuk::Lingkaran(2.0)));
+    println!("Luas persegi (3.0 x 4.0): {}", luas(Bentuk::Persegi(3.0, 4.0)));
 }
 `,
         hasQuiz: true,
@@ -614,9 +752,52 @@ fn main() {
         content: [
           'Rust sengaja tidak punya konsep `null` atau `nil` seperti kebanyakan bahasa lain — ini menghilangkan seluruh kategori bug terkenal "null pointer exception" yang sering terjadi di bahasa lain saat mengakses nilai yang ternyata kosong.',
           'Sebagai gantinya, Rust punya enum bawaan `Option<T>` dengan dua variant: `Some(nilai)` kalau ada nilai, dan `None` kalau tidak ada nilai. Contoh: fungsi pencarian yang mungkin tidak menemukan hasil akan mengembalikan `Option<i32>`, bukan `i32` yang dipaksa bernilai sesuatu.',
-          'Karena `Option<T>` adalah tipe yang berbeda dari `T` biasa, compiler memaksa programmer menangani kedua kemungkinan (`Some` dan `None`) secara eksplisit sebelum bisa memakai nilai di dalamnya — biasanya lewat `match` atau method seperti `.unwrap_or()` yang menyediakan nilai fallback.',
+          '## Membuat dan menangani Option',
+          '```rust\nfn bagi(a: i32, b: i32) -> Option<i32> {\n    if b == 0 {\n        None // pembagian dengan nol: tidak ada hasil\n    } else {\n        Some(a / b)\n    }\n}\n\nfn main() {\n    match bagi(10, 2) {\n        Some(hasil) => println!("Hasil: {}", hasil),\n        None => println!("Tidak bisa dibagi"),\n    }\n}\n```',
+          'Karena `Option<T>` adalah tipe yang berbeda dari `T` biasa, compiler memaksa programmer menangani kedua kemungkinan (`Some` dan `None`) secara eksplisit sebelum bisa memakai nilai di dalamnya — biasanya lewat `match`, lewat `if let` kalau hanya peduli pada `Some`, atau lewat method seperti `.unwrap_or()` yang menyediakan nilai fallback. Kode berikut sengaja gagal dikompilasi, karena `i32` tidak bisa langsung dijumlahkan dengan `Option<i32>`:',
+          '```rust\nlet x: i32 = 5;\nlet y: Option<i32> = Some(5);\nlet jumlah = x + y; // error[E0277]: cannot add `std::option::Option<i32>` to `i32`\n```',
           'Pendekatan ini memindahkan pengecekan "apakah nilai ini ada?" dari yang tadinya bisa lolos tanpa disadari (dan crash saat runtime di bahasa lain), menjadi wajib ditangani saat kompilasi di Rust.',
         ],
+        hasSandbox: true,
+        sandboxStarterCode: `fn bagi(a: i32, b: i32) -> Option<i32> {
+    if b == 0 {
+        None // pembagian dengan nol: tidak ada hasil
+    } else {
+        Some(a / b)
+    }
+}
+
+fn main() {
+    // match: tangani Some dan None
+    match bagi(10, 2) {
+        Some(hasil) => println!("10 / 2 = {}", hasil),
+        None => println!("10 / 2 tidak bisa dihitung"),
+    }
+    match bagi(10, 0) {
+        Some(hasil) => println!("10 / 0 = {}", hasil),
+        None => println!("10 / 0 tidak bisa dihitung"),
+    }
+
+    // if let: kalau hanya peduli pada Some
+    if let Some(hasil) = bagi(9, 3) {
+        println!("if let: 9 / 3 = {}", hasil);
+    }
+
+    // unwrap_or: nilai cadangan kalau hasilnya None
+    let aman = bagi(5, 0).unwrap_or(-1);
+    println!("unwrap_or: {}", aman);
+
+    // Option<i32> bukan i32. Baris yang di-comment di bawah GAGAL dikompilasi
+    // kalau tanda // dihapus:
+    let x: i32 = 5;
+    let y: Option<i32> = Some(5);
+    // let jumlah = x + y;
+    // error[E0277]: cannot add \`std::option::Option<i32>\` to \`i32\`
+    if let Some(isi) = y {
+        println!("Isi y dibuka dulu baru dijumlahkan: {}", x + isi);
+    }
+}
+`,
         hasQuiz: true,
         quizQuestions: [
           q('Apa yang dipakai Rust untuk mewakili "tidak ada nilai", karena tidak punya null?', [
@@ -637,6 +818,12 @@ fn main() {
             ['Option<T> hanya dekorasi tanpa efek nyata', false],
             ['Option<T> membuat program berjalan lebih lambat tanpa manfaat', false],
           ]),
+          q('Apa yang terjadi kalau sebuah i32 langsung dijumlahkan dengan Option<i32>?', [
+            ['Gagal dikompilasi, karena i32 dan Option<i32> adalah tipe yang berbeda', true],
+            ['Hasilnya otomatis dibungkus menjadi Some(jumlah)', false],
+            ['Option<i32> otomatis dibuka, jadi hasilnya i32 biasa', false],
+            ['Dikompilasi, tapi program panic saat runtime kalau isinya None', false],
+          ]),
         ],
       },
       {
@@ -646,6 +833,8 @@ fn main() {
           '`Vec<T>` (vector) adalah koleksi yang mirip array tapi ukurannya bisa berubah (tumbuh atau menyusut) saat program berjalan, disimpan di heap. `T` adalah placeholder untuk tipe data elemen di dalamnya, misal `Vec<i32>` berarti vector berisi bilangan bulat.',
           'Vector baru bisa dibuat dengan `Vec::new()` (kosong, biasanya diikuti penambahan elemen) atau macro `vec![1, 2, 3]` untuk langsung mengisi nilai awal. Method `.push(nilai)` menambah elemen ke akhir vector.',
           'Akses elemen vector pakai index seperti array (`vektor[0]`), tapi kalau index di luar jangkauan program akan panic (crash terkontrol) — untuk akses yang lebih aman, method `.get(index)` mengembalikan `Option<&T>` yang bisa dicek dulu apakah ada isinya.',
+          'Di starter, `{:?}` di dalam `println!` adalah format Debug: ia mencetak seluruh isi vector, misal `[10, 20, 30]`. Placeholder biasa `{}` tidak bisa dipakai untuk `Vec` karena `Vec` tidak punya tampilan standar untuk ditampilkan ke pengguna. Format Debug tersedia otomatis untuk tipe bawaan seperti `Vec`, `Option`, dan angka; untuk struct buatan sendiri harus ditambahkan atribut `#[derive(Debug)]`.',
+          'Perhatikan juga `for nilai in &angka`: tanda `&` meminjam vector (seperti di lesson Borrowing) supaya `angka` tetap bisa dipakai setelah loop selesai.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `fn main() {
@@ -697,7 +886,8 @@ fn main() {
         slug: 'rustfz-studi-kasus-gabungan',
         content: [
           'Sebagai penutup course ini, mari gabungkan semua konsep yang sudah dipelajari — struct, enum, `Option<T>`, vector, `match`, dan ownership sederhana — ke dalam satu program kecil yang merepresentasikan daftar tugas (to-do list) sederhana.',
-          'Program di sandbox berikut mendefinisikan struct `Tugas` dengan field `nama` dan `status` (bertipe enum `StatusTugas`), menyimpan beberapa tugas dalam `Vec<Tugas>`, lalu memakai `match` untuk menampilkan status tiap tugas dengan format yang berbeda.',
+          'Program di sandbox berikut mendefinisikan struct `Tugas` dengan field `nama` dan `status` (bertipe enum `StatusTugas`), menyimpan beberapa tugas dalam `Vec<Tugas>`, lalu memakai `match` untuk menampilkan status tiap tugas dengan format yang berbeda. Method `.get(5)` pada vector mengembalikan `Option`, jadi index yang tidak ada ditangani dengan `match` alih-alih membuat program panic.',
+          'Bagian akhir program menghitung tugas yang selesai lewat `.iter().filter(...).count()`: `.filter()` menyaring elemen yang memenuhi kondisi di dalam `|t| ...` (closure, fungsi mini tanpa nama; pembahasannya di luar cakupan course ini), lalu `.count()` menghitung elemen yang lolos.',
           'Sepanjang course "Rust from Zero" ini kita sudah belajar dari sintaks dasar, tipe data, kontrol alur, fungsi, konsep ownership & borrowing yang jadi ciri khas Rust, hingga struct dan enum — fondasi yang cukup untuk mulai membangun program Rust yang lebih kompleks dan aman dari bug memori.',
         ],
         hasSandbox: true,
@@ -733,6 +923,12 @@ fn main() {
         tugas.tampilkan();
     }
 
+    // Vec::get mengembalikan Option, jadi index yang tidak ada tidak membuat program panic
+    match daftar_tugas.get(5) {
+        Some(tugas) => tugas.tampilkan(),
+        None => println!("Tugas ke-5 tidak ada"),
+    }
+
     let jumlah_selesai = daftar_tugas
         .iter()
         .filter(|t| match t.status {
@@ -753,7 +949,11 @@ const course: CourseDef = {
   slug: 'rust-from-zero',
   category: { name: 'Programming', slug: 'programming' },
   level: 'pemula',
-  description: '',
+  description: [
+    'Rust from Zero adalah course pengantar untuk kamu yang belum pernah menulis Rust. Rust dikenal cepat sekaligus menjamin keamanan memori tanpa garbage collector, dan dipakai untuk sistem operasi, browser engine, sampai tools command-line. Course ini memperkenalkan Rust dari nol, jadi pengalaman programming di bahasa lain membantu tapi tidak wajib.',
+    'Di sini kamu belajar struktur program dan Cargo, variabel dan mutability (immutable by default, shadowing), tipe data dasar, operator, tuple dan array, percabangan `if`, perulangan, `match`, fungsi, konsep ownership dan borrowing yang jadi ciri khas Rust, struct dengan `impl`, enum, `Option<T>`, dan `Vec<T>`, ditutup dengan studi kasus yang menggabungkan semuanya. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Sandbox di course ini menjalankan kode dengan Rust 1.40, tanpa akses jaringan dan tanpa input keyboard. Kode dikompilasi sebagai satu file, jadi Cargo dan crate pihak ketiga tidak bisa dicoba di sana, dan fitur yang lebih baru dari Rust 1.40 (misalnya macro `matches!` atau variabel langsung di dalam string `println!`) tidak dipakai. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
+  ].join('\n\n'),
   sandboxLanguage: 'rust',
   modules,
 }
