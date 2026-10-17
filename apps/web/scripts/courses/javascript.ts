@@ -12,6 +12,7 @@ const modules: ModuleDef[] = [
           'Sejak kemunculan Node.js pada 2009, JavaScript tidak lagi terbatas di browser. Node.js memungkinkan JavaScript dijalankan langsung di server, dipakai untuk membangun backend, script otomasi, hingga command-line tool.',
           'Karena itu, JavaScript termasuk bahasa yang unik: satu bahasa yang sama bisa dipakai untuk frontend (di browser) maupun backend (di server lewat Node.js) — sering disebut "full-stack JavaScript".',
           'JavaScript bersifat dynamically typed (tipe data ditentukan otomatis saat runtime) dan interpreted (dijalankan langsung tanpa proses compile terpisah), mirip Python, tapi dengan sintaks yang berbeda.',
+          'Meski namanya mirip, JavaScript dan Java adalah dua bahasa yang berbeda: dibuat untuk tujuan yang berbeda dan tidak saling terkait.',
         ],
         hasQuiz: true,
         quizQuestions: [
@@ -28,10 +29,9 @@ const modules: ModuleDef[] = [
             ['Apache', false],
           ]),
           q('Apa maksud "full-stack JavaScript"?', [
-            ['JavaScript dipakai untuk frontend maupun backend', true],
-            ['JavaScript hanya untuk desain visual', false],
-            ['JavaScript hanya bisa dipakai sekali', false],
-            ['JavaScript tidak bisa dipakai di server', false],
+            ['Satu bahasa yang sama dipakai untuk frontend (di browser) maupun backend (di server lewat Node.js)', true],
+            ['JavaScript hanya jalan di browser, jadi sisi server wajib memakai bahasa lain seperti PHP atau Java', false],
+            ['JavaScript dan Java digabung dalam satu program supaya bisa dijalankan di semua perangkat', false],
           ]),
           q('JavaScript bersifat dynamically typed, artinya?', [
             ['Tipe data ditentukan otomatis saat runtime', true],
@@ -45,14 +45,49 @@ const modules: ModuleDef[] = [
         title: 'Menjalankan JavaScript',
         slug: 'jsfz-menjalankan-javascript',
         content: [
-          'Di sandbox belajar ini, JavaScript dijalankan lewat Node.js — sebuah runtime yang mengeksekusi kode JavaScript di luar browser, langsung dari terminal.',
-          'Perintah paling dasar untuk menampilkan output ke layar adalah `console.log()`. Hampir setiap program yang kita tulis di course ini akan memakai `console.log()` untuk melihat hasilnya.',
+          'Di sandbox belajar ini, JavaScript dijalankan lewat Node.js — sebuah runtime yang mengeksekusi kode JavaScript di luar browser, langsung dari terminal. Sandbox memakai Node.js 12, jadi kamu tidak perlu menginstal apa pun untuk mencoba kode di course ini.',
+          '## Menjalankan di komputer sendiri',
+          'Kalau ingin mencoba di komputermu, pasang Node.js dari situs resmi nodejs.org, lalu cek versinya di terminal:',
+          '```bash\nnode --version\n```',
+          'Simpan kode di sebuah file, misal `halo.js`, lalu jalankan dengan perintah `node` diikuti nama filenya:',
+          '```bash\nnode halo.js\n```',
+          'Mengetik `node` tanpa nama file membuka REPL (Read-Eval-Print Loop): prompt `>` menerima satu perintah JavaScript demi satu dan langsung menampilkan hasilnya. Keluar dengan `.exit` atau tombol Ctrl+D.',
+          `\`\`\`plaintext
+$ node
+> 2 + 3
+5
+> "halo".toUpperCase()
+'HALO'
+> .exit
+\`\`\``,
+          '## console.log dan process',
+          'Perintah paling dasar untuk menampilkan output ke layar adalah `console.log()`. Ia bisa menerima beberapa argumen sekaligus dan mencetaknya dalam satu baris dengan dipisah spasi. Hampir setiap program yang kita tulis di course ini akan memakai `console.log()` untuk melihat hasilnya.',
+          '```javascript\nconsole.log("Halo");\nconsole.log("Umur:", 20, "tahun"); // Umur: 20 tahun\n```',
           'Objek bawaan `process` di Node.js menyimpan informasi tentang environment yang sedang berjalan, misalnya `process.version` untuk mengetahui versi Node.js yang dipakai.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `console.log("Halo, JavaScript!");
+console.log("Umur:", 20, "tahun");
 console.log("Node.js versi:", process.version);
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa peran Node.js dalam menjalankan JavaScript di sandbox ini?', [
+            ['Runtime yang menjalankan kode JavaScript di luar browser', true],
+            ['Library yang harus di-import dulu supaya console.log bisa dipakai', false],
+            ['Compiler yang mengubah JavaScript menjadi bahasa C sebelum dijalankan', false],
+          ]),
+          q('Apa yang terjadi kalau kamu mengetik node di terminal tanpa nama file?', [
+            ['Masuk ke REPL interaktif yang menjalankan perintah satu per satu', true],
+            ['Node.js menjalankan semua file .js yang ada di folder itu', false],
+            ['Muncul error karena nama file wajib diisi', false],
+          ]),
+          q('Apa yang dicetak oleh console.log("Umur:", 20, "tahun")?', [
+            ['Umur: 20 tahun', true],
+            ['Umur:20tahun', false],
+            ['"Umur:", 20, "tahun" (tanda kutip dan koma ikut tercetak)', false],
+          ]),
+        ],
       },
       {
         title: 'Variabel: var, let, dan const',
@@ -116,8 +151,21 @@ contohScope();
         title: 'Tipe Data Dasar',
         slug: 'jsfz-tipe-data-dasar',
         content: [
-          'JavaScript punya beberapa tipe data primitif dasar: `number` (angka, tidak membedakan integer/desimal seperti bahasa lain), `string` (teks), `boolean` (`true`/`false`), `undefined` (variabel dideklarasikan tapi belum diisi nilai), dan `null` (representasi "sengaja kosong").',
-          'Operator `typeof` dipakai untuk mengecek tipe data sebuah nilai, misalnya `typeof 10` menghasilkan `"number"`. Ini berguna untuk debugging saat tidak yakin tipe data apa yang sedang dipegang variabel.',
+          'JavaScript punya 7 tipe data primitif: `string` (teks), `number` (angka), `bigint` (bilangan bulat berukuran sangat besar), `boolean` (`true`/`false`), `undefined` (variabel dideklarasikan tapi belum diisi nilai), `symbol` (pengenal unik), dan `null` (representasi "sengaja kosong"). Di luar primitif ada tipe `object`, yang mencakup array dan object biasa.',
+          'Tipe `number` tidak membedakan integer dan desimal: `5` dan `5.5` sama-sama `number`. Kalau butuh bilangan bulat yang lebih besar dari batas aman `number` (`Number.MAX_SAFE_INTEGER`, yaitu 9007199254740991), pakai `bigint`: tulis akhiran `n` seperti `123n`, atau panggil `BigInt(123)`. Sedangkan `symbol` jarang dipakai di level pemula; cukup tahu bahwa tipe ini ada.',
+          '## Mengecek tipe dengan typeof',
+          'Operator `typeof` dipakai untuk mengecek tipe data sebuah nilai dan hasilnya berupa string, misalnya `typeof 10` menghasilkan `"number"`. Ini berguna untuk debugging saat tidak yakin tipe data apa yang sedang dipegang variabel.',
+          `\`\`\`javascript
+console.log(typeof 10);             // number
+console.log(typeof "halo");         // string
+console.log(typeof true);           // boolean
+console.log(typeof undefined);      // undefined
+console.log(typeof BigInt(123));    // bigint
+console.log(typeof Symbol("id"));   // symbol
+\`\`\``,
+          '## typeof null: bug lama',
+          'Kejutan: `typeof null` menghasilkan `"object"`, bukan `"null"`. Ini bug lama (legacy) dari JavaScript versi awal yang tidak pernah diperbaiki karena memperbaikinya akan merusak banyak program yang sudah ada. Meski begitu, `null` tetap termasuk tipe primitif. Untuk mengecek apakah sebuah nilai `null`, bandingkan langsung dengan `=== null`.',
+          '```javascript\nconst data = null;\nconsole.log(typeof data); // object (bug lama, bukan berarti data adalah object)\nconsole.log(data === null); // true, cara yang benar untuk mengecek null\n```',
           'Perbedaan `undefined` dan `null`: `undefined` terjadi otomatis (variabel belum diisi, atau parameter fungsi tidak diberikan), sedangkan `null` harus diisi secara sengaja oleh programmer untuk menandakan "memang kosong".',
         ],
         hasSandbox: true,
@@ -126,12 +174,19 @@ let nama = "Siswa BarisORG";
 let lulus = true;
 let alamat;
 let dataKosong = null;
+const angkaBesar = BigInt(123);
+const pengenal = Symbol("id");
 
 console.log(typeof umur, "->", umur);
 console.log(typeof nama, "->", nama);
 console.log(typeof lulus, "->", lulus);
 console.log(typeof alamat, "->", alamat);
-console.log(typeof dataKosong, "->", dataKosong);
+console.log(typeof dataKosong, "->", dataKosong); // "object", bukan "null"
+console.log(typeof angkaBesar, "->", angkaBesar);
+console.log(typeof pengenal, "->", pengenal.toString());
+
+console.log("Cek null yang benar:", dataKosong === null);
+console.log("Batas aman number:", Number.MAX_SAFE_INTEGER);
 `,
         hasQuiz: true,
         quizQuestions: [
@@ -148,16 +203,25 @@ console.log(typeof dataKosong, "->", dataKosong);
             ['boolean', false],
           ]),
           q('Kapan sebaiknya nilai null dipakai?', [
-            ['Untuk menandakan "memang sengaja kosong" secara eksplisit', true],
-            ['Untuk semua variabel angka', false],
-            ['Hanya untuk boolean', false],
-            ['null tidak pernah dipakai di JavaScript', false],
+            ['Untuk menandakan secara sengaja bahwa sebuah variabel memang kosong', true],
+            ['Sebagai nilai awal otomatis untuk variabel yang belum diisi', false],
+            ['Untuk menghapus variabel dari memori', false],
           ]),
-          q('JavaScript membedakan integer dan desimal dengan tipe data terpisah?', [
-            ['Tidak, keduanya sama-sama bertipe number', true],
-            ['Ya, integer dan float adalah tipe berbeda', false],
-            ['Ya, tapi hanya untuk angka negatif', false],
-            ['JavaScript tidak punya tipe angka', false],
+          q('Apa hasil typeof null di JavaScript?', [
+            ['"object", bug lama yang tidak diperbaiki supaya program lama tidak rusak', true],
+            ['"null", karena null punya tipe sendiri', false],
+            ['"undefined", karena null berarti belum ada nilai', false],
+          ]),
+          q('Angka 5 dan 5.5 bertipe apa di JavaScript?', [
+            ['Keduanya bertipe number', true],
+            ['5 bertipe integer dan 5.5 bertipe float', false],
+            ['5 bertipe number dan 5.5 bertipe decimal', false],
+          ]),
+          q('Tipe primitif mana yang dipakai untuk bilangan bulat yang melebihi batas aman number?', [
+            ['bigint', true],
+            ['long', false],
+            ['integer', false],
+            ['symbol', false],
           ]),
         ],
       },
@@ -219,6 +283,14 @@ console.log("Slice 6 karakter pertama:", "JavaScript from Zero".slice(0, 6));
           'Type coercion adalah konversi tipe data yang dilakukan JavaScript secara otomatis (implisit) saat operator dipakai pada nilai bertipe berbeda, tanpa kita minta secara eksplisit.',
           'Contoh paling terkenal: `"5" + 3` menghasilkan `"53"` (string), bukan `8` — karena operator `+` pada string memicu penggabungan (concatenation), sehingga angka `3` dikonversi jadi string dulu.',
           'Sebaliknya, operator `-`, `*`, `/` cenderung memaksa konversi ke number, sehingga `"5" - 3` menghasilkan `2` (number), bukan error atau string.',
+          'Kalau string tidak bisa dikonversi jadi angka, hasilnya `NaN` (Not a Number), misalnya `"abc" - 3`.',
+          `\`\`\`javascript
+console.log("5" + 3);          // 53 (string)
+console.log("5" - 3);          // 2 (number)
+console.log("abc" - 3);        // NaN
+console.log(Number("5") + 3);  // 8 (konversi eksplisit)
+console.log(String(3) + "5");  // 35 (konversi eksplisit)
+\`\`\``,
           'Karena perilaku ini sering membingungkan pemula, praktik yang aman adalah melakukan konversi tipe secara eksplisit (misal `Number("5")` atau `String(3)`) daripada mengandalkan coercion otomatis, dan selalu memakai `===` untuk perbandingan.',
         ],
         hasQuiz: true,
@@ -238,14 +310,14 @@ console.log("Slice 6 karakter pertama:", "JavaScript from Zero".slice(0, 6));
           q('Apa hasil dari "5" - 3 di JavaScript?', [
             ['2 (number)', true],
             ['"5-3" (string)', false],
-            ['Error', false],
-            ['NaN selalu', false],
+            ['Error, karena string tidak bisa dikurangi', false],
+            ['NaN, karena "5" bukan angka', false],
           ]),
           q('Apa praktik yang disarankan untuk menghindari bug akibat type coercion?', [
-            ['Konversi tipe secara eksplisit dan gunakan ===', false],
-            ['Selalu gunakan == agar fleksibel', false],
-            ['Hindari operator matematika sama sekali', false],
-            ['Konversi tipe secara eksplisit dan gunakan === untuk perbandingan', true],
+            ['Konversi tipe secara eksplisit (misal Number("5")) dan bandingkan dengan ===', true],
+            ['Selalu gunakan == supaya JavaScript menyamakan tipe otomatis', false],
+            ['Andalkan coercion otomatis, karena JavaScript selalu menebak tipe yang tepat', false],
+            ['Tulis semua angka sebagai string supaya tipenya seragam', false],
           ]),
         ],
       },
@@ -259,6 +331,18 @@ console.log("Slice 6 karakter pertama:", "JavaScript from Zero".slice(0, 6));
         slug: 'jsfz-percabangan-if-else-switch',
         content: [
           '`if` menjalankan blok kode hanya kalau kondisi bernilai truthy. `else if` mengecek kondisi tambahan kalau `if` sebelumnya tidak terpenuhi, dan `else` menjalankan blok kalau semua kondisi di atasnya tidak terpenuhi.',
+          '## Truthy dan falsy',
+          'Kondisi di `if` tidak harus bernilai `true` atau `false` persis: JavaScript mengonversi nilai apa pun ke boolean. Nilai yang dianggap `true` disebut truthy, dan nilai yang dianggap `false` disebut falsy. Nilai falsy hanya ada sedikit, yaitu: `false`, `0`, `-0`, `0n` (bigint nol), `""` (string kosong), `null`, `undefined`, dan `NaN`. Semua nilai lain adalah truthy, termasuk `"0"`, `"false"`, array kosong `[]`, dan object kosong `{}`. (Di browser ada satu tambahan peninggalan lama, `document.all`, yang tidak dipakai lagi.)',
+          `\`\`\`javascript
+if ("halo") {
+  console.log("String tidak kosong -> truthy");
+}
+if (!0) {
+  console.log("Angka 0 -> falsy, jadi !0 bernilai true");
+}
+console.log(Boolean(""), Boolean("0"), Boolean([])); // false true true
+\`\`\``,
+          '## switch',
           '`switch` adalah alternatif untuk percabangan dengan banyak nilai spesifik yang dibandingkan ke satu variabel — setiap `case` dicocokkan memakai strict equality, dan `break` wajib ditulis supaya eksekusi tidak "jatuh" ke case berikutnya (fall-through).',
           '`default` di dalam `switch` berfungsi seperti `else` — dijalankan kalau tidak ada `case` yang cocok.',
         ],
@@ -289,6 +373,18 @@ switch (hari) {
   default:
     console.log("Hari tidak dikenali");
 }
+
+const namaPengguna = "";
+if (namaPengguna) {
+  console.log("Halo,", namaPengguna);
+} else {
+  console.log("Nama kosong (string kosong itu falsy)");
+}
+
+console.log("Boolean(0):", Boolean(0));
+console.log("Boolean(null):", Boolean(null));
+console.log("Boolean('0'):", Boolean("0"));
+console.log("Boolean([]):", Boolean([]));
 `,
         hasQuiz: true,
         quizQuestions: [
@@ -309,6 +405,17 @@ switch (hari) {
             ['Selalu dijalankan pertama kali', false],
             ['Menghentikan seluruh program', false],
             ['Wajib ditulis di case pertama', false],
+          ]),
+          q('Manakah nilai berikut yang dianggap falsy di JavaScript?', [
+            ['Angka 0', true],
+            ['String "0"', false],
+            ['Array kosong []', false],
+            ['String "false"', false],
+          ]),
+          q('Apa yang dicetak oleh kode: const nama = ""; if (nama) { console.log("A"); } else { console.log("B"); }', [
+            ['B, karena string kosong bersifat falsy', true],
+            ['A, karena variabel nama sudah dideklarasikan', false],
+            ['Error, karena kondisi if harus berupa boolean', false],
           ]),
         ],
       },
@@ -462,9 +569,49 @@ function sapa(nama) {
         title: 'Arrow Function',
         slug: 'jsfz-arrow-function',
         content: [
-          'Arrow function adalah sintaks fungsi yang lebih ringkas, diperkenalkan di ES6, ditulis dengan tanda panah `=>`, misal `const tambah = (a, b) => a + b;`.',
-          'Kalau body fungsi hanya satu ekspresi, kurung kurawal dan `return` bisa dihilangkan (implicit return) — hasil ekspresi otomatis dikembalikan. Kalau body-nya lebih dari satu statement, tetap perlu `{}` dan `return` eksplisit.',
-          'Perbedaan penting dengan function biasa: arrow function tidak punya `this` sendiri — ia "mewarisi" `this` dari lingkup di sekitarnya (lexical `this`), berbeda dari function biasa yang `this`-nya ditentukan saat dipanggil.',
+          'Arrow function adalah sintaks fungsi yang lebih ringkas, diperkenalkan di ES6, ditulis dengan tanda panah `=>`. Contoh berikut menulis fungsi yang sama dengan dua cara.',
+          `\`\`\`javascript
+// function expression biasa
+const tambahBiasa = function (a, b) {
+  return a + b;
+};
+
+// arrow function
+const tambah = (a, b) => a + b;
+\`\`\``,
+          '## Implicit return',
+          'Kalau body fungsi hanya satu ekspresi, kurung kurawal dan `return` bisa dihilangkan (implicit return) — hasil ekspresi otomatis dikembalikan. Kalau body-nya lebih dari satu statement, tetap perlu `{}` dan `return` eksplisit. Arrow function dengan satu parameter boleh menulis parameternya tanpa kurung (`n => n * n`), tapi tanpa parameter atau dengan lebih dari satu parameter, kurung wajib ditulis.',
+          `\`\`\`javascript
+const kuadrat = (n) => n * n;   // implicit return
+
+const sapa = (nama) => {        // pakai {} jadi perlu return eksplisit
+  const pesan = \`Halo, \${nama}!\`;
+  return pesan;
+};
+
+const buatSiswa = (nama) => ({ nama: nama, aktif: true }); // object dibungkus kurung
+\`\`\``,
+          'Perhatikan baris terakhir: untuk mengembalikan object literal lewat implicit return, bungkus object itu dengan kurung `( )`. Tanpa kurung, JavaScript menganggap `{ ... }` sebagai body fungsi, bukan object.',
+          '## Lexical this',
+          'Perbedaan penting dengan function biasa: arrow function tidak punya `this` sendiri — ia "mewarisi" `this` dari lingkup di sekitarnya (lexical `this`), berbeda dari function biasa yang `this`-nya ditentukan saat dipanggil. Perbedaan ini paling terasa pada callback di dalam method object.',
+          `\`\`\`javascript
+const kelas = {
+  nama: "12 IPA",
+  siswa: ["Budi", "Siti"],
+  daftarDenganFunction: function () {
+    this.siswa.forEach(function (s) {
+      console.log(s, this.nama); // this BUKAN object kelas, jadi this.nama tidak ketemu
+    });
+  },
+  daftarDenganArrow: function () {
+    this.siswa.forEach((s) => {
+      console.log(s, this.nama); // this diwarisi dari daftarDenganArrow, yaitu object kelas
+    });
+  },
+};
+\`\`\``,
+          'Pada callback function biasa, `this` bukan lagi object `kelas` (di skrip biasa ia merujuk ke object global, di strict mode nilainya `undefined`), sehingga `this.nama` tidak ketemu. Pada callback arrow function, `this` tetap sama dengan `this` milik method yang membungkusnya, yaitu object `kelas`. Coba jalankan contoh lengkapnya di sandbox.',
+          'Karena itu arrow function cocok untuk callback di dalam method, tapi jangan dipakai sebagai method object itu sendiri: `this` di dalamnya tidak menunjuk ke object tersebut.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `const tambah = (a, b) => a + b;
@@ -472,36 +619,143 @@ const kuadrat = (n) => n * n;
 const sapa = (nama) => {
   console.log(\`Halo, \${nama}!\`);
 };
+const buatSiswa = (nama) => ({ nama: nama, aktif: true });
 
 console.log("Arrow tambah:", tambah(5, 3));
 console.log("Arrow kuadrat:", kuadrat(4));
 sapa("Siswa BarisORG");
+console.log("Object dari arrow:", buatSiswa("Budi"));
 
-const objek = {
-  nilai: 10,
-  tampilkanDenganFunction: function () {
-    console.log("this.nilai lewat function biasa:", this.nilai);
+const kelas = {
+  nama: "12 IPA",
+  siswa: ["Budi", "Siti"],
+  daftarDenganFunction: function () {
+    this.siswa.forEach(function (s) {
+      console.log(s, "-> function biasa, this.nama:", this.nama);
+    });
+  },
+  daftarDenganArrow: function () {
+    this.siswa.forEach((s) => {
+      console.log(s, "-> arrow, this.nama:", this.nama);
+    });
   },
 };
-objek.tampilkanDenganFunction();
+
+kelas.daftarDenganFunction();
+kelas.daftarDenganArrow();
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa hasil dari const kuadrat = (n) => n * n; kuadrat(4)?', [
+            ['16', true],
+            ['undefined, karena tidak ada kata return', false],
+            ['Error, karena arrow function wajib memakai kurung kurawal', false],
+          ]),
+          q('Apa maksud arrow function memakai lexical this?', [
+            ['Ia tidak punya this sendiri, melainkan memakai this dari lingkup tempat ia ditulis', true],
+            ['this-nya ditentukan oleh siapa yang memanggilnya, sama seperti function biasa', false],
+            ['this-nya selalu menunjuk ke object global', false],
+            ['Arrow function tidak boleh dipakai di dalam method object', false],
+          ]),
+          q('Di dalam method object, callback manakah yang this-nya tetap menunjuk ke object tersebut?', [
+            ['Callback berbentuk arrow function', true],
+            ['Callback berbentuk function biasa', false],
+            ['Keduanya sama saja, this selalu menunjuk ke object itu', false],
+          ]),
+        ],
       },
       {
         title: 'Scope & Closure Dasar',
         slug: 'jsfz-scope-closure-dasar',
         content: [
+          '## Scope',
           'Scope menentukan di bagian kode mana sebuah variabel bisa diakses. Variabel yang dibuat di dalam fungsi disebut local variable, hanya bisa diakses di dalam fungsi itu sendiri. Variabel di luar semua fungsi disebut global variable.',
-          'Closure terjadi ketika sebuah fungsi "mengingat" variabel dari scope tempat ia dibuat, meskipun fungsi luar (yang membuat variabel itu) sudah selesai dieksekusi. Ini terjadi karena fungsi dalam menyimpan referensi ke lingkungan (environment) tempat ia didefinisikan, bukan tempat ia dipanggil.',
-          'Contoh klasik closure: fungsi `buatCounter()` yang mengembalikan fungsi lain, dan fungsi yang dikembalikan itu tetap bisa mengakses dan mengubah variabel counter dari `buatCounter()`, walau `buatCounter()` sudah selesai berjalan.',
-          'Closure sering dipakai untuk membuat data privat (yang tidak bisa diakses langsung dari luar).',
+          `\`\`\`javascript
+const pesanGlobal = "saya variabel global";
+
+function contohScope() {
+  const pesanLokal = "saya variabel lokal";
+  console.log(pesanGlobal, "|", pesanLokal); // keduanya terbaca di sini
+}
+
+contohScope();
+console.log(pesanGlobal);  // terbaca
+// console.log(pesanLokal); // ReferenceError: pesanLokal hanya ada di dalam fungsi
+\`\`\``,
+          '## Closure',
+          'Closure terjadi ketika sebuah fungsi "mengingat" variabel dari scope tempat ia dibuat, meskipun fungsi luar (yang membuat variabel itu) sudah selesai dieksekusi. Ini terjadi karena fungsi dalam menyimpan referensi ke lingkungan (environment) tempat ia didefinisikan, bukan tempat ia dipanggil. Yang disimpan adalah referensi ke variabelnya, bukan salinan nilainya, jadi perubahan nilai ikut terbawa antar pemanggilan.',
+          'Contoh klasik closure: fungsi `buatCounter()` yang mengembalikan fungsi lain, dan fungsi yang dikembalikan itu tetap bisa mengakses dan mengubah variabel `hitung` dari `buatCounter()`, walau `buatCounter()` sudah selesai berjalan.',
+          `\`\`\`javascript
+function buatCounter() {
+  let hitung = 0;
+  return function () {
+    hitung++;
+    return hitung;
+  };
+}
+
+const counterA = buatCounter();
+console.log(counterA()); // 1
+console.log(counterA()); // 2
+
+const counterB = buatCounter();
+console.log(counterB()); // 1, counterB punya variabel hitung sendiri
+\`\`\``,
+          'Setiap kali `buatCounter()` dipanggil, JavaScript membuat environment baru berisi `hitung` yang baru. Karena itu `counterA` dan `counterB` menghitung sendiri-sendiri dan tidak saling mengganggu.',
+          '## Closure untuk data privat',
+          'Closure sering dipakai untuk membuat data privat (yang tidak bisa diakses langsung dari luar): variabel disimpan di fungsi luar, dan dunia luar hanya bisa mengaksesnya lewat fungsi-fungsi yang dikembalikan. Contoh lengkapnya, rekening bank dengan saldo yang tidak bisa diubah sembarangan, ada di sandbox.',
         ],
+        hasSandbox: true,
+        sandboxStarterCode: `const pesanGlobal = "saya variabel global";
+
+function contohScope() {
+  const pesanLokal = "saya variabel lokal";
+  console.log("Di dalam fungsi:", pesanGlobal, "|", pesanLokal);
+}
+contohScope();
+console.log("Di luar fungsi:", pesanGlobal);
+// console.log(pesanLokal); // hapus tanda // di awal untuk melihat ReferenceError
+
+function buatCounter() {
+  let hitung = 0;
+  return function () {
+    hitung++;
+    return hitung;
+  };
+}
+
+const counterA = buatCounter();
+console.log("counterA:", counterA());
+console.log("counterA:", counterA());
+const counterB = buatCounter();
+console.log("counterB (counter baru):", counterB());
+console.log("counterA lagi:", counterA());
+
+function buatRekening(saldoAwal) {
+  let saldo = saldoAwal;
+  return {
+    setor: function (jumlah) {
+      saldo += jumlah;
+      return saldo;
+    },
+    lihatSaldo: function () {
+      return saldo;
+    },
+  };
+}
+
+const rekening = buatRekening(100);
+rekening.setor(50);
+console.log("Saldo lewat lihatSaldo():", rekening.lihatSaldo());
+console.log("Akses langsung rekening.saldo:", rekening.saldo);
+`,
         hasQuiz: true,
         quizQuestions: [
           q('Apa yang dimaksud dengan closure di JavaScript?', [
-            ['Fungsi yang tetap mengingat variabel dari scope tempat ia dibuat', true],
-            ['Fungsi yang selalu mengembalikan undefined', false],
-            ['Fungsi yang tidak bisa menerima parameter', false],
-            ['Fungsi bawaan untuk menutup program', false],
+            ['Fungsi yang tetap bisa mengakses variabel dari scope tempat ia dibuat, meski fungsi luarnya sudah selesai berjalan', true],
+            ['Fungsi yang langsung dijalankan saat didefinisikan', false],
+            ['Fungsi yang dipanggil kembali setelah operasi asynchronous selesai', false],
+            ['Fungsi yang menutup akses ke semua variabel global', false],
           ]),
           q('Variabel yang dibuat di dalam fungsi disebut?', [
             ['local variable', true],
@@ -511,9 +765,14 @@ objek.tampilkanDenganFunction();
           ]),
           q('Kenapa closure bisa mengakses variabel meski fungsi luarnya sudah selesai dieksekusi?', [
             ['Fungsi dalam menyimpan referensi ke environment tempat ia didefinisikan', true],
-            ['JavaScript menyalin ulang seluruh program setiap saat', false],
-            ['Variabel global otomatis dipakai sebagai pengganti', false],
-            ['Ini sebenarnya tidak mungkin terjadi di JavaScript', false],
+            ['Variabel itu otomatis berubah menjadi global saat fungsi luar selesai', false],
+            ['Fungsi dalam menyimpan salinan nilai variabel pada saat fungsi itu dibuat', false],
+            ['Fungsi luar sebenarnya tidak pernah selesai dieksekusi selama program berjalan', false],
+          ]),
+          q('Pada contoh buatCounter, apa yang dikembalikan counterA() pada pemanggilan ketiga?', [
+            ['3, karena hitung diingat dan bertambah di setiap pemanggilan', true],
+            ['1, karena hitung dibuat ulang setiap kali counterA dipanggil', false],
+            ['0, karena hitung dikembalikan ke nilai awal setelah fungsi selesai', false],
           ]),
         ],
       },
@@ -550,21 +809,20 @@ setTimeout(() => {
         quizQuestions: [
           q('Apa itu callback function?', [
             ['Fungsi yang diteruskan sebagai argumen lalu dipanggil oleh fungsi lain', true],
-            ['Fungsi yang hanya bisa dipanggil sekali seumur hidup program', false],
-            ['Fungsi bawaan untuk menghapus variabel', false],
+            ['Fungsi yang dipanggil otomatis tepat saat ia didefinisikan', false],
+            ['Fungsi yang mengembalikan fungsi lain', false],
             ['Nama lain untuk arrow function', false],
           ]),
           q('setTimeout(callback, delay) melakukan apa?', [
             ['Menjalankan callback setelah delay milidetik, tanpa blocking', true],
             ['Menjalankan callback langsung tanpa delay', false],
             ['Menghentikan seluruh program selama delay', false],
-            ['Menghapus callback dari memory', false],
+            ['Menjalankan callback berulang-ulang setiap delay milidetik', false],
           ]),
-          q('Method array mana yang menerima callback untuk dijalankan per item?', [
-            ['forEach()', true],
-            ['length', false],
-            ['toString()', false],
-            ['Array.isArray()', false],
+          q('Pada angka.forEach(function (item) { ... }), siapa yang memanggil fungsi callback itu?', [
+            ['forEach sendiri, satu kali untuk setiap item di array', true],
+            ['Kita sendiri, lewat baris kode terpisah setelah forEach selesai', false],
+            ['forEach, tapi hanya satu kali setelah semua item selesai diproses', false],
           ]),
         ],
       },
@@ -622,45 +880,75 @@ console.log("Spread object (override kelas):", siswaBaru);
         title: 'Promise & Async/Await Dasar',
         slug: 'jsfz-promise-async-await-dasar',
         content: [
-          'Promise adalah object yang merepresentasikan hasil dari operasi asynchronous (yang butuh waktu, seperti mengambil data) yang akan selesai di masa depan — bisa berakhir "resolved" (berhasil) atau "rejected" (gagal).',
-          '`async`/`await` adalah sintaks yang lebih mudah dibaca untuk bekerja dengan Promise. Fungsi yang diberi kata kunci `async` otomatis mengembalikan Promise, dan `await` di dalamnya "menunggu" sebuah Promise selesai sebelum melanjutkan baris berikutnya — tanpa perlu menulis `.then()` berantai.',
-          '`await` hanya boleh dipakai di dalam fungsi `async`. Kalau ingin memakai `await` langsung di level atas skrip, pola umum yang aman adalah membungkusnya dalam sebuah async IIFE (Immediately Invoked Function Expression) seperti `(async function() { ... })();`.',
+          'Promise adalah object yang merepresentasikan hasil dari operasi asynchronous (yang butuh waktu, seperti mengambil data) yang akan selesai di masa depan. Sebuah Promise selalu ada di salah satu dari tiga keadaan: pending (awal, belum selesai), fulfilled (selesai dengan berhasil), atau rejected (selesai dengan gagal). Fulfilled dan rejected disebut hasil akhir: setelah itu Promise tidak berubah lagi.',
+          'Di kode, nasib Promise ditentukan lewat dua fungsi yang disediakan constructor-nya: `resolve(nilai)` memenuhi promise dengan sebuah nilai (jadi fulfilled), dan `reject(alasan)` menolaknya (jadi rejected). Kamu juga akan sering mendengar kata "resolved" untuk hasil yang berhasil. Di dokumentasi resmi, arti kata itu lebih luas dari sekadar berhasil, jadi istilah yang tepat untuk hasil berhasil adalah fulfilled.',
+          `\`\`\`javascript
+const janji = new Promise((resolve, reject) => {
+  resolve("data siap");                // pending -> fulfilled
+  // reject(new Error("server mati")); // pending -> rejected
+});
+\`\`\``,
+          '## async dan await',
+          '`async`/`await` adalah sintaks yang lebih mudah dibaca untuk bekerja dengan Promise. Fungsi yang diberi kata kunci `async` otomatis mengembalikan Promise, bahkan kalau isinya cuma `return 42` (hasilnya Promise yang fulfilled dengan nilai 42). Di dalamnya, `await` "menunggu" sebuah Promise selesai sebelum melanjutkan baris berikutnya — tanpa perlu menulis `.then()` berantai.',
+          'Kalau Promise yang ditunggu berakhir rejected, `await` melempar error, jadi bisa ditangkap dengan blok `try`/`catch` (lihat starter code di sandbox).',
+          '## Di mana await boleh dipakai',
+          '`await` boleh dipakai di dalam fungsi `async`, atau di level atas sebuah ES module (top-level await). Skrip Node.js biasa (CommonJS) tidak mendukung top-level await, dan Node.js 12 di sandbox ini juga tidak mendukungnya sama sekali: hasilnya SyntaxError. Kalau ingin memakai `await` langsung di level atas skrip, pola umum yang aman adalah membungkusnya dalam sebuah async IIFE (Immediately Invoked Function Expression):',
+          `\`\`\`javascript
+(async function () {
+  const hasil = await janji; // janji dari contoh di atas
+  console.log(hasil);
+})();
+\`\`\``,
         ],
         hasSandbox: true,
-        sandboxStarterCode: `function ambilData() {
-  return new Promise((resolve) => {
+        sandboxStarterCode: `function ambilData(berhasil) {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
-      resolve("Data berhasil diambil");
+      if (berhasil) {
+        resolve("Data berhasil diambil");
+      } else {
+        reject(new Error("Server tidak merespons"));
+      }
     }, 10);
   });
 }
 
 (async function main() {
   console.log("Mulai mengambil data...");
-  const hasil = await ambilData();
-  console.log("Hasil:", hasil);
+  const hasil = await ambilData(true);
+  console.log("Fulfilled:", hasil);
+
+  try {
+    await ambilData(false); // rejected: await melempar error
+  } catch (error) {
+    console.log("Rejected:", error.message);
+  }
   console.log("Selesai.");
 })();
 `,
         hasQuiz: true,
         quizQuestions: [
           q('Apa yang dikembalikan oleh sebuah fungsi async secara otomatis?', [
-            ['Promise', true],
-            ['Callback', false],
-            ['undefined selalu', false],
-            ['Array', false],
+            ['Promise, walaupun di dalamnya tidak ada await', true],
+            ['Nilai yang di-return apa adanya, tanpa dibungkus apa pun', false],
+            ['Promise, tapi hanya kalau di dalam fungsinya ada await', false],
+            ['Callback yang dipanggil setelah fungsi selesai', false],
           ]),
-          q('Kata kunci await hanya boleh dipakai di mana?', [
-            ['Di dalam fungsi async', true],
-            ['Di mana saja tanpa syarat', false],
-            ['Hanya di dalam class', false],
+          q('Di mana kata kunci await boleh dipakai?', [
+            ['Di dalam fungsi async, atau di level atas sebuah ES module (top-level await)', true],
+            ['Di mana saja, termasuk di level atas skrip Node.js biasa tanpa fungsi async', false],
+            ['Di dalam fungsi apa pun yang mengembalikan Promise, walau tidak diberi async', false],
             ['Hanya di dalam callback setTimeout', false],
           ]),
           q('Dua kemungkinan hasil akhir sebuah Promise adalah?', [
-            ['Resolved (berhasil) atau rejected (gagal)', true],
-            ['True atau false saja', false],
-            ['Selalu berhasil tanpa kemungkinan gagal', false],
-            ['Null atau undefined', false],
+            ['Fulfilled (berhasil) atau rejected (gagal)', true],
+            ['Pending (menunggu) atau fulfilled (berhasil)', false],
+            ['True atau false, mengikuti nilai yang dikirim ke resolve', false],
+          ]),
+          q('Promise yang baru dibuat dan operasinya belum selesai berada di keadaan apa?', [
+            ['pending', true],
+            ['rejected, sampai ada hasil yang berhasil', false],
+            ['fulfilled dengan nilai kosong', false],
           ]),
         ],
       },
@@ -702,7 +990,11 @@ const course: CourseDef = {
   slug: 'javascript-from-zero',
   category: { name: 'Programming', slug: 'programming' },
   level: 'pemula',
-  description: '',
+  description: [
+    'JavaScript from Zero adalah course pengantar untuk kamu yang belum pernah menulis kode sama sekali. JavaScript adalah bahasa utama untuk membuat halaman web interaktif, dan lewat Node.js ia juga dipakai di sisi server, sehingga cocok sebagai bahasa pemrograman pertama.',
+    'Di sini kamu belajar dari dasar: menjalankan JavaScript, variabel (`var`, `let`, `const`), tipe data dan operator, type coercion, template literal, percabangan dan perulangan, array dan object, fungsi (function expression, arrow function, scope dan closure, callback), destructuring dan spread, hingga dasar asynchronous dengan Promise dan async/await. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Sandbox di course ini menjalankan kode dengan Node.js 12, tanpa akses jaringan dan tanpa input keyboard, jadi fitur JavaScript yang lebih baru seperti optional chaining dan operator `??` tidak bisa dicoba di sana. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun dan tidak perlu pengalaman programming sebelumnya.',
+  ].join('\n\n'),
   sandboxLanguage: 'javascript',
   modules,
 }
