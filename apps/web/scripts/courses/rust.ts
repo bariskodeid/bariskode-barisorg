@@ -735,7 +735,10 @@ fn main() {
 
     let jumlah_selesai = daftar_tugas
         .iter()
-        .filter(|t| matches!(t.status, StatusTugas::Selesai))
+        .filter(|t| match t.status {
+            StatusTugas::Selesai => true,
+            _ => false,
+        })
         .count();
     println!("Tugas selesai: {} dari {}", jumlah_selesai, daftar_tugas.len());
 }

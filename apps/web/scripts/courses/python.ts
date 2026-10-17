@@ -405,7 +405,6 @@ print("Jumlah semua:", jumlahkan_semua(1, 2, 3, 4))
           'Scope menentukan di bagian kode mana sebuah variabel bisa diakses. Variabel yang dibuat di dalam fungsi disebut local variable, hanya bisa diakses di dalam fungsi itu sendiri.',
           'Variabel yang dibuat di luar semua fungsi disebut global variable, bisa dibaca dari mana saja termasuk di dalam fungsi — tapi untuk mengubah nilainya dari dalam fungsi, perlu kata kunci `global`.',
           'Praktik yang baik: hindari terlalu banyak variabel global karena membuat kode sulit dilacak alurnya — lebih baik lewatkan data lewat parameter dan return value fungsi.',
-          'Catatan: topik ini abstrak dan sulit didemonstrasikan lewat satu potongan skrip sandbox singkat tanpa membingungkan, jadi dipelajari lewat penjelasan dan quiz konsep.',
         ],
         hasQuiz: true,
         quizQuestions: [

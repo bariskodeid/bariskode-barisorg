@@ -493,7 +493,7 @@ objek.tampilkanDenganFunction();
           'Scope menentukan di bagian kode mana sebuah variabel bisa diakses. Variabel yang dibuat di dalam fungsi disebut local variable, hanya bisa diakses di dalam fungsi itu sendiri. Variabel di luar semua fungsi disebut global variable.',
           'Closure terjadi ketika sebuah fungsi "mengingat" variabel dari scope tempat ia dibuat, meskipun fungsi luar (yang membuat variabel itu) sudah selesai dieksekusi. Ini terjadi karena fungsi dalam menyimpan referensi ke lingkungan (environment) tempat ia didefinisikan, bukan tempat ia dipanggil.',
           'Contoh klasik closure: fungsi `buatCounter()` yang mengembalikan fungsi lain, dan fungsi yang dikembalikan itu tetap bisa mengakses dan mengubah variabel counter dari `buatCounter()`, walau `buatCounter()` sudah selesai berjalan.',
-          'Closure sering dipakai untuk membuat data privat (yang tidak bisa diakses langsung dari luar) — konsep ini penting dipahami secara konsep dulu lewat penjelasan dan quiz sebelum dipraktikkan di kode nyata.',
+          'Closure sering dipakai untuk membuat data privat (yang tidak bisa diakses langsung dari luar).',
         ],
         hasQuiz: true,
         quizQuestions: [
