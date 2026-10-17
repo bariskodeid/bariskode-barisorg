@@ -419,7 +419,7 @@ const modules: ModuleDef[] = [
     ],
   },
   {
-    title: 'Ownership & Fungsi',
+    title: 'Fungsi, Ownership & Struct',
     lessons: [
       {
         title: 'Fungsi & Parameter',
@@ -554,10 +554,80 @@ fn main() {
 `,
       },
       {
+        title: 'String vs &str & Slice',
+        slug: 'rustfz-string-vs-str-slice',
+        content: [
+          'Rust punya dua tipe string utama yang sering membingungkan pemula. `&str` (dibaca "string slice") adalah teks pinjaman: string literal seperti `"halo"` bertipe `&str`, tersimpan di dalam binary program, dan tidak bisa diubah. `String` adalah teks milik sendiri (owned): datanya disimpan di heap, boleh tumbuh, dan boleh diubah kalau variabelnya `mut`. Tanda `&` pada `&str` artinya reference (pinjaman), yang dibahas lengkap di lesson Borrowing berikutnya.',
+          '```rust\nlet literal = "halo"; // &str\nlet mut milik_sendiri = String::from("halo"); // String\nmilik_sendiri.push_str(" dunia"); // menambah teks di akhir\nlet lain = "kopi".to_string(); // cara lain membuat String dari &str\nprintln!("{} {} {}", literal, milik_sendiri, lain);\n```',
+          '`String` adalah pemilik datanya, jadi ia mengikuti aturan ownership di lesson sebelumnya: `let b = a;` memindahkannya. `&str` hanya menunjuk (pointer dan panjang) ke teks yang sudah ada, jadi menyalinnya murah dan ia di-copy seperti `i32`: setelah `let b = a;`, variabel `a` dan `b` sama-sama valid. Karena itu parameter fungsi yang hanya membaca teks sebaiknya bertipe `&str`: ia menerima literal (`sapa("Rust")`) maupun `&String` (`sapa(&judul)`, Rust otomatis memperlakukan `&String` sebagai `&str`), sedangkan parameter bertipe `&String` menolak literal.',
+          '## Slice',
+          'Slice adalah "jendela" ke sebagian data tanpa menyalinnya: `&s[mulai..akhir]` menghasilkan `&str` berisi karakter dari `mulai` sampai sebelum `akhir` (batas atas eksklusif, sama seperti `0..5` di perulangan `for`). Salah satu batas boleh dihilangkan: `&s[..5]`, `&s[6..]`, atau `&s[..]` untuk seluruh string. Array juga bisa di-slice dengan sintaks yang sama (`&angka[1..4]`). Hati-hati: index slice string adalah posisi byte, bukan karakter. `.len()` menghitung byte, jadi `"café".len()` adalah `5` karena `é` memakai 2 byte dalam UTF-8, sedangkan `.chars().count()` (menghitung per karakter) menghasilkan `4`. Memotong di tengah sebuah karakter multibyte membuat program panic.',
+          '```rust\nlet s = String::from("hello world");\nlet hello = &s[0..5]; // "hello"\nlet world = &s[6..]; // "world"\nlet semua = &s[..]; // seluruh string\nprintln!("{} {} {}", hello, world, semua);\n\nlet kata = "café";\nprintln!("{} {}", kata.len(), kata.chars().count()); // 5 4\n```',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `fn sapa(nama: &str) {
+    println!("Halo, {}!", nama);
+}
+
+fn main() {
+    // &str: string literal, tersimpan di binary program dan tidak bisa diubah
+    let literal = "Rust";
+
+    // String: milik sendiri, datanya di heap, bisa tumbuh (butuh let mut untuk diubah)
+    let mut judul = String::from("Belajar ");
+    judul.push_str(literal);
+    println!("String: {}", judul);
+
+    // Parameter &str menerima literal maupun &String
+    sapa(literal);
+    sapa(&judul);
+
+    // &str disalin murah, bukan di-move: a tetap valid setelah let b = a
+    let a = "halo";
+    let b = a;
+    println!("a = {}, b = {}", a, b);
+
+    // Slice: potongan string lewat range byte (batas atas eksklusif)
+    println!("Slice [0..7]: {}", &judul[0..7]);
+    println!("Slice [8..]: {}", &judul[8..]);
+
+    // len() menghitung byte, bukan karakter
+    let kata = "café";
+    println!("len() = {}, jumlah karakter = {}", kata.len(), kata.chars().count());
+
+    // Slice juga berlaku untuk array
+    let angka = [10, 20, 30, 40, 50];
+    let tengah = &angka[1..4];
+    println!("Slice array: mulai {}, panjang {}", tengah[0], tengah.len());
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa perbedaan utama String dan &str di Rust?', [
+            ['String memiliki datanya di heap dan bisa tumbuh, sedangkan &str hanya menunjuk ke teks yang sudah ada dan tidak bisa diubah', true],
+            ['&str hanya untuk teks pendek dan String untuk teks panjang; selain ukuran, keduanya identik', false],
+            ['String disimpan di stack dan otomatis di-copy, sedangkan &str disimpan di heap dan di-move', false],
+            ['&str adalah tipe untuk satu karakter, sedangkan String untuk teks yang terdiri dari beberapa karakter', false],
+          ]),
+          q('Apa yang terjadi pada kode ini? let a = "halo"; let b = a; println!("{} {}", a, b);', [
+            ['Dikompilasi dan mencetak halo halo, karena &str hanya disalin (copy), bukan dipindah', true],
+            ['Gagal dikompilasi dengan borrow of moved value, sama seperti pada String', false],
+            ['Dikompilasi, tapi a menjadi kosong karena isinya sudah dipindah ke b', false],
+            ['Gagal dikompilasi karena variabel bertipe &str tidak boleh di-assign ke variabel lain', false],
+          ]),
+          q('Berapa nilai "café".len() di Rust?', [
+            ['5, karena len() menghitung byte dan é memakai 2 byte', true],
+            ['4, karena len() menghitung jumlah karakter', false],
+            ['3, karena huruf beraksen tidak ikut dihitung', false],
+            ['6, karena Rust menambahkan 1 byte null terminator di akhir seperti string C', false],
+          ]),
+        ],
+      },
+      {
         title: 'Borrowing & Reference',
         slug: 'rustfz-borrowing-reference',
         content: [
-          'Borrowing memungkinkan sebuah fungsi "meminjam" akses ke suatu nilai tanpa memindahkan kepemilikannya (ownership) — dilakukan dengan memakai reference, ditandai tanda `&` di depan tipe data atau variabel, misal `&String` atau `&nama`.',
+          'Borrowing memungkinkan sebuah fungsi "meminjam" akses ke suatu nilai tanpa memindahkan kepemilikannya (ownership) — dilakukan dengan memakai reference, ditandai tanda `&` di depan tipe data atau variabel, misal `&String` atau `&nama`. Untuk parameter yang hanya membaca teks, `&str` biasanya lebih fleksibel daripada `&String` (lihat lesson String vs &str); starter di bawah memakai `&String` supaya contoh reference-nya tetap sederhana.',
           'Karena hanya meminjam, variabel asli tetap valid dan bisa dipakai lagi setelah fungsi peminjam selesai — berbeda dengan move yang membuat variabel asli tidak bisa dipakai lagi.',
           'Rust punya aturan ketat soal borrowing untuk mencegah data race: dalam satu waktu, boleh ada banyak reference immutable (`&T`) sekaligus, ATAU tepat satu reference mutable (`&mut T`) — tidak boleh keduanya bercampur secara bersamaan.',
           'Reference mutable (`&mut`) dipakai kalau fungsi peminjam perlu mengubah nilai yang dipinjam, misal `fn tambah_satu(angka: &mut i32)` — variabel yang dipinjam sendiri juga harus dideklarasikan dengan `mut`.',
@@ -614,7 +684,7 @@ fn main() {
           'Untuk mengubah sebuah field, seluruh instance harus dideklarasikan `let mut`. Rust tidak punya `mut` per field: kita tidak bisa membuat hanya sebagian field yang boleh diubah.',
           '## Method dan associated function',
           'Method (fungsi yang "menempel" pada struct) didefinisikan dalam blok `impl NamaStruct { ... }`, dengan parameter pertama biasanya `&self` — merujuk ke instance struct itu sendiri, mirip `self` di Python atau `this` di bahasa lain. Karena `&self` hanya meminjam instance, instance tetap bisa dipakai setelah method dipanggil.',
-          'Blok `impl` juga bisa berisi associated function: fungsi tanpa parameter `self`, dipanggil lewat nama tipe dengan `::`, bukan lewat instance, misal `Siswa::baru("Siti", 22)`. Kamu sudah sering memakainya: `String::from(...)` adalah associated function milik `String`. Rust tidak punya kata kunci constructor; `baru` (atau `new`) hanyalah nama fungsi biasa yang dipakai sebagai konvensi.',
+          'Blok `impl` juga bisa berisi associated function: fungsi tanpa parameter `self`, dipanggil lewat nama tipe dengan `::`, bukan lewat instance, misal `Siswa::baru("Siti", 22)`. Kamu sudah sering memakainya: `String::from(...)` adalah associated function milik `String`. Rust tidak punya kata kunci constructor; `baru` (atau `new`) hanyalah nama fungsi biasa yang dipakai sebagai konvensi. Lesson berikutnya membahas `Self`, method yang mengubah instance (`&mut self`), dan cara mencetak struct.',
           'Lanjutan dari definisi `Siswa` di atas, berisi satu associated function dan satu method:',
           '```rust\nimpl Siswa {\n    // associated function: tanpa self, dipanggil Siswa::baru(...)\n    fn baru(nama: &str, umur: u32) -> Siswa {\n        Siswa {\n            nama: String::from(nama),\n            umur, // shorthand untuk umur: umur\n        }\n    }\n\n    // method: parameter pertama &self, dipanggil siswa.perkenalan()\n    fn perkenalan(&self) {\n        println!("Halo, saya {}", self.nama);\n    }\n}\n```',
         ],
@@ -676,10 +746,93 @@ fn main() {
           ]),
         ],
       },
+      {
+        title: 'impl, #[derive(Debug)] & if let',
+        slug: 'rustfz-impl-derive-iflet',
+        content: [
+          'Blok `impl` bisa berisi dua jenis fungsi. Method punya `self` sebagai parameter pertama dan dipanggil lewat instance (`siswa.perkenalan()`): `&self` untuk membaca, `&mut self` untuk mengubah field (instance-nya harus dideklarasikan `let mut`). Associated function tidak punya `self` dan dipanggil lewat nama tipe dengan `::` (`Siswa::baru(...)`), seperti `String::from`. Di dalam `impl`, `Self` adalah nama lain untuk tipe yang sedang didefinisikan, jadi `-> Self` sama dengan `-> Siswa`.',
+          '```rust\nstruct Siswa {\n    nama: String,\n    umur: u32,\n}\n\nimpl Siswa {\n    // associated function: Self = Siswa\n    fn baru(nama: &str, umur: u32) -> Self {\n        Self { nama: String::from(nama), umur }\n    }\n\n    // method &mut self: boleh mengubah field\n    fn ulang_tahun(&mut self) {\n        self.umur += 1;\n    }\n}\n\nfn main() {\n    let mut siswa = Siswa::baru("Budi", 20);\n    siswa.ulang_tahun();\n    println!("{} sekarang {} tahun", siswa.nama, siswa.umur);\n}\n```',
+          'Struct buatan sendiri tidak otomatis bisa dicetak dengan `println!`. Format Debug `{:?}` hanya tersedia kalau struct diberi atribut `#[derive(Debug)]` di atas definisinya, yang membuat compiler menghasilkan kodenya otomatis. `{:?}` mencetak dalam satu baris, sedangkan `{:#?}` mencetak rapi berbaris-baris (pretty print), berguna untuk struct yang besar. Tanpa `derive`, `println!("{:?}", siswa)` gagal dikompilasi karena `Siswa` tidak mengimplementasikan `Debug`. Placeholder biasa `{}` (format Display) tidak bisa diturunkan otomatis, harus ditulis sendiri, jadi untuk memeriksa isi struct saat belajar pakai `{:?}`.',
+          '```rust\n#[derive(Debug)]\nstruct Titik {\n    x: i32,\n    y: i32,\n}\n\nfn main() {\n    let t = Titik { x: 3, y: -1 };\n    println!("{:?}", t); // Titik { x: 3, y: -1 }\n    println!("{:#?}", t); // versi berbaris-baris\n}\n```',
+          'Kadang `match` terasa bertele-tele karena kita hanya peduli pada satu pola. `if let` adalah singkatannya: `if let Pola = nilai { ... } else { ... }` menjalankan blok pertama kalau nilai cocok dengan pola (sambil mengikat variabel dari dalam pola), dan blok `else` kalau tidak cocok. Pemakaian paling umum adalah dengan `Option<T>`, tipe untuk nilai yang bisa ada atau kosong yang dibahas lengkap di modul berikutnya: `Some(isi)` berarti ada nilai dan `None` berarti kosong. Bedanya dengan `match`, `if let` tidak memaksa semua kemungkinan ditangani.',
+          '```rust\nlet nilai_ujian: Option<u32> = Some(85);\n\n// dengan match: wajib menangani semua kemungkinan\nmatch nilai_ujian {\n    Some(nilai) => println!("Nilai: {}", nilai),\n    None => println!("Belum ujian"),\n}\n\n// dengan if let: lebih ringkas untuk satu pola\nif let Some(nilai) = nilai_ujian {\n    println!("Nilai: {}", nilai);\n} else {\n    println!("Belum ujian");\n}\n```',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#[derive(Debug)]
+struct Siswa {
+    nama: String,
+    umur: u32,
+    nilai_ujian: Option<u32>, // None = belum ujian
+}
+
+impl Siswa {
+    // Associated function (tanpa self): Self = tipe Siswa
+    fn baru(nama: &str, umur: u32) -> Self {
+        Self {
+            nama: String::from(nama),
+            umur,
+            nilai_ujian: None,
+        }
+    }
+
+    // Method dengan &self: hanya membaca
+    fn perkenalan(&self) {
+        println!("Halo, saya {}, umur {} tahun", self.nama, self.umur);
+    }
+
+    // Method dengan &mut self: boleh mengubah field
+    fn catat_nilai(&mut self, nilai: u32) {
+        self.nilai_ujian = Some(nilai);
+    }
+
+    fn laporkan_nilai(&self) {
+        if let Some(nilai) = self.nilai_ujian {
+            println!("{} mendapat nilai {}", self.nama, nilai);
+        } else {
+            println!("{} belum ujian", self.nama);
+        }
+    }
+}
+
+fn main() {
+    let mut siswa = Siswa::baru("Budi", 20);
+    siswa.perkenalan();
+    siswa.laporkan_nilai();
+
+    siswa.catat_nilai(85);
+    siswa.laporkan_nilai();
+
+    // {:?} dan {:#?} butuh #[derive(Debug)] di atas struct
+    println!("{:?}", siswa);
+    println!("{:#?}", siswa);
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa perbedaan associated function dan method di dalam blok impl?', [
+            ['Associated function tidak punya self dan dipanggil lewat Tipe::nama(), sedangkan method punya self dan dipanggil lewat instance.nama()', true],
+            ['Associated function khusus untuk membuat instance baru, sedangkan method khusus untuk menghapus instance', false],
+            ['Associated function hanya boleh membaca field, sedangkan method boleh mengubah field', false],
+            ['Keduanya sama; hanya cara menulis pemanggilannya yang berbeda, :: atau titik', false],
+          ]),
+          q('Apa yang terjadi kalau sebuah struct tanpa #[derive(Debug)] dicetak dengan println!("{:?}", siswa)?', [
+            ['Gagal dikompilasi, karena struct itu tidak mengimplementasikan Debug', true],
+            ['Dikompilasi dan mencetak alamat memori instance tersebut', false],
+            ['Dikompilasi dan mencetak semua field otomatis, karena {:?} tidak butuh derive', false],
+            ['Dikompilasi, tapi program panic saat baris itu dijalankan', false],
+          ]),
+          q('Kapan if let lebih cocok dipakai daripada match?', [
+            ['Saat hanya peduli pada satu pola (misal Some) dan sisanya cukup ditangani di else atau diabaikan', true],
+            ['Saat ingin compiler memastikan semua variant enum sudah ditangani', false],
+            ['Saat nilainya bukan enum, karena match hanya bisa dipakai untuk enum', false],
+            ['Saat butuh program yang lebih cepat, karena if let selalu lebih cepat dari match', false],
+          ]),
+        ],
+      },
     ],
   },
   {
-    title: 'Enum & Ringkasan',
+    title: 'Enum, Error Handling & Ringkasan',
     lessons: [
       {
         title: 'Enum Dasar',
@@ -688,7 +841,7 @@ fn main() {
           'Enum (enumeration) mendefinisikan sebuah tipe data yang nilainya harus salah satu dari beberapa kemungkinan (variant) yang sudah ditentukan, ditulis dengan kata kunci `enum`, misal `enum Arah { Utara, Selatan, Timur, Barat }`.',
           'Enum di Rust jauh lebih kuat dari sekadar daftar konstanta — tiap variant bisa menyimpan data tambahan dengan tipe berbeda-beda, misal `enum Bentuk { Lingkaran(f64), Persegi(f64, f64) }`, di mana `Lingkaran` menyimpan radius dan `Persegi` menyimpan panjang & lebar.',
           'Kombinasi enum dengan `match` sangat umum dipakai di Rust — `match` memaksa semua variant enum ditangani, sehingga compiler akan mengingatkan kalau ada satu variant yang lupa ditangani, mengurangi bug akibat kasus yang terlewat.',
-          'Di starter, `&\'static str` pada tipe kembalian berarti teks literal yang tersimpan selama program berjalan; pembahasan lengkap tentang `&str` ada di lesson lain. Starter juga memakai setiap variant minimal sekali: variant yang tidak pernah dibuat memunculkan warning `dead_code` dari compiler.',
+          'Di starter, `&\'static str` pada tipe kembalian berarti teks literal yang tersimpan selama program berjalan; pembahasan lengkap tentang `&str` ada di lesson String vs &str. Starter juga memakai setiap variant minimal sekali: variant yang tidak pernah dibuat memunculkan warning `dead_code` dari compiler.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `enum Arah {
@@ -757,6 +910,7 @@ fn main() {
           'Karena `Option<T>` adalah tipe yang berbeda dari `T` biasa, compiler memaksa programmer menangani kedua kemungkinan (`Some` dan `None`) secara eksplisit sebelum bisa memakai nilai di dalamnya — biasanya lewat `match`, lewat `if let` kalau hanya peduli pada `Some`, atau lewat method seperti `.unwrap_or()` yang menyediakan nilai fallback. Kode berikut sengaja gagal dikompilasi, karena `i32` tidak bisa langsung dijumlahkan dengan `Option<i32>`:',
           '```rust\nlet x: i32 = 5;\nlet y: Option<i32> = Some(5);\nlet jumlah = x + y; // error[E0277]: cannot add `std::option::Option<i32>` to `i32`\n```',
           'Pendekatan ini memindahkan pengecekan "apakah nilai ini ada?" dari yang tadinya bisa lolos tanpa disadari (dan crash saat runtime di bahasa lain), menjadi wajib ditangani saat kompilasi di Rust.',
+          '`Option<T>` cocok untuk "nilai mungkin tidak ada". Kalau sebuah operasi bisa gagal dan kita ingin tahu penyebabnya, Rust punya `Result<T, E>` dengan variant `Ok(nilai)` dan `Err(error)`, yang dibahas di lesson berikutnya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `fn bagi(a: i32, b: i32) -> Option<i32> {
@@ -809,7 +963,7 @@ fn main() {
           q('Apa dua variant dari enum Option<T>?', [
             ['Some(nilai) dan None', true],
             ['True dan False', false],
-            ['Ok dan Error', false],
+            ['Ok(nilai) dan Err(error)', false],
             ['Yes dan No', false],
           ]),
           q('Kenapa pendekatan Option<T> mengurangi bug dibanding null tradisional?', [
@@ -827,13 +981,91 @@ fn main() {
         ],
       },
       {
+        title: 'Result<T, E> & Error Handling',
+        slug: 'rustfz-result-error-handling',
+        content: [
+          'Di lesson sebelumnya `Option<T>` dipakai untuk nilai yang mungkin tidak ada. Untuk operasi yang bisa gagal dan kita ingin tahu penyebabnya, Rust punya enum `Result<T, E>` dengan dua variant: `Ok(nilai)` untuk berhasil (membawa hasil bertipe `T`) dan `Err(error)` untuk gagal (membawa penyebab bertipe `E`). Rust tidak punya exception dan `try/catch`: error adalah nilai biasa yang dikembalikan fungsi, sehingga compiler memaksa kita menanganinya. Sementara `panic!` dipakai untuk bug yang tidak bisa dipulihkan: program langsung berhenti.',
+          '```rust\nfn main() {\n    // parse mengubah teks jadi angka; ::<i32> memberi tahu tipe hasil yang diinginkan\n    match "42".parse::<i32>() {\n        Ok(angka) => println!("Berhasil: {}", angka),\n        Err(e) => println!("Gagal: {}", e),\n    }\n    match "abc".parse::<i32>() {\n        Ok(angka) => println!("Berhasil: {}", angka),\n        Err(e) => println!("Gagal: {}", e), // invalid digit found in string\n    }\n}\n```',
+          'Fungsi buatan sendiri juga bisa mengembalikan `Result`. Bandingkan dengan versi `Option` di lesson sebelumnya: `Option` hanya bisa bilang "tidak ada hasil" (`None`), sedangkan `Result` bisa menjelaskan kenapa gagal lewat `Err`. Di contoh ini tipe error-nya `String`, jadi tipe kembaliannya `Result<i32, String>`.',
+          '```rust\nfn bagi(a: i32, b: i32) -> Result<i32, String> {\n    if b == 0 {\n        Err(String::from("tidak bisa membagi dengan nol"))\n    } else {\n        Ok(a / b)\n    }\n}\n\nfn main() {\n    println!("{:?}", bagi(10, 2)); // Ok(5)\n    println!("{:?}", bagi(10, 0)); // Err("tidak bisa membagi dengan nol")\n}\n```',
+          'Selain `match`, ada beberapa jalan pintas. `.unwrap()` mengambil nilai di dalam `Ok`, tapi kalau hasilnya `Err` program langsung panic. `.expect("pesan")` sama seperti `unwrap` dengan pesan panic buatan sendiri, dan `.unwrap_or(nilai)` mengembalikan nilai cadangan kalau hasilnya `Err`. `unwrap` dan `expect` cocok untuk percobaan cepat atau kasus yang pasti berhasil, tapi di program sungguhan lebih aman memakai `match` atau `unwrap_or`. Terakhir, operator `?` di belakang sebuah `Result` bekerja begini: kalau `Ok`, ia mengambil nilainya; kalau `Err`, fungsi yang sedang berjalan langsung `return Err(...)` ke pemanggilnya. Operator ini hanya bisa dipakai di dalam fungsi yang tipe kembaliannya juga `Result`.',
+          '```rust\nfn jumlahkan_teks(a: &str, b: &str) -> Result<i32, std::num::ParseIntError> {\n    let x = a.parse::<i32>()?; // kalau Err, langsung return Err\n    let y = b.parse::<i32>()?;\n    Ok(x + y)\n}\n\nfn main() {\n    println!("{:?}", jumlahkan_teks("20", "22")); // Ok(42)\n    println!("{:?}", jumlahkan_teks("20", "dua")); // Err(ParseIntError { kind: InvalidDigit })\n}\n```',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `fn bagi(a: i32, b: i32) -> Result<i32, String> {
+    if b == 0 {
+        Err(String::from("tidak bisa membagi dengan nol"))
+    } else {
+        Ok(a / b)
+    }
+}
+
+fn jumlahkan_teks(a: &str, b: &str) -> Result<i32, std::num::ParseIntError> {
+    let x = a.parse::<i32>()?;
+    let y = b.parse::<i32>()?;
+    Ok(x + y)
+}
+
+fn main() {
+    // match pada Result: Ok membawa hasil, Err membawa penyebab gagal
+    match bagi(10, 2) {
+        Ok(hasil) => println!("10 / 2 = {}", hasil),
+        Err(pesan) => println!("Error: {}", pesan),
+    }
+    match bagi(10, 0) {
+        Ok(hasil) => println!("10 / 0 = {}", hasil),
+        Err(pesan) => println!("Error: {}", pesan),
+    }
+
+    // parse: mengubah teks jadi angka bisa gagal
+    match "abc".parse::<i32>() {
+        Ok(angka) => println!("Angka: {}", angka),
+        Err(e) => println!("Gagal parse: {}", e),
+    }
+
+    // unwrap_or: nilai cadangan kalau hasilnya Err
+    let aman = "abc".parse::<i32>().unwrap_or(0);
+    println!("unwrap_or: {}", aman);
+
+    // expect: seperti unwrap, tapi dengan pesan panic buatan sendiri
+    let pasti: i32 = "42".parse().expect("harus angka yang valid");
+    println!("expect: {}", pasti);
+
+    // Operator ?: kalau Err, fungsi langsung return Err itu ke pemanggilnya
+    println!("{:?}", jumlahkan_teks("20", "22"));
+    println!("{:?}", jumlahkan_teks("20", "dua"));
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa perbedaan Option<T> dan Result<T, E>?', [
+            ['Option hanya menandakan nilai ada atau tidak, sedangkan Result juga membawa penyebab kegagalan lewat Err', true],
+            ['Option membawa pesan error, sedangkan Result hanya menandakan berhasil atau tidak', false],
+            ['Result khusus untuk operasi file, sedangkan Option khusus untuk angka', false],
+            ['Keduanya sama persis; hanya nama variant-nya yang berbeda', false],
+          ]),
+          q('Apa yang terjadi kalau .unwrap() dipanggil pada sebuah Err?', [
+            ['Program panic dan berhenti dengan pesan error', true],
+            ['Mengembalikan nilai default tipenya, misal 0 untuk i32', false],
+            ['Mengembalikan None sehingga program lanjut berjalan', false],
+            ['Err diabaikan dan program lanjut dengan nilai kosong', false],
+          ]),
+          q('Apa yang dilakukan operator ? pada a.parse::<i32>()? kalau hasilnya Err?', [
+            ['Fungsi yang sedang berjalan langsung mengembalikan Err itu ke pemanggilnya', true],
+            ['Program panic, sama seperti unwrap()', false],
+            ['Err diganti nilai default 0 dan fungsi lanjut berjalan', false],
+            ['Err diubah menjadi Ok(0) sehingga fungsi tetap berhasil', false],
+          ]),
+        ],
+      },
+      {
         title: 'Vector (Vec<T>) Dasar',
         slug: 'rustfz-vector-dasar',
         content: [
           '`Vec<T>` (vector) adalah koleksi yang mirip array tapi ukurannya bisa berubah (tumbuh atau menyusut) saat program berjalan, disimpan di heap. `T` adalah placeholder untuk tipe data elemen di dalamnya, misal `Vec<i32>` berarti vector berisi bilangan bulat.',
           'Vector baru bisa dibuat dengan `Vec::new()` (kosong, biasanya diikuti penambahan elemen) atau macro `vec![1, 2, 3]` untuk langsung mengisi nilai awal. Method `.push(nilai)` menambah elemen ke akhir vector.',
           'Akses elemen vector pakai index seperti array (`vektor[0]`), tapi kalau index di luar jangkauan program akan panic (crash terkontrol) — untuk akses yang lebih aman, method `.get(index)` mengembalikan `Option<&T>` yang bisa dicek dulu apakah ada isinya.',
-          'Di starter, `{:?}` di dalam `println!` adalah format Debug: ia mencetak seluruh isi vector, misal `[10, 20, 30]`. Placeholder biasa `{}` tidak bisa dipakai untuk `Vec` karena `Vec` tidak punya tampilan standar untuk ditampilkan ke pengguna. Format Debug tersedia otomatis untuk tipe bawaan seperti `Vec`, `Option`, dan angka; untuk struct buatan sendiri harus ditambahkan atribut `#[derive(Debug)]`.',
+          'Di starter, `{:?}` di dalam `println!` adalah format Debug yang sudah kamu kenal di lesson `#[derive(Debug)]`: ia mencetak seluruh isi vector, misal `[10, 20, 30]`. Placeholder biasa `{}` tidak bisa dipakai untuk `Vec` karena `Vec` tidak punya tampilan standar untuk ditampilkan ke pengguna. Format Debug tersedia otomatis untuk tipe bawaan seperti `Vec`, `Option`, dan angka, sedangkan struct buatan sendiri memerlukan atribut `#[derive(Debug)]`.',
           'Perhatikan juga `for nilai in &angka`: tanda `&` meminjam vector (seperti di lesson Borrowing) supaya `angka` tetap bisa dipakai setelah loop selesai.',
         ],
         hasSandbox: true,
@@ -885,10 +1117,10 @@ fn main() {
         title: 'Studi Kasus Gabungan',
         slug: 'rustfz-studi-kasus-gabungan',
         content: [
-          'Sebagai penutup course ini, mari gabungkan semua konsep yang sudah dipelajari — struct, enum, `Option<T>`, vector, `match`, dan ownership sederhana — ke dalam satu program kecil yang merepresentasikan daftar tugas (to-do list) sederhana.',
-          'Program di sandbox berikut mendefinisikan struct `Tugas` dengan field `nama` dan `status` (bertipe enum `StatusTugas`), menyimpan beberapa tugas dalam `Vec<Tugas>`, lalu memakai `match` untuk menampilkan status tiap tugas dengan format yang berbeda. Method `.get(5)` pada vector mengembalikan `Option`, jadi index yang tidak ada ditangani dengan `match` alih-alih membuat program panic.',
+          'Sebagai penutup course ini, mari gabungkan semua konsep yang sudah dipelajari — struct dengan associated function, enum, `Option<T>`, vector, `match` dan `if let`, serta ownership sederhana — ke dalam satu program kecil yang merepresentasikan daftar tugas (to-do list) sederhana.',
+          'Program di sandbox berikut mendefinisikan struct `Tugas` dengan field `nama` dan `status` (bertipe enum `StatusTugas`), membuat tiap tugas lewat associated function `Tugas::baru`, menyimpan beberapa tugas dalam `Vec<Tugas>`, lalu memakai `match` untuk menampilkan status tiap tugas dengan format yang berbeda. Method `.get(5)` pada vector mengembalikan `Option`, jadi index yang tidak ada ditangani dengan `if let ... else` alih-alih membuat program panic.',
           'Bagian akhir program menghitung tugas yang selesai lewat `.iter().filter(...).count()`: `.filter()` menyaring elemen yang memenuhi kondisi di dalam `|t| ...` (closure, fungsi mini tanpa nama; pembahasannya di luar cakupan course ini), lalu `.count()` menghitung elemen yang lolos.',
-          'Sepanjang course "Rust from Zero" ini kita sudah belajar dari sintaks dasar, tipe data, kontrol alur, fungsi, konsep ownership & borrowing yang jadi ciri khas Rust, hingga struct dan enum — fondasi yang cukup untuk mulai membangun program Rust yang lebih kompleks dan aman dari bug memori.',
+          'Sepanjang course "Rust from Zero" ini kita sudah belajar dari sintaks dasar, tipe data, kontrol alur, fungsi, konsep ownership & borrowing yang jadi ciri khas Rust, `String` vs `&str`, struct dengan `impl` dan `#[derive(Debug)]`, enum, hingga `Option` dan `Result` untuk menangani nilai kosong dan error — fondasi yang cukup untuk mulai membangun program Rust yang lebih kompleks dan aman dari bug memori.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `enum StatusTugas {
@@ -902,6 +1134,14 @@ struct Tugas {
 }
 
 impl Tugas {
+    // Associated function: membuat Tugas dari &str
+    fn baru(nama: &str, status: StatusTugas) -> Tugas {
+        Tugas {
+            nama: String::from(nama),
+            status,
+        }
+    }
+
     fn tampilkan(&self) {
         let simbol = match self.status {
             StatusTugas::Selesai => "[x]",
@@ -913,9 +1153,9 @@ impl Tugas {
 
 fn main() {
     let daftar_tugas: Vec<Tugas> = vec![
-        Tugas { nama: String::from("Belajar ownership"), status: StatusTugas::Selesai },
-        Tugas { nama: String::from("Belajar struct & enum"), status: StatusTugas::Selesai },
-        Tugas { nama: String::from("Bikin proyek Rust sendiri"), status: StatusTugas::BelumSelesai },
+        Tugas::baru("Belajar ownership", StatusTugas::Selesai),
+        Tugas::baru("Belajar struct & enum", StatusTugas::Selesai),
+        Tugas::baru("Bikin proyek Rust sendiri", StatusTugas::BelumSelesai),
     ];
 
     println!("Daftar Tugas Belajar Rust:");
@@ -924,9 +1164,10 @@ fn main() {
     }
 
     // Vec::get mengembalikan Option, jadi index yang tidak ada tidak membuat program panic
-    match daftar_tugas.get(5) {
-        Some(tugas) => tugas.tampilkan(),
-        None => println!("Tugas ke-5 tidak ada"),
+    if let Some(tugas) = daftar_tugas.get(5) {
+        tugas.tampilkan();
+    } else {
+        println!("Tugas ke-5 tidak ada");
     }
 
     let jumlah_selesai = daftar_tugas
@@ -951,7 +1192,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'Rust from Zero adalah course pengantar untuk kamu yang belum pernah menulis Rust. Rust dikenal cepat sekaligus menjamin keamanan memori tanpa garbage collector, dan dipakai untuk sistem operasi, browser engine, sampai tools command-line. Course ini memperkenalkan Rust dari nol, jadi pengalaman programming di bahasa lain membantu tapi tidak wajib.',
-    'Di sini kamu belajar struktur program dan Cargo, variabel dan mutability (immutable by default, shadowing), tipe data dasar, operator, tuple dan array, percabangan `if`, perulangan, `match`, fungsi, konsep ownership dan borrowing yang jadi ciri khas Rust, struct dengan `impl`, enum, `Option<T>`, dan `Vec<T>`, ditutup dengan studi kasus yang menggabungkan semuanya. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar struktur program dan Cargo, variabel dan mutability (immutable by default, shadowing), tipe data dasar, operator, tuple dan array, percabangan `if`, perulangan, `match`, fungsi, konsep ownership dan borrowing yang jadi ciri khas Rust, `String` vs `&str` dan slice, struct dengan `impl`, `#[derive(Debug)]`, dan `if let`, enum, `Option<T>`, `Result<T, E>` untuk error handling, dan `Vec<T>`, ditutup dengan studi kasus yang menggabungkan semuanya. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini menjalankan kode dengan Rust 1.40, tanpa akses jaringan dan tanpa input keyboard. Kode dikompilasi sebagai satu file, jadi Cargo dan crate pihak ketiga tidak bisa dicoba di sana, dan fitur yang lebih baru dari Rust 1.40 (misalnya macro `matches!` atau variabel langsung di dalam string `println!`) tidak dipakai. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
   ].join('\n\n'),
   sandboxLanguage: 'rust',
