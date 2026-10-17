@@ -57,6 +57,25 @@ describe('markdownToLexical()', () => {
     expect(() => markdownToLexical('```kotlin\nx\n```')).toThrow(/bahasa.*kotlin/i)
   })
 
+  it('pembuka fence malformed (atribut / indentasi) melempar dengan nomor baris dan isi baris', () => {
+    expect(() =>
+      markdownToLexical('intro\n\n```python title="x"\nprint(1)\n```\n\nprosa\n\n```python\nprint(2)\n```'),
+    ).toThrow(/pembuka.*baris 3.*title=\\"x\\"/i)
+    expect(() => markdownToLexical('a\n  ```python\nx\n```')).toThrow(/pembuka.*baris 2.*```python/i)
+  })
+
+  it('nama bahasa dari prototype (constructor, toString) ditolak', () => {
+    expect(() => markdownToLexical('```constructor\nx\n```')).toThrow(/bahasa.*constructor/i)
+    expect(() => markdownToLexical('```toString\nx\n```')).toThrow(/bahasa.*toString/i)
+  })
+
+  it('error menyebut nomor baris dan isi baris pembuka', () => {
+    expect(() => markdownToLexical('a\n\n```kotlin\nx\n```')).toThrow(/bahasa.*kotlin.*baris 3.*```kotlin/i)
+    expect(() => markdownToLexical('a\n\n```python\nprint(1)')).toThrow(
+      /fence.*tidak ditutup.*baris 3.*```python/i,
+    )
+  })
+
   it('backtick ganjil jadi teks literal', () => {
     const [p] = kids('ada ` sendirian')
     expect(p.children.map((c: { text: string }) => c.text).join('')).toBe('ada ` sendirian')

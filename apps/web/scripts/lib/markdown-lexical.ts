@@ -76,12 +76,18 @@ export function markdownToLexical(markdown: string | string[]): SerializedEditor
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
     const fence = /^```(\S*)\s*$/.exec(line)
+    if (!fence && line.trimStart().startsWith('```')) {
+      throw new Error(`Pembuka code fence tidak valid di baris ${i + 1}: ${JSON.stringify(line)}`)
+    }
     if (fence) {
       flushAll()
       const language = fence[1] || 'plaintext'
-      if (!(language in CODE_LANGUAGES)) {
-        throw new Error(`Bahasa code block tidak dikenal: ${language}`)
+      if (!Object.hasOwn(CODE_LANGUAGES, language)) {
+        throw new Error(
+          `Bahasa code block tidak dikenal: ${language} (baris ${i + 1}: ${JSON.stringify(line)})`,
+        )
       }
+      const openerLine = i + 1
       const codeLines: string[] = []
       let closed = false
       for (i++; i < lines.length; i++) {
@@ -91,7 +97,11 @@ export function markdownToLexical(markdown: string | string[]): SerializedEditor
         }
         codeLines.push(lines[i])
       }
-      if (!closed) throw new Error(`Code fence "${language}" tidak ditutup`)
+      if (!closed) {
+        throw new Error(
+          `Code fence "${language}" tidak ditutup (dibuka di baris ${openerLine}: ${JSON.stringify(line)})`,
+        )
+      }
       const code = codeLines.join('\n')
       children.push({
         type: 'block',
