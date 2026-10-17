@@ -1,6 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { seoPlugin } from '@payloadcms/plugin-seo'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { BlocksFeature, CodeBlock, lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -19,6 +19,7 @@ import {
   Bookmarks,
 } from './collections'
 import { Settings } from './globals'
+import { CODE_LANGUAGES } from './lib/codeLanguages'
 
 const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
@@ -44,7 +45,14 @@ export default buildConfig({
   },
   collections: [Users, Categories, Media, Courses, Modules, Lessons, Progress, Posts, Certificates, Bookmarks],
   globals: [Settings],
-  editor: lexicalEditor(),
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) => [
+      ...defaultFeatures,
+      BlocksFeature({
+        blocks: [CodeBlock({ defaultLanguage: 'plaintext', languages: CODE_LANGUAGES })],
+      }),
+    ],
+  }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

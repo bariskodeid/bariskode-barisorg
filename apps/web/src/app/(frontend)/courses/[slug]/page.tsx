@@ -1,10 +1,10 @@
-import { RichText } from '@payloadcms/richtext-lexical/react'
 import { ChevronRight, PlayCircle } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
+import { LessonRichText } from '@/components/ui/LessonRichText'
 import { T } from '@/lib/i18n/LocaleContext'
 import { getPayload } from '@/lib/payload'
 import type { Lesson, Module } from '@/payload-types'
@@ -97,7 +97,7 @@ export default async function CourseDetailPage(props: PageProps<'/courses/[slug]
 
           {course.description && (
             <div className="prose prose-invert max-w-none text-muted-foreground mb-12">
-              <RichText data={course.description} />
+              <LessonRichText data={course.description} />
             </div>
           )}
 

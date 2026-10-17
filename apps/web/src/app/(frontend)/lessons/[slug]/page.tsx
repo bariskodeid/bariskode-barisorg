@@ -1,4 +1,3 @@
-import { RichText } from '@payloadcms/richtext-lexical/react'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import { headers as getHeaders } from 'next/headers'
 import Link from 'next/link'
@@ -6,6 +5,7 @@ import { notFound } from 'next/navigation'
 
 import { CodeSandbox } from '@/components/CodeSandbox'
 import { BookmarkButton } from '@/components/ui/BookmarkButton'
+import { LessonRichText } from '@/components/ui/LessonRichText'
 import { MarkCompleteButton } from '@/components/ui/MarkCompleteButton'
 import { Quiz } from '@/components/ui/Quiz'
 import { dictionaries } from '@/lib/i18n/dictionaries'
@@ -127,7 +127,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
 
           {lesson.content && (
             <div className="prose prose-invert max-w-none">
-              <RichText data={lesson.content} />
+              <LessonRichText data={lesson.content} />
             </div>
           )}
 
