@@ -914,7 +914,7 @@ setTimeout(() => {
     ],
   },
   {
-    title: 'Ringkasan & Async Dasar',
+    title: 'Destructuring, Error, Async & Class',
     lessons: [
       {
         title: 'Destructuring & Spread Operator',
