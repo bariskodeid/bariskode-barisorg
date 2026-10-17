@@ -29,9 +29,7 @@ function positionShares(course: CourseDef): number[] {
 // Course yang porsi satu index jawabannya melebihi 0.4 karena kebetulan (teks soal & seed
 // shuffle dibekukan di task ini, jadi tidak diperbaiki di sini). Key = slug course, value =
 // catatan porsi maksimum. Diperbaiki saat teks soal course itu ditulis ulang.
-const SKEWED_POSITION_COURSES: Record<string, string> = {
-  'typescript-from-zero': 'porsi jawaban benar di index 3 = 0.42 (> 0.4), 33 soal',
-}
+const SKEWED_POSITION_COURSES: Record<string, string> = {}
 
 describe('konten course "from Zero"', () => {
   it('ada 12 course, slug course unik', () => {

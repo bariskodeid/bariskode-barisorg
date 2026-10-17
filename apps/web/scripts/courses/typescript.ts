@@ -8,9 +8,9 @@ const modules: ModuleDef[] = [
         title: 'Apa itu TypeScript?',
         slug: 'tsfz-apa-itu-typescript',
         content: [
-          'TypeScript adalah superset dari JavaScript, dikembangkan dan dirawat oleh Microsoft, pertama dirilis tahun 2012. "Superset" artinya semua kode JavaScript yang valid juga valid sebagai kode TypeScript — TypeScript menambahkan fitur baru di atas JavaScript, bukan menggantikannya.',
-          'Fitur utama yang ditambahkan TypeScript adalah static typing (tipe data statis) — kita bisa menentukan tipe data variabel, parameter fungsi, dan return value secara eksplisit, sesuatu yang tidak ada di JavaScript murni.',
-          'Kode TypeScript (file `.ts`) tidak dijalankan langsung oleh browser atau Node.js — harus dikompilasi (di-transpile) dulu jadi JavaScript biasa lewat compiler `tsc` sebelum bisa dieksekusi.',
+          'TypeScript adalah superset dari JavaScript, dikembangkan dan dirawat oleh Microsoft, pertama dirilis tahun 2012. "Superset" artinya semua sintaks JavaScript yang valid juga valid sebagai sintaks TypeScript — TypeScript menambahkan fitur baru di atas JavaScript, bukan menggantikannya. (Pemeriksaan tipenya bisa saja melaporkan error untuk kode JavaScript yang longgar soal tipe, misalnya variabel angka yang diisi teks, tapi sintaksnya tetap dikenali.)',
+          'Fitur utama yang ditambahkan TypeScript adalah static typing (tipe data statis) — kita bisa menentukan tipe data variabel, parameter fungsi, dan return value secara eksplisit, sesuatu yang tidak ada di JavaScript murni. Fitur lain yang sering dikira milik TypeScript, seperti class, modul, dan `async`/`await`, sebenarnya sudah ada di JavaScript modern.',
+          'Kode TypeScript (file `.ts`) tidak bisa langsung dijalankan browser — harus dikompilasi (di-transpile) dulu jadi JavaScript biasa lewat compiler `tsc`. Tipe hanya dipakai saat pemeriksaan dan dihapus dari hasil kompilasi, jadi TypeScript tidak membuat program berjalan lebih cepat; manfaatnya ada di keamanan dan kenyamanan saat menulis kode. Cara kerja `tsc` dibahas di lesson Menjalankan TypeScript.',
           'Karena TypeScript adalah superset JavaScript, semua konsep JavaScript yang sudah kita kuasai (variabel, fungsi, array, object, loop, dsb) tetap berlaku sama persis — course ini fokus membahas apa yang TypeScript TAMBAHKAN, yaitu sistem tipe.',
         ],
         hasQuiz: true,
@@ -22,16 +22,16 @@ const modules: ModuleDef[] = [
             ['Mozilla', false],
           ]),
           q('Apa arti "TypeScript adalah superset dari JavaScript"?', [
-            ['Semua kode JavaScript valid juga valid sebagai TypeScript', true],
+            ['Semua sintaks JavaScript yang valid juga valid di TypeScript', true],
             ['TypeScript sama sekali berbeda dari JavaScript', false],
             ['TypeScript menggantikan JavaScript sepenuhnya', false],
             ['JavaScript adalah superset dari TypeScript', false],
           ]),
           q('Fitur utama apa yang ditambahkan TypeScript di atas JavaScript?', [
             ['Static typing (sistem tipe statis)', true],
-            ['Garbage collection', false],
-            ['Multi-threading', false],
-            ['Database bawaan', false],
+            ['Sintaks class dan modul yang tidak ada di JavaScript', false],
+            ['Eksekusi kode yang lebih cepat daripada JavaScript biasa', false],
+            ['Fitur async/await untuk operasi asynchronous', false],
           ]),
         ],
       },
@@ -41,8 +41,14 @@ const modules: ModuleDef[] = [
         content: [
           'JavaScript bersifat dynamically typed — tipe data variabel baru diketahui saat program benar-benar dijalankan (runtime). Ini berarti kesalahan tipe, misalnya memanggil method yang tidak ada pada sebuah nilai, baru ketahuan setelah kode itu dieksekusi, bisa jadi setelah aplikasi sudah dipakai pengguna.',
           'Dengan static typing di TypeScript, compiler `tsc` memeriksa kecocokan tipe SEBELUM kode dijalankan (compile-time). Kalau ada ketidakcocokan tipe, compiler langsung memberi error, jauh sebelum kode itu sempat dijalankan sama sekali.',
+          'Contoh berikut salah ketik nama property: `nmaa`, seharusnya `nama`. Di JavaScript murni, kesalahan ini baru meledak sebagai `TypeError` saat baris itu dijalankan. Di TypeScript, `tsc` langsung melaporkan bahwa property `nmaa` tidak ada, saat kompilasi. Contoh ini sengaja salah, jadi tidak akan lolos kompilasi di sandbox.',
+          `\`\`\`typescript
+const pengguna = { nama: "Budi" }
+console.log(pengguna.nmaa.toUpperCase())
+// error: Property 'nmaa' does not exist on type '{ nama: string; }'.
+\`\`\``,
           'Manfaat lain: editor kode (seperti VS Code) memakai informasi tipe TypeScript untuk memberi autocomplete yang lebih akurat, menampilkan dokumentasi parameter fungsi, dan mendeteksi typo nama properti secara instan saat mengetik.',
-          'Static typing sangat membantu pada proyek besar dengan banyak file dan banyak orang yang berkontribusi — tipe data berfungsi seperti dokumentasi hidup yang selalu diverifikasi oleh compiler, mengurangi bug akibat kesalahan asumsi tipe data.',
+          'Static typing sangat membantu pada proyek besar dengan banyak file dan banyak orang yang berkontribusi — tipe data berfungsi seperti dokumentasi hidup yang selalu diverifikasi oleh compiler, mengurangi bug akibat kesalahan asumsi tipe data. Perlu diingat batasnya: static typing hanya memeriksa tipe, bukan logika program — rumus yang salah atau kondisi yang keliru tetap lolos pemeriksaan tipe dan tetap perlu dites.',
         ],
         hasQuiz: true,
         quizQuestions: [
@@ -59,10 +65,9 @@ const modules: ModuleDef[] = [
             ['TypeScript tidak bisa mendeteksi error tipe', false],
           ]),
           q('Apa manfaat static typing untuk editor kode seperti VS Code?', [
-            ['Autocomplete lebih akurat & deteksi typo instan', true],
-            ['Membuat file jadi lebih kecil', false],
-            ['Mempercepat koneksi internet', false],
-            ['Tidak ada manfaat untuk editor', false],
+            ['Autocomplete lebih akurat dan typo nama property langsung terdeteksi', true],
+            ['Kode otomatis dioptimalkan sehingga berjalan lebih cepat saat runtime', false],
+            ['Semua bug logika, bukan hanya salah tipe, ditemukan sebelum kode dijalankan', false],
           ]),
         ],
       },
@@ -70,9 +75,18 @@ const modules: ModuleDef[] = [
         title: 'Menjalankan TypeScript',
         slug: 'tsfz-menjalankan-typescript',
         content: [
-          'Untuk menjalankan file `.ts`, compiler `tsc` (TypeScript Compiler) mengubahnya jadi file `.js` biasa terlebih dahulu, baru file `.js` hasil kompilasi itu yang dijalankan oleh Node.js. Alur ini disebut "transpile" (translate + compile).',
-          'Selama proses kompilasi, `tsc` memeriksa seluruh anotasi tipe di kode — kalau semua cocok, hasil `.js` dihasilkan tanpa masalah; kalau ada ketidakcocokan tipe, `tsc` menampilkan pesan error lengkap dengan lokasi barisnya.',
-          'Setelah dikompilasi menjadi JavaScript biasa, semua anotasi tipe TypeScript dihapus (fitur ini disebut "type erasure") — artinya tipe data hanya berguna saat development untuk pengecekan, sama sekali tidak memperlambat kode saat dijalankan.',
+          'Untuk menjalankan file `.ts` di komputer sendiri, compiler `tsc` (TypeScript Compiler) mengubahnya jadi file `.js` biasa terlebih dahulu, baru file `.js` hasil kompilasi itu yang dijalankan oleh Node.js. Alur ini disebut "transpile" (translate + compile). Pasang TypeScript lewat npm, lalu kompilasi dan jalankan:',
+          '```bash\nnpm install --save-dev typescript\nnpx tsc halo.ts\nnode halo.js\n```',
+          '## Error tipe dan hasil kompilasi',
+          'Selama kompilasi, `tsc` memeriksa seluruh anotasi tipe di kode. Kalau semua cocok, `halo.js` dihasilkan tanpa masalah. Kalau ada ketidakcocokan tipe, `tsc` menampilkan pesan error lengkap dengan lokasi barisnya. Perhatikan: secara default `tsc` tetap menghasilkan `halo.js` walau ada error tipe — error hanya dilaporkan (dan exit code-nya tidak nol). Supaya file `.js` tidak dihasilkan kalau ada error, jalankan dengan opsi `noEmitOnError`:',
+          '```bash\nnpx tsc --noEmitOnError halo.ts\n```',
+          '## Sandbox di course ini',
+          'Sandbox memakai TypeScript 3.7.4 yang dikompilasi TANPA flag `--strict` (sandbox tidak bisa diberi flag atau `tsconfig.json`), lalu hasilnya dijalankan di Node.js 12. Kalau `tsc` melaporkan error tipe, sandbox menampilkan error kompilasi itu dan tidak menjalankan kodenya — ini perilaku sandbox, bukan perilaku default TypeScript. Karena `--strict` mati, beberapa error yang muncul di proyek sungguhan (misalnya mengisi `null` ke variabel `string`) tidak akan terlihat di sandbox.',
+          '## tsconfig.json dan strict',
+          'Di proyek sungguhan, opsi compiler disimpan di file `tsconfig.json` (bisa dibuat dengan `npx tsc --init`), lalu cukup jalankan `npx tsc` tanpa nama file. Opsi `"strict": true` menyalakan sekelompok pemeriksaan tipe yang lebih ketat, termasuk `noImplicitAny` dan `strictNullChecks`; hampir semua proyek TypeScript modern menyalakannya.',
+          '```plaintext\n{\n  "compilerOptions": {\n    "target": "es2017",\n    "strict": true\n  }\n}\n```',
+          '## Type erasure',
+          'Setelah dikompilasi menjadi JavaScript biasa, semua anotasi tipe TypeScript dihapus (fitur ini disebut "type erasure") — artinya tipe data hanya berguna saat development untuk pengecekan, sama sekali tidak memperlambat kode saat dijalankan. Catatan: Node.js versi baru (misalnya v24) bisa menjalankan file `.ts` langsung dengan membuang anotasi tipe, tapi tanpa memeriksa tipe sama sekali, jadi `tsc` tetap dibutuhkan untuk pengecekan.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `function sapa(nama: string): string {
@@ -82,6 +96,26 @@ const modules: ModuleDef[] = [
 console.log(sapa("Siswa BarisORG"))
 console.log("TypeScript berhasil dikompilasi dan dijalankan.")
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Sebuah file .ts berisi error tipe. Apa yang dilakukan tsc secara default (tanpa noEmitOnError)?', [
+            ['Melaporkan error, tetapi tetap menghasilkan file .js', true],
+            ['Tidak menghasilkan file .js sama sekali sampai semua error diperbaiki', false],
+            ['Memperbaiki tipe yang salah secara otomatis, lalu menghasilkan file .js', false],
+          ]),
+          q('Apa fungsi opsi noEmitOnError pada tsc?', [
+            ['Mencegah tsc menghasilkan file .js kalau ada error tipe', true],
+            ['Mengaktifkan pemeriksaan tipe yang lebih ketat seperti strictNullChecks', false],
+            ['Menyembunyikan pesan error tipe dari terminal supaya tidak mengganggu', false],
+            ['Mengubah semua error tipe menjadi peringatan yang boleh diabaikan', false],
+          ]),
+          q('Apa yang benar tentang cara sandbox course ini mengompilasi TypeScript?', [
+            ['Memakai TypeScript 3.7.4 tanpa --strict; kalau ada error tipe, kode tidak dijalankan', true],
+            ['Memakai tsconfig.json dengan strict: true, sama seperti proyek TypeScript modern', false],
+            ['Selalu menjalankan hasil kompilasi walaupun tsc melaporkan error tipe di kodenya', false],
+            ['Menjalankan file .ts langsung di Node.js 12 tanpa langkah kompilasi lebih dulu', false],
+          ]),
+        ],
       },
     ],
   },
@@ -93,17 +127,31 @@ console.log("TypeScript berhasil dikompilasi dan dijalankan.")
         slug: 'tsfz-tipe-data-dasar-annotation',
         content: [
           'Type annotation adalah cara menuliskan tipe data secara eksplisit pada variabel, ditulis setelah nama variabel dengan tanda titik dua, contoh: `let umur: number = 20`. Tipe dasar yang paling sering dipakai: `number` (semua angka, termasuk desimal), `string` (teks), dan `boolean` (true/false).',
-          'Berbeda dengan JavaScript yang membedakan `int` dan `float`, TypeScript hanya punya satu tipe `number` untuk semua jenis angka.',
-          'Kalau kita mencoba memasukkan nilai dengan tipe yang tidak cocok, misal `let umur: number = "dua puluh"`, compiler `tsc` langsung menolak dengan error sebelum kode sempat dijalankan — inilah inti dari static typing yang sudah kita bahas di modul sebelumnya.',
+          'JavaScript tidak punya tipe `int` dan `float` yang terpisah, jadi TypeScript juga tidak: `42` dan `3.14` sama-sama bertipe `number`.',
+          'Untuk bilangan bulat yang melebihi batas aman `number`, ada tipe terpisah `bigint` (sejak TypeScript 3.2). Contoh berikut tidak jalan di sandbox karena sandbox memakai target kompilasi bawaan yang lebih lama dari ES2020, sehingga `BigInt` tidak dikenali:',
+          `\`\`\`typescript
+const besar: bigint = BigInt("9007199254740993")
+console.log(typeof besar)   // bigint
+\`\`\``,
+          'Kalau kita mencoba memasukkan nilai dengan tipe yang tidak cocok, misal `let umur: number = "dua puluh"`, compiler `tsc` melaporkan error saat kompilasi, sebelum kode sempat dijalankan — inilah inti dari static typing yang sudah kita bahas di modul sebelumnya. Baris terakhir contoh berikut sengaja salah:',
+          `\`\`\`typescript
+let umur: number = 20
+let tinggi: number = 170.5   // desimal tetap number
+let nama: string = "Siswa"
+umur = "dua puluh"
+// error: Type '"dua puluh"' is not assignable to type 'number'.
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `let nama: string = "Siswa BarisORG"
 let umur: number = 20
+let tinggi: number = 170.5
 let sudahLulus: boolean = false
 
-console.log(nama, umur, sudahLulus)
+console.log(nama, umur, tinggi, sudahLulus)
 console.log("Tipe nama:", typeof nama)
 console.log("Tipe umur:", typeof umur)
+console.log("Tipe tinggi:", typeof tinggi)
 `,
         hasQuiz: true,
         quizQuestions: [
@@ -113,17 +161,17 @@ console.log("Tipe umur:", typeof umur)
             ['let number umur = 20', false],
             ['let umur<number> = 20', false],
           ]),
-          q('Berapa jenis tipe angka dasar yang dipunyai TypeScript?', [
-            ['Hanya satu, yaitu number', true],
-            ['Dua, int dan float', false],
-            ['Tiga, int, float, dan double', false],
-            ['TypeScript tidak punya tipe angka', false],
+          q('Angka 42 dan 3.14 bertipe apa di TypeScript?', [
+            ['Sama-sama number, tidak ada tipe int dan float yang terpisah', true],
+            ['42 bertipe int dan 3.14 bertipe float', false],
+            ['42 bertipe integer dan 3.14 bertipe double', false],
+            ['42 bertipe number dan 3.14 bertipe decimal', false],
           ]),
-          q('Apa yang terjadi kalau tipe nilai tidak cocok dengan annotation-nya?', [
-            ['Compiler tsc menolak dengan error compile-time', true],
-            ['TypeScript otomatis mengubah tipe nilainya', false],
-            ['Tidak terjadi apa-apa, kode tetap jalan normal', false],
-            ['Error baru muncul saat runtime, bukan compile-time', false],
+          q('Apa yang terjadi kalau tipe nilai tidak cocok dengan annotation-nya, misal let umur: number = "dua puluh"?', [
+            ['tsc melaporkan error saat kompilasi, sebelum kode dijalankan', true],
+            ['TypeScript otomatis mengubah nilainya menjadi tipe yang sesuai', false],
+            ['Kode tetap jalan normal dan tidak ada pesan apa pun', false],
+            ['Program berjalan dulu, error baru muncul saat baris itu dieksekusi (runtime)', false],
           ]),
         ],
       },
@@ -133,7 +181,15 @@ console.log("Tipe umur:", typeof umur)
         content: [
           'Tipe array ditulis dengan menambahkan `[]` setelah tipe elemennya, contoh: `let angka: number[] = [1, 2, 3]` berarti array yang HANYA boleh berisi angka. Alternatif penulisan yang setara: `Array<number>`.',
           'Tuple adalah array dengan panjang tetap dan tipe tiap elemen yang sudah ditentukan urutannya, ditulis dengan `[]` tapi berisi daftar tipe, contoh: `let koordinat: [number, number] = [10, 20]` — elemen pertama dan kedua harus `number`.',
-          'Tuple berguna ketika urutan dan jumlah elemen punya makna spesifik, misal `[string, number]` untuk pasangan nama dan umur — beda dengan array biasa yang elemennya harus seragam tipenya tapi jumlahnya bebas.',
+          'Tuple berguna ketika urutan dan jumlah elemen punya makna spesifik, misal `[string, number]` untuk pasangan nama dan umur — beda dengan array biasa yang elemennya harus seragam tipenya tapi jumlahnya bebas. Nilai yang diberikan harus cocok persis dengan urutan dan jumlah tipe di tuple.',
+          `\`\`\`typescript
+let angka: number[] = [1, 2, 3]
+let buah: Array<string> = ["apel", "jeruk"]   // penulisan alternatif
+
+let siswa: [string, number] = ["Budi", 20]
+// siswa = [20, "Budi"]         // error: urutan tipe terbalik
+// siswa = ["Budi", 20, "TI"]   // error: jumlah elemen kelebihan
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `let angka: number[] = [1, 2, 3, 4, 5]
@@ -145,6 +201,26 @@ console.log("Array buah:", namaBuah)
 let siswa: [string, number] = ["Budi", 20]
 console.log("Tuple siswa - nama:", siswa[0], "umur:", siswa[1])
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa arti let angka: number[] di TypeScript?', [
+            ['Array yang hanya boleh berisi elemen bertipe number', true],
+            ['Array dengan tepat satu elemen bertipe number', false],
+            ['Array yang boleh berisi number dan string campuran', false],
+          ]),
+          q('Apa yang membedakan tuple dari array biasa?', [
+            ['Tuple menentukan jumlah elemen dan tipe tiap posisinya; array biasa bertipe elemen seragam', true],
+            ['Tuple hanya boleh berisi string, sedangkan array boleh berisi elemen bertipe apa pun', false],
+            ['Tuple ditulis dengan Array<...>, sedangkan array biasa ditulis dengan tanda [...]', false],
+            ['Tuple otomatis mengurutkan elemennya berdasarkan tipe', false],
+          ]),
+          q('Dari nilai berikut, mana yang valid untuk let siswa: [string, number]?', [
+            ['["Budi", 20]', true],
+            ['[20, "Budi"]', false],
+            ['["Budi", 20, "TI"]', false],
+            ['["Budi"]', false],
+          ]),
+        ],
       },
       {
         title: 'Union Type',
@@ -194,7 +270,17 @@ tampilkanId(456)
         content: [
           'Type inference adalah kemampuan TypeScript menebak (infer) tipe data sebuah variabel secara otomatis dari nilai yang diberikan, tanpa kita perlu menulis anotasi tipe secara eksplisit. Contoh: `let nama = "Budi"` — TypeScript otomatis menganggap `nama` bertipe `string`.',
           'Meski tipe tidak dituliskan eksplisit, TypeScript tetap menegakkan aturan tipe itu setelahnya — mencoba `nama = 100` pada variabel di atas tetap akan ditolak compiler, karena `nama` sudah "terkunci" sebagai `string` sejak inisialisasi pertama.',
-          'Praktik umum di TypeScript: gunakan type inference untuk variabel lokal sederhana yang nilainya sudah jelas dari konteks, tapi tetap tuliskan annotation eksplisit untuk parameter fungsi dan return value, karena di situ TypeScript tidak selalu bisa menebak dengan pasti.',
+          '## Kapan menulis tipe, kapan membiarkan inference',
+          'Praktik umum: biarkan inference bekerja untuk variabel lokal yang nilai awalnya sudah jelas, dan untuk return type fungsi — TypeScript menyimpulkan return type dari pernyataan `return` di dalam fungsi, jadi biasanya tidak perlu ditulis. Sebaliknya, parameter fungsi sebaiknya selalu diberi tipe, karena TypeScript tidak bisa menebaknya dari isi fungsi (tanpa anotasi, parameter jadi bertipe `any`, tipe yang mematikan pengecekan). Return type boleh tetap ditulis kalau kamu ingin mendokumentasikan kontrak fungsi.',
+          'Inference juga tidak membantu kalau variabel dideklarasikan tanpa nilai awal: `let nilai` bertipe `any`. Kalau nilainya baru diisi nanti, tulis tipenya: `let nilai: number`.',
+          `\`\`\`typescript
+function kali(a: number, b: number) {   // return type di-infer: number
+  return a * b
+}
+
+const hasil = kali(3, 4)                // hasil: number
+// hasil = "dua belas"                  // error: tipe hasil sudah terkunci sebagai number
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `let kota = "Jakarta"
@@ -207,24 +293,72 @@ console.log(typeof kota, typeof jumlahPenduduk, typeof statusIbukota)
 // tapi tetap menegakkan aturannya:
 kota = "Bandung"
 console.log("Kota diubah jadi:", kota)
+
+// Return type fungsi juga di-infer dari isi fungsi (di sini: number),
+// sedangkan parameternya tetap kita beri tipe.
+function kali(a: number, b: number) {
+  return a * b
+}
+
+const hasil = kali(3, 4)
+console.log("3 x 4 =", hasil)
+console.log("Tipe hasil:", typeof hasil)
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang dilakukan TypeScript pada let nama = "Budi" tanpa annotation?', [
+            ['Menyimpulkan nama bertipe string dari nilai awalnya', true],
+            ['Memberi nama tipe any karena tidak ada annotation', false],
+            ['Menolak kode itu karena annotation tipe wajib ditulis', false],
+            ['Membiarkan nama tanpa tipe sampai kode dijalankan', false],
+          ]),
+          q('Setelah let kota = "Jakarta", apa yang terjadi pada kota = 100?', [
+            ['tsc melaporkan error, karena kota sudah terkunci sebagai string', true],
+            ['Boleh, tipe kota ikut berubah menjadi number', false],
+            ['Boleh, karena tipe hasil inference bisa diganti kapan saja', false],
+            ['Boleh, asalkan kota dideklarasikan dengan let', false],
+          ]),
+          q('Mana yang paling tepat untuk function kali(a: number, b: number) { return a * b }?', [
+            ['Parameter diberi tipe; return type boleh dibiarkan karena di-infer sebagai number', true],
+            ['Return type wajib ditulis, kalau tidak compiler menolak fungsinya', false],
+            ['Parameter tidak perlu diberi tipe karena TypeScript menebaknya dari isi fungsi', false],
+            ['Tidak perlu menulis tipe apa pun, karena TypeScript selalu bisa menebak semuanya', false],
+          ]),
+        ],
       },
     ],
   },
   {
-    title: 'Fungsi & Object',
+    title: 'Fungsi, Object & Type Alias',
     lessons: [
       {
         title: 'Fungsi dengan Type',
         slug: 'tsfz-fungsi-dengan-type',
         content: [
-          'Fungsi di TypeScript bisa diberi tipe pada tiap parameter dan tipe return value-nya, ditulis setelah tanda kurung parameter, contoh: `function tambah(a: number, b: number): number { return a + b }`.',
-          'Kalau tipe return value tidak ditulis, TypeScript akan meng-inference-nya otomatis dari isi fungsi — tapi menuliskannya eksplisit tetap dianjurkan untuk fungsi publik, supaya jelas kontrak fungsi tersebut tanpa harus membaca isinya.',
+          'Fungsi di TypeScript bisa diberi tipe pada tiap parameter dan tipe return value-nya, ditulis setelah tanda kurung parameter, contoh: `function tambah(a: number, b: number): number { return a + b }`. Tipe parameter sebaiknya selalu ditulis, karena TypeScript tidak bisa menebaknya dari isi fungsi.',
+          'Tipe return value boleh tidak ditulis: TypeScript akan meng-inference-nya otomatis dari pernyataan `return` di dalam fungsi, jadi biasanya tidak wajib. Banyak tim tetap menuliskannya secara eksplisit untuk fungsi yang dipakai di banyak tempat, sebagai dokumentasi kontrak fungsi dan supaya perubahan isi fungsi tidak mengubah tipe return secara tak sengaja — tapi itu pilihan gaya, bukan aturan.',
           'Fungsi yang tidak mengembalikan nilai apa pun (hanya melakukan aksi, misal `console.log`) diberi tipe return `void`, menandakan pemanggil fungsi tidak seharusnya memakai hasil return-nya.',
+          `\`\`\`typescript
+function tambah(a: number, b: number): number {   // return type ditulis eksplisit
+  return a + b
+}
+
+function kali(a: number, b: number) {              // return type di-infer: number
+  return a * b
+}
+
+function sapa(nama: string): void {                // tidak mengembalikan nilai
+  console.log("Halo,", nama)
+}
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `function tambah(a: number, b: number): number {
   return a + b
+}
+
+function kali(a: number, b: number) {
+  return a * b
 }
 
 function sapa(nama: string): void {
@@ -233,6 +367,7 @@ function sapa(nama: string): void {
 
 const hasil: number = tambah(5, 3)
 console.log("Hasil tambah:", hasil)
+console.log("Hasil kali (return type di-infer):", kali(5, 3))
 sapa("Siswa BarisORG")
 `,
         hasQuiz: true,
@@ -240,8 +375,8 @@ sapa("Siswa BarisORG")
           q('Tipe return apa yang dipakai untuk fungsi yang tidak mengembalikan nilai?', [
             ['void', true],
             ['null', false],
-            ['undefined saja tanpa nama tipe', false],
-            ['empty', false],
+            ['undefined', false],
+            ['never', false],
           ]),
           q('Di mana tipe return value fungsi dituliskan?', [
             ['Setelah tanda kurung parameter, sebelum kurung kurawal isi fungsi', true],
@@ -249,11 +384,11 @@ sapa("Siswa BarisORG")
             ['Di dalam kurung parameter bersama parameter lain', false],
             ['TypeScript tidak mengizinkan tipe return value', false],
           ]),
-          q('Kenapa tetap dianjurkan menulis tipe return value secara eksplisit?', [
-            ['Supaya kontrak fungsi jelas tanpa harus membaca isinya', true],
-            ['Karena TypeScript wajib mensyaratkannya, tidak ada inference', false],
-            ['Supaya fungsi berjalan lebih cepat saat runtime', false],
-            ['Supaya fungsi bisa dipanggil tanpa argumen', false],
+          q('Kenapa sebagian tim tetap menulis tipe return value walau bisa di-infer?', [
+            ['Sebagai dokumentasi kontrak fungsi dan pengaman supaya tipe return tidak berubah tanpa sengaja', true],
+            ['Karena TypeScript sama sekali tidak bisa meng-infer return type dari isi fungsi', false],
+            ['Supaya fungsi berjalan lebih cepat saat dijalankan karena tipenya sudah pasti', false],
+            ['Karena tanpa tipe return, fungsi tidak bisa dipanggil dari bagian kode lain', false],
           ]),
         ],
       },
@@ -264,6 +399,13 @@ sapa("Siswa BarisORG")
           'Parameter opsional ditandai dengan tanda tanya `?` setelah nama parameter, contoh: `function sapa(nama: string, gelar?: string)` — pemanggil boleh tidak memberikan argumen `gelar` sama sekali.',
           'Parameter dengan nilai default ditulis dengan `=` diikuti nilainya, contoh: `function sapa(nama: string, gelar: string = "Bapak/Ibu")` — kalau argumen tidak diberikan, `gelar` otomatis bernilai `"Bapak/Ibu"`. Tipe parameter ini biasanya bisa di-inference dari nilai defaultnya, tidak wajib dituliskan eksplisit.',
           'Aturan penting: parameter opsional atau berdefault harus diletakkan SETELAH parameter wajib dalam daftar parameter fungsi — TypeScript akan menolak kalau parameter wajib diletakkan setelah parameter opsional.',
+          `\`\`\`typescript
+function sapa(nama: string, gelar?: string): void { }          // gelar opsional
+function beriSalam(nama: string, salam = "Selamat pagi"): void { }   // tipe salam di-infer: string
+
+// function salah(gelar?: string, nama: string): void { }
+// error: A required parameter cannot follow an optional parameter.
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `function sapa(nama: string, gelar?: string): void {
@@ -283,14 +425,35 @@ sapa("Siti", "Dr.")
 beriSalam("Andi")
 beriSalam("Rina", "Selamat malam")
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Bagaimana menandai parameter fungsi sebagai opsional?', [
+            ['Tambahkan ? setelah nama parameter, contoh gelar?: string', true],
+            ['Tambahkan ! setelah nama parameter, contoh gelar!: string', false],
+            ['Tulis kata kunci optional sebelum nama parameter', false],
+            ['Tulis tipenya dengan tanda tanya, contoh gelar: string?', false],
+          ]),
+          q('Apa yang terjadi pada function sapa(nama: string, gelar: string = "Bapak/Ibu") kalau dipanggil sapa("Budi")?', [
+            ['gelar otomatis bernilai "Bapak/Ibu"', true],
+            ['tsc melaporkan error karena argumen gelar kurang', false],
+            ['gelar bernilai undefined karena tidak diberikan', false],
+            ['gelar bernilai string kosong', false],
+          ]),
+          q('Di mana parameter opsional diletakkan dalam daftar parameter fungsi?', [
+            ['Setelah semua parameter wajib', true],
+            ['Sebelum semua parameter wajib', false],
+            ['Di posisi mana pun, asalkan diberi tanda ?', false],
+          ]),
+        ],
       },
       {
         title: 'Interface',
         slug: 'tsfz-interface',
         content: [
           'Interface mendefinisikan "bentuk" (shape) yang harus dipenuhi sebuah object — daftar properti apa saja yang wajib ada dan tipe datanya masing-masing. Ditulis dengan kata kunci `interface`, contoh: `interface Siswa { nama: string; umur: number }`.',
-          'Object yang dideklarasikan dengan tipe sebuah interface akan diperiksa compiler agar strukturnya cocok persis — kalau ada properti wajib yang hilang, atau tipe salah satu properti tidak sesuai, compiler akan menolak dengan error.',
+          'Object yang dideklarasikan dengan tipe sebuah interface akan diperiksa compiler agar strukturnya cocok persis — kalau ada properti wajib yang hilang, atau tipe salah satu properti tidak sesuai, compiler akan melaporkan error.',
           'Properti interface bisa dibuat opsional dengan `?`, sama seperti parameter fungsi, contoh: `interface Siswa { nama: string; nilai?: number }` — properti `nilai` boleh tidak ada.',
+          'Interface hanya ada saat kompilasi: di JavaScript hasil kompilasi, interface hilang sepenuhnya (type erasure) dan tidak menambah apa pun ke kode yang dijalankan.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `interface Siswa {
@@ -316,9 +479,9 @@ tampilkanSiswa(siswa2)
         quizQuestions: [
           q('Apa fungsi interface di TypeScript?', [
             ['Mendefinisikan bentuk/struktur yang harus dipenuhi sebuah object', true],
-            ['Menjalankan kode secara asynchronous', false],
-            ['Mengganti fungsi print/console.log', false],
-            ['Membuat array bertipe campuran', false],
+            ['Membuat object baru dari cetak biru, lengkap dengan method-nya, seperti class', false],
+            ['Menyimpan nilai default untuk tiap properti object', false],
+            ['Memeriksa tipe object saat program berjalan (runtime)', false],
           ]),
           q('Bagaimana cara membuat properti interface menjadi opsional?', [
             ['Tambahkan ? setelah nama properti', true],
@@ -327,7 +490,7 @@ tampilkanSiswa(siswa2)
             ['Semua properti interface otomatis opsional', false],
           ]),
           q('Apa yang terjadi kalau object tidak memenuhi struktur interface-nya?', [
-            ['Compiler tsc menolak dengan error', true],
+            ['Compiler tsc melaporkan error', true],
             ['Properti yang hilang otomatis diisi null', false],
             ['Tidak terjadi apa-apa, tetap jalan normal', false],
             ['Interface diabaikan sepenuhnya oleh compiler', false],
@@ -339,7 +502,7 @@ tampilkanSiswa(siswa2)
         slug: 'tsfz-object-type-literal',
         content: [
           'Selain lewat `interface`, bentuk object juga bisa dituliskan langsung sebagai "object type literal" di tempat annotation tipe dibutuhkan, contoh: `let siswa: { nama: string; umur: number }`.',
-          'Object type literal cocok dipakai untuk tipe yang hanya dipakai sekali di satu tempat dan tidak perlu dipakai ulang di bagian lain kode — kalau bentuknya perlu dipakai berulang kali di banyak tempat, `interface` (atau `type`, yang akan dibahas di modul terakhir) lebih rapi.',
+          'Object type literal cocok dipakai untuk tipe yang hanya dipakai sekali di satu tempat dan tidak perlu dipakai ulang di bagian lain kode — kalau bentuknya perlu dipakai berulang kali di banyak tempat, `interface` (atau `type`, yang dibahas di lesson Type Alias setelah ini) lebih rapi.',
           'Sama seperti interface, object type literal juga mendukung properti opsional dengan `?` dan akan diperiksa strukturnya secara ketat oleh compiler saat object diisi.',
         ],
         hasSandbox: true,
@@ -353,8 +516,104 @@ function cetakProduk(p: { nama: string; harga: number }): void {
 }
 
 cetakProduk(produk)
+// ?? memakai nilai di kanan hanya kalau nilai di kiri null atau undefined
 console.log("Stok produk:", produk.stok ?? "tidak diketahui")
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Kapan object type literal lebih cocok dipakai daripada interface?', [
+            ['Saat bentuk object hanya dipakai sekali di satu tempat', true],
+            ['Saat bentuk object perlu dipakai ulang di banyak tempat', false],
+            ['Saat butuh properti opsional, karena interface tidak mendukungnya', false],
+            ['Saat butuh pemeriksaan yang lebih ketat daripada interface', false],
+          ]),
+          q('Bagaimana menulis tipe object dengan properti nama (string) dan umur (number) langsung di annotation?', [
+            ['let siswa: { nama: string; umur: number }', true],
+            ['let siswa = { nama: string, umur: number }', false],
+            ['let siswa: object { nama, umur }', false],
+            ['let siswa: (nama: string, umur: number)', false],
+          ]),
+          q('Apa yang terjadi kalau properti wajib harga tidak diisi pada object bertipe { nama: string; harga: number }?', [
+            ['tsc melaporkan error karena properti wajib harga hilang', true],
+            ['harga otomatis bernilai 0', false],
+            ['Tidak ada error, harga bernilai undefined', false],
+            ['Error baru muncul saat harga dipakai di runtime', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Type Alias',
+        slug: 'tsfz-type-alias',
+        content: [
+          'Type alias dibuat dengan kata kunci `type`, memberi nama baru untuk sebuah tipe (termasuk union type, object type literal, atau tipe primitif) — setelah itu nama tersebut bisa dipakai sebagai annotation tipe di mana saja.',
+          `\`\`\`typescript
+type ID = string | number
+type Siswa = { id: ID; nama: string; umur: number }
+
+function cetak(siswa: Siswa): void {
+  console.log(siswa.id, siswa.nama)
+}
+\`\`\``,
+          'Untuk mendeskripsikan bentuk object, `type` dan `interface` terlihat sangat mirip (`type Siswa = { nama: string; umur: number }` vs `interface Siswa { nama: string; umur: number }`) — keduanya bisa dipakai bergantian untuk kasus sederhana.',
+          '## Perbedaan type dan interface',
+          'Perbedaan pentingnya: `type` bisa dipakai untuk union type dan alias tipe primitif (hal yang TIDAK bisa dilakukan `interface`), sedangkan `interface` punya keunggulan bisa "digabung" (declaration merging) kalau dideklarasikan dua kali dengan nama sama. `type` yang dideklarasikan dua kali justru menghasilkan error. Untuk bentuk object biasa, konvensi tim sering menentukan mana yang dipakai.',
+          `\`\`\`typescript
+interface Guru { nama: string }
+interface Guru { mapel: string }   // digabung: Guru sekarang punya nama dan mapel
+
+// type Kelas = { nama: string }
+// type Kelas = { ruang: string }  // error: Duplicate identifier 'Kelas'.
+\`\`\``,
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `type ID = string | number
+
+type Siswa = {
+  id: ID
+  nama: string
+}
+
+interface Guru {
+  nama: string
+}
+
+interface Guru {
+  mapel: string
+}
+
+function tampilkanId(id: ID): void {
+  console.log("ID:", id)
+}
+
+const siswa: Siswa = { id: "S-001", nama: "Budi" }
+const guru: Guru = { nama: "Bu Rina", mapel: "Matematika" }
+
+tampilkanId(siswa.id)
+tampilkanId(42)
+console.log(siswa)
+console.log(guru)
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Kata kunci apa untuk membuat type alias?', [
+            ['type', true],
+            ['alias', false],
+            ['typedef', false],
+            ['using', false],
+          ]),
+          q('Kemampuan apa yang dimiliki type alias tapi TIDAK dimiliki interface?', [
+            ['Memberi nama pada union type atau tipe primitif', true],
+            ['Mendefinisikan bentuk object dengan properti opsional', false],
+            ['Dipakai sebagai annotation tipe parameter fungsi', false],
+            ['Digabung otomatis ketika dideklarasikan dua kali dengan nama sama', false],
+          ]),
+          q('Contoh manakah yang merupakan union type alias yang valid?', [
+            ['type ID = string | number', true],
+            ['interface ID = string | number', false],
+            ['type ID: string | number', false],
+            ['union ID = string | number', false],
+          ]),
+        ],
       },
     ],
   },
@@ -365,14 +624,37 @@ console.log("Stok produk:", produk.stok ?? "tidak diketahui")
         title: 'Class dengan TypeScript',
         slug: 'tsfz-class-dengan-typescript',
         content: [
-          'Class di TypeScript ditulis mirip JavaScript ES6, tapi setiap property WAJIB dideklarasikan dengan tipenya di badan class sebelum dipakai di constructor, contoh: `class Siswa { nama: string; umur: number }`.',
-          'Constructor (`constructor(...)`) tetap dipakai untuk mengisi nilai awal property saat object baru dibuat lewat `new`. Parameter constructor juga diberi tipe seperti parameter fungsi biasa.',
+          'Class di TypeScript ditulis mirip class JavaScript ES6, dengan satu perbedaan penting: property harus dideklarasikan di badan class sebelum dipakai lewat `this` di constructor atau method. Tipe property boleh ditulis eksplisit (`nama: string`) atau di-infer dari nilai awalnya (`poin = 0` otomatis bertipe `number`). Tanpa deklarasi, `this.nama = ...` menghasilkan error karena property itu tidak dikenal.',
+          `\`\`\`typescript
+class Siswa {
+  nama: string        // tipe ditulis eksplisit
+  umur: number
+  poin = 0            // tipe di-infer dari nilai awal: number
+
+  constructor(nama: string, umur: number) {
+    this.nama = nama
+    this.umur = umur
+  }
+}
+\`\`\``,
+          'Constructor (`constructor(...)`) tetap dipakai untuk mengisi nilai awal property saat object baru dibuat lewat `new`. Parameter constructor juga diberi tipe seperti parameter fungsi biasa. Dengan opsi `strictPropertyInitialization` (bagian dari `strict`), property tanpa nilai awal wajib diisi di constructor, kalau tidak compiler melaporkan error.',
+          '## Parameter property',
+          'TypeScript punya singkatan: kalau parameter constructor diberi modifier seperti `public` (artinya bisa diakses dari luar class), parameter itu otomatis menjadi property class dengan nama dan nilai yang sama — kita tidak perlu mendeklarasikan property dan menulis `this.x = x` lagi. Bentuk ini dipakai lagi di lesson Inheritance nanti.',
+          `\`\`\`typescript
+class Produk {
+  constructor(public nama: string, public harga: number) {}
+}
+
+const p = new Produk("Buku", 75000)
+console.log(p.nama, p.harga)   // Buku 75000
+\`\`\``,
           'Method dalam class juga bisa diberi tipe parameter dan return value-nya, persis seperti fungsi biasa yang sudah kita pelajari — bedanya method dipanggil lewat `object.method()`.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `class Siswa {
   nama: string
   umur: number
+  poin = 0
 
   constructor(nama: string, umur: number) {
     this.nama = nama
@@ -384,16 +666,24 @@ console.log("Stok produk:", produk.stok ?? "tidak diketahui")
   }
 }
 
+class Produk {
+  constructor(public nama: string, public harga: number) {}
+}
+
 const siswa1 = new Siswa("Budi", 20)
 console.log(siswa1.perkenalan())
+console.log("Poin awal:", siswa1.poin)
+
+const buku = new Produk("Buku TypeScript", 75000)
+console.log(buku.nama, "- Rp", buku.harga)
 `,
         hasQuiz: true,
         quizQuestions: [
-          q('Apa yang wajib dilakukan pada property class di TypeScript sebelum dipakai di constructor?', [
-            ['Dideklarasikan dengan tipenya di badan class', true],
-            ['Diinisialisasi dengan nilai null', false],
-            ['Diberi kata kunci var', false],
-            ['Tidak ada yang wajib, sama persis seperti JavaScript', false],
+          q('Apa yang benar tentang property class di TypeScript?', [
+            ['Harus dideklarasikan di badan class; tipenya boleh ditulis eksplisit atau di-infer dari nilai awal', true],
+            ['Tidak perlu dideklarasikan, cukup diisi lewat this di constructor seperti di JavaScript', false],
+            ['Harus ditulis dengan tipe eksplisit, karena tipe property tidak pernah bisa di-infer', false],
+            ['Harus diinisialisasi null di badan class sebelum diisi di constructor', false],
           ]),
           q('Method dalam class dipanggil lewat sintaks apa?', [
             ['object.method()', true],
@@ -407,6 +697,12 @@ console.log(siswa1.perkenalan())
             ['Hanya saat program pertama kali dimulai', false],
             ['Constructor harus dipanggil manual setelah new', false],
           ]),
+          q('Apa efek constructor(public nama: string) {} pada sebuah class?', [
+            ['Otomatis membuat property nama di class sekaligus mengisinya dari argumen', true],
+            ['Hanya memberi tipe pada parameter, property harus dibuat terpisah di badan class', false],
+            ['Membuat nama bisa dipakai tanpa membuat object, seperti anggota static', false],
+            ['Menimbulkan error karena parameter constructor tidak boleh punya modifier', false],
+          ]),
         ],
       },
       {
@@ -414,13 +710,28 @@ console.log(siswa1.perkenalan())
         slug: 'tsfz-access-modifier',
         content: [
           'Access modifier menentukan dari mana sebuah property atau method class bisa diakses. `public` (default kalau tidak ditulis) bisa diakses dari mana saja, termasuk dari luar class.',
-          '`private` hanya bisa diakses dari dalam class itu sendiri — mencoba mengakses property `private` dari luar class akan ditolak compiler, meski secara JavaScript murni sebenarnya nilainya tetap ada di object.',
-          '`protected` mirip `private`, tapi juga bisa diakses dari class turunan (subclass) yang meng-extend class tersebut — akan dibahas lebih lanjut di pelajaran inheritance berikutnya.',
+          '`private` hanya bisa diakses dari dalam class itu sendiri — mencoba mengakses property `private` dari luar class akan dilaporkan sebagai error oleh compiler.',
+          '`protected` mirip `private`, tapi juga bisa diakses dari class turunan (subclass), yaitu class yang mewarisi class tersebut lewat `extends` (dibahas lengkap di lesson berikutnya).',
+          `\`\`\`typescript
+class Akun {
+  public nama = "Budi"
+  private saldo = 100000
+  protected jenis = "reguler"
+}
+
+const akun = new Akun()
+console.log(akun.nama)   // boleh: public
+// console.log(akun.saldo)   // error: Property 'saldo' is private and only accessible within class 'Akun'.
+// console.log(akun.jenis)   // error: Property 'jenis' is protected and only accessible within class 'Akun' and its subclasses.
+\`\`\``,
+          '## private hanya dicek saat kompilasi',
+          'Modifier `private` dan `protected` murni pengecekan compiler. Setelah dikompilasi, modifier itu hilang (type erasure) dan nilainya tetap ada di object JavaScript biasa, sehingga kode di luar TypeScript tetap bisa mengaksesnya. Untuk privasi yang sungguhan berlaku di runtime, JavaScript modern punya private field `#nama` (butuh TypeScript 3.8+, tidak jalan di sandbox).',
         ],
         hasSandbox: true,
         sandboxStarterCode: `class Akun {
   public nama: string
   private saldo: number
+  protected jenis: string = "reguler"
 
   constructor(nama: string, saldoAwal: number) {
     this.nama = nama
@@ -428,7 +739,7 @@ console.log(siswa1.perkenalan())
   }
 
   public tampilkanSaldo(): void {
-    console.log(this.nama + " memiliki saldo Rp" + this.saldo)
+    console.log(this.nama + " (" + this.jenis + ") memiliki saldo Rp" + this.saldo)
   }
 
   public setor(jumlah: number): void {
@@ -436,19 +747,54 @@ console.log(siswa1.perkenalan())
   }
 }
 
+// extends = mewarisi class Akun (dibahas lengkap di lesson berikutnya)
+class AkunPremium extends Akun {
+  constructor(nama: string, saldoAwal: number) {
+    super(nama, saldoAwal)   // menjalankan constructor Akun
+    this.jenis = "premium"   // boleh: protected bisa diakses dari subclass
+  }
+}
+
 const akun1 = new Akun("Budi", 100000)
 akun1.tampilkanSaldo()
 akun1.setor(50000)
 akun1.tampilkanSaldo()
+
+const akun2 = new AkunPremium("Siti", 500000)
+akun2.tampilkanSaldo()
+
+console.log("Nama (public):", akun1.nama)
+// console.log(akun1.saldo)   // hapus tanda // untuk melihat error compile: saldo adalah private
+// console.log(akun1.jenis)   // hapus tanda // untuk melihat error compile: jenis adalah protected
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Property bermodifier private bisa diakses dari mana?', [
+            ['Hanya dari dalam class itu sendiri', true],
+            ['Dari class itu dan semua class turunannya', false],
+            ['Dari mana saja di file yang sama', false],
+            ['Dari mana saja, tetapi hanya untuk dibaca', false],
+          ]),
+          q('Apa perbedaan protected dan private?', [
+            ['protected juga bisa diakses dari subclass, private tidak', true],
+            ['private juga bisa diakses dari subclass, protected tidak', false],
+            ['protected bisa diakses dari mana saja, private tidak', false],
+            ['Tidak ada beda, keduanya hanya soal gaya penulisan', false],
+          ]),
+          q('Kode di luar class mengakses property private. Kapan itu dilaporkan sebagai error?', [
+            ['Saat kompilasi oleh tsc; JavaScript hasil kompilasinya tidak punya pengaman private', true],
+            ['Saat runtime, JavaScript melempar error karena property itu bersifat private', false],
+            ['Tidak pernah, karena private hanya anjuran penulisan kode yang tidak dicek compiler', false],
+          ]),
+        ],
       },
       {
         title: "Inheritance & implements Interface",
         slug: 'tsfz-inheritance-implements-interface',
         content: [
           'Inheritance (pewarisan) memungkinkan sebuah class mewarisi property dan method dari class lain memakai kata kunci `extends`, contoh: `class Mahasiswa extends Siswa`. Class turunan otomatis punya semua yang dimiliki class induknya, dan bisa menambah property/method baru.',
-          'Di dalam constructor class turunan, `super(...)` wajib dipanggil terlebih dahulu untuk menjalankan constructor class induk, sebelum menambahkan logika constructor milik class turunan itu sendiri.',
-          'Kata kunci `implements` dipakai class untuk berjanji memenuhi struktur sebuah interface — class itu wajib punya semua property dan method yang didefinisikan interface, kalau tidak compiler akan menolak.',
+          'Di dalam constructor class turunan, `super(...)` wajib dipanggil terlebih dahulu (sebelum memakai `this`) untuk menjalankan constructor class induk, baru setelah itu menambahkan logika constructor milik class turunan itu sendiri.',
+          'Kata kunci `implements` dipakai class untuk berjanji memenuhi struktur sebuah interface — class itu wajib punya semua property dan method yang didefinisikan interface, kalau tidak compiler akan melaporkan error. Berbeda dengan `extends`, `implements` tidak mewarisi isi apa pun: class tetap harus menulis sendiri implementasinya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `interface BisaMemperkenalkanDiri {
@@ -503,8 +849,30 @@ console.log(mhs.perkenalan())
         slug: 'tsfz-enum',
         content: [
           'Enum (enumeration) adalah cara memberi nama pada sekumpulan nilai konstan yang saling terkait, ditulis dengan kata kunci `enum`, contoh: `enum StatusPesanan { Baru, Diproses, Selesai }`.',
-          'Secara default, tiap anggota enum diberi nilai angka otomatis mulai dari 0 (`Baru` = 0, `Diproses` = 1, `Selesai` = 2) — tapi kita juga bisa menetapkan nilai string secara eksplisit, contoh: `enum Warna { Merah = "MERAH", Biru = "BIRU" }`.',
+          'Secara default, tiap anggota enum diberi nilai angka otomatis mulai dari 0 (`Baru` = 0, `Diproses` = 1, `Selesai` = 2). Enum numerik juga punya reverse mapping: kita bisa mengambil nama anggota dari angkanya.',
+          `\`\`\`typescript
+enum StatusPesanan {
+  Baru,       // 0
+  Diproses,   // 1
+  Selesai,    // 2
+}
+
+console.log(StatusPesanan.Selesai)   // 2
+console.log(StatusPesanan[0])        // "Baru" (reverse mapping, khusus enum numerik)
+\`\`\``,
+          '## String enum',
+          'Kita juga bisa menetapkan nilai string secara eksplisit. String enum tidak punya reverse mapping, tapi nilainya jelas terbaca saat dicetak atau disimpan.',
+          `\`\`\`typescript
+enum Warna {
+  Merah = "MERAH",
+  Biru = "BIRU",
+}
+
+const pilihan: Warna = Warna.Biru
+console.log(pilihan)   // BIRU
+\`\`\``,
           'Enum membuat kode lebih mudah dibaca dibanding memakai angka atau string mentah secara langsung tersebar di banyak tempat — cukup memakai `StatusPesanan.Selesai` daripada mengingat-ingat angka `2` artinya apa.',
+          'Berbeda dengan interface dan type alias yang hilang total saat kompilasi, enum menghasilkan kode JavaScript sungguhan (sebuah object), jadi enum ada juga saat program berjalan. Banyak tim juga memakai union dari beberapa nilai string persis, misal `"baru" | "diproses" | "selesai"`, sebagai alternatif ringan yang tidak menghasilkan kode JavaScript tambahan; pilih sesuai konvensi tim.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `enum StatusPesanan {
@@ -525,7 +893,37 @@ function tampilkanStatus(status: StatusPesanan): void {
 
 tampilkanStatus(StatusPesanan.Diproses)
 console.log("Nilai numerik Selesai:", StatusPesanan.Selesai)
+console.log("Nama untuk angka 0:", StatusPesanan[0])
+
+enum Warna {
+  Merah = "MERAH",
+  Biru = "BIRU",
+}
+
+const pilihan: Warna = Warna.Biru
+console.log("Warna pilihan:", pilihan)
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Berapa nilai StatusPesanan.Diproses pada enum StatusPesanan { Baru, Diproses, Selesai }?', [
+            ['1', true],
+            ['0', false],
+            ['2', false],
+            ['"Diproses"', false],
+          ]),
+          q('Apa hasil StatusPesanan[0] pada enum numerik tersebut?', [
+            ['String "Baru", lewat reverse mapping', true],
+            ['Angka 0 itu sendiri', false],
+            ['undefined, karena enum bukan array', false],
+            ['Error, karena enum tidak bisa diakses dengan angka', false],
+          ]),
+          q('Apa beda enum dan interface setelah dikompilasi ke JavaScript?', [
+            ['Enum menjadi object nyata di JavaScript, interface hilang sepenuhnya', true],
+            ['Keduanya hilang sepenuhnya karena type erasure', false],
+            ['Interface menjadi object nyata, enum hilang sepenuhnya', false],
+            ['Keduanya menjadi object nyata di JavaScript', false],
+          ]),
+        ],
       },
     ],
   },
@@ -536,9 +934,17 @@ console.log("Nilai numerik Selesai:", StatusPesanan.Selesai)
         title: 'Generic Dasar',
         slug: 'tsfz-generic-dasar',
         content: [
-          'Generic memungkinkan kita menulis fungsi, class, atau interface yang bisa bekerja dengan berbagai tipe data, TANPA kehilangan pengecekan tipe yang ketat. Ditulis dengan tanda kurung siku berisi placeholder huruf, biasanya `<T>`, contoh: `function identitas<T>(nilai: T): T { return nilai }`.',
+          'Generic memungkinkan kita menulis fungsi, class, atau interface yang bisa bekerja dengan berbagai tipe data, TANPA kehilangan pengecekan tipe yang ketat. Ditulis dengan kurung sudut (`<` dan `>`) berisi placeholder huruf, biasanya `<T>`, contoh: `function identitas<T>(nilai: T): T { return nilai }`.',
           'Tanpa generic, kita harus memilih antara menulis fungsi terpisah untuk tiap tipe (banyak duplikasi kode), atau memakai tipe `any` yang menghilangkan sama sekali manfaat static typing. Generic memberi jalan tengah: fleksibel untuk tipe apa pun, tapi tetap type-safe.',
-          'Saat fungsi generic dipanggil, TypeScript otomatis meng-inference tipe `T` dari argumen yang diberikan — memanggil `identitas<number>(5)` membuat `T` menjadi `number`, jadi return value-nya juga dijamin bertipe `number`, bukan `any`.',
+          'Saat memanggil fungsi generic, ada dua cara menentukan tipe `T`. Pertama, menuliskannya eksplisit di kurung sudut sebagai type argument: `identitas<number>(5)` langsung menetapkan `T` menjadi `number`. Kedua, membiarkan TypeScript meng-inference `T` dari argumen yang diberikan: `identitas(5)` otomatis menjadikan `T` bertipe `number`. Cara kedua paling umum; tulis type argument eksplisit hanya kalau inference gagal atau hasilnya tidak sesuai harapan. Pada kedua cara, return value dijamin bertipe `number`, bukan `any`.',
+          `\`\`\`typescript
+function identitas<T>(nilai: T): T {
+  return nilai
+}
+
+const a = identitas<number>(5)       // type argument ditulis eksplisit: T = number
+const b = identitas("halo")          // T di-infer dari argumen: string
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `function identitas<T>(nilai: T): T {
@@ -549,59 +955,37 @@ function itemPertama<T>(daftar: T[]): T {
   return daftar[0]
 }
 
-console.log(identitas<number>(5))
-console.log(identitas<string>("halo generic"))
-console.log(itemPertama<string>(["apel", "jeruk", "mangga"]))
+console.log(identitas<number>(5))                  // type argument eksplisit
+console.log(identitas("halo generic"))             // T di-infer: string
+console.log(itemPertama(["apel", "jeruk", "mangga"]))  // T di-infer: string
+
+const angkaPertama = itemPertama([10, 20, 30])     // T di-infer: number
+console.log(angkaPertama + 1)
 `,
         hasQuiz: true,
         quizQuestions: [
           q('Apa manfaat utama generic dibanding memakai tipe any?', [
             ['Fleksibel untuk berbagai tipe tapi tetap type-safe', true],
             ['Generic membuat kode berjalan lebih cepat saat runtime', false],
-            ['Generic menghapus kebutuhan compiler tsc', false],
-            ['Generic hanya bisa dipakai untuk tipe number', false],
+            ['Generic mengubah tipe apa pun menjadi any secara otomatis', false],
+            ['Generic hanya bisa dipakai di class, bukan di fungsi', false],
           ]),
-          q('Bagaimana TypeScript menentukan tipe T saat fungsi generic dipanggil?', [
-            ['Di-inference otomatis dari argumen yang diberikan', true],
-            ['T selalu bertipe any secara default', false],
-            ['T harus ditulis manual setiap kali, tidak bisa di-inference', false],
+          q('Pada identitas(5) tanpa tanda <...>, bagaimana TypeScript menentukan tipe T?', [
+            ['T di-infer otomatis dari argumen 5, jadi number', true],
+            ['T otomatis menjadi any karena tidak ditulis eksplisit', false],
+            ['Kode itu error, type argument wajib ditulis eksplisit', false],
             ['T ditentukan dari nama fungsi', false],
           ]),
-          q('Simbol apa yang dipakai menulis parameter tipe generic?', [
-            ['<T> (kurung siku dengan huruf placeholder)', true],
+          q('Tanda apa yang dipakai menulis parameter tipe generic?', [
+            ['<T> (kurung sudut dengan huruf placeholder)', true],
             ['{T} (kurung kurawal)', false],
-            ['[T] (kurung siku biasa tanpa arti khusus)', false],
+            ['[T] (kurung siku)', false],
             ['(T) (kurung biasa)', false],
           ]),
-        ],
-      },
-      {
-        title: 'Type Alias',
-        slug: 'tsfz-type-alias',
-        content: [
-          'Type alias dibuat dengan kata kunci `type`, memberi nama baru untuk sebuah tipe (termasuk union type, object type literal, atau tipe primitif), contoh: `type ID = string | number` — setelah ini, `ID` bisa dipakai sebagai annotation tipe di mana saja.',
-          'Untuk mendeskripsikan bentuk object, `type` dan `interface` terlihat sangat mirip (`type Siswa = { nama: string; umur: number }` vs `interface Siswa { nama: string; umur: number }`) — keduanya bisa dipakai bergantian untuk kasus sederhana.',
-          'Perbedaan pentingnya: `type` bisa dipakai untuk union type dan alias tipe primitif (hal yang TIDAK bisa dilakukan `interface`), sedangkan `interface` punya keunggulan bisa "digabung" (declaration merging) kalau dideklarasikan dua kali dengan nama sama — untuk bentuk object biasa, konvensi tim sering menentukan mana yang dipakai.',
-        ],
-        hasQuiz: true,
-        quizQuestions: [
-          q('Kata kunci apa untuk membuat type alias?', [
-            ['type', true],
-            ['alias', false],
-            ['typedef', false],
-            ['using', false],
-          ]),
-          q('Kemampuan apa yang dimiliki type alias tapi TIDAK dimiliki interface?', [
-            ['Membuat alias untuk union type dan tipe primitif', true],
-            ['Mendefinisikan bentuk object', false],
-            ['Dipakai sebagai annotation tipe parameter fungsi', false],
-            ['Bisa diberi nama', false],
-          ]),
-          q('Contoh manakah yang merupakan union type alias yang valid?', [
-            ['type ID = string | number', true],
-            ['interface ID = string | number', false],
-            ['type ID: string | number', false],
-            ['union ID = string | number', false],
+          q('Apa yang dilakukan <number> pada pemanggilan identitas<number>(5)?', [
+            ['Menetapkan type argument T secara eksplisit, bukan lewat inference', true],
+            ['Mengonversi nilai 5 menjadi number saat program berjalan', false],
+            ['Membatasi fungsi identitas supaya hanya menerima angka 5', false],
           ]),
         ],
       },
@@ -609,14 +993,18 @@ console.log(itemPertama<string>(["apel", "jeruk", "mangga"]))
         title: 'Studi Kasus Gabungan',
         slug: 'tsfz-studi-kasus-gabungan',
         content: [
-          'Sebagai penutup course ini, kita gabungkan konsep yang sudah dipelajari: interface untuk mendefinisikan bentuk data, class dengan access modifier dan inheritance untuk memodelkan entitas, serta generic untuk membuat struktur data yang fleksibel dipakai ulang.',
-          'Contoh di sandbox berikut membuat sebuah "Kotak Penyimpanan" generic (`Kotak<T>`) yang bisa menyimpan item bertipe apa pun (misal object yang mengikuti interface `Produk`), dipakai lewat class yang mengimplementasikan interface dan mewarisi class lain.',
+          'Sebagai penutup course ini, kita gabungkan konsep yang sudah dipelajari: interface untuk mendefinisikan bentuk data dan kontrak method, class dengan access modifier, inheritance, dan `implements` untuk memodelkan entitas, serta generic untuk membuat struktur data yang fleksibel dipakai ulang.',
+          'Contoh di sandbox berikut membuat sebuah "Kotak Penyimpanan" generic (`Kotak<T>`) yang bisa menyimpan item bertipe apa pun (misal object yang mengikuti interface `Produk`). Class `KotakProduk` mewarisi `Kotak<Produk>` lewat `extends` sekaligus mengimplementasikan interface `Ringkasan` lewat `implements`.',
           'Dengan menguasai type annotation, interface, class, dan generic, kita sudah punya fondasi kuat untuk membangun aplikasi TypeScript yang lebih besar dan type-safe — mulai dari sini, langkah selanjutnya adalah mempraktikkannya di proyek nyata.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `interface Produk {
   nama: string
   harga: number
+}
+
+interface Ringkasan {
+  ringkas(): string
 }
 
 class Kotak<T> {
@@ -631,9 +1019,13 @@ class Kotak<T> {
   }
 }
 
-class KotakProduk extends Kotak<Produk> {
+class KotakProduk extends Kotak<Produk> implements Ringkasan {
   totalHarga(): number {
     return this.ambilSemua().reduce((total, produk) => total + produk.harga, 0)
+  }
+
+  ringkas(): string {
+    return this.ambilSemua().length + " produk, total Rp" + this.totalHarga()
   }
 }
 
@@ -643,14 +1035,15 @@ kotak.tambah({ nama: "Stiker BarisORG", harga: 15000 })
 
 console.log("Semua produk:", kotak.ambilSemua())
 console.log("Total harga:", kotak.totalHarga())
+console.log("Ringkasan:", kotak.ringkas())
 `,
         hasQuiz: true,
         quizQuestions: [
           q('Dalam studi kasus ini, apa fungsi interface Produk?', [
             ['Mendefinisikan bentuk data yang wajib dipenuhi tiap produk', true],
             ['Menjalankan logika perhitungan total harga', false],
-            ['Menggantikan fungsi class Kotak', false],
-            ['Membuat angka acak', false],
+            ['Menyimpan daftar produk di dalam Kotak', false],
+            ['Membuat object Produk baru setiap kali tambah() dipanggil', false],
           ]),
           q('Kenapa class Kotak dibuat generic (Kotak<T>)?', [
             ['Supaya bisa menyimpan item bertipe apa pun secara type-safe', true],
@@ -664,6 +1057,11 @@ console.log("Total harga:", kotak.totalHarga())
             ['Keduanya adalah class yang sama persis, tidak ada relasi', false],
             ['Kotak<Produk> mewarisi dari KotakProduk', false],
           ]),
+          q('Apa fungsi implements Ringkasan pada class KotakProduk?', [
+            ['Memastikan KotakProduk punya method ringkas(); compiler melaporkan error kalau tidak ada', true],
+            ['Membuat KotakProduk otomatis mewarisi isi method ringkas() dari interface', false],
+            ['Membuat KotakProduk mewarisi semua property dan method dari class Kotak', false],
+          ]),
         ],
       },
     ],
@@ -675,7 +1073,11 @@ const course: CourseDef = {
   slug: 'typescript-from-zero',
   category: { name: 'Programming', slug: 'programming' },
   level: 'pemula',
-  description: '',
+  description: [
+    'TypeScript from Zero adalah course pengantar untuk kamu yang sudah mengenal dasar JavaScript (variabel, fungsi, array, object, dan class) dan ingin menambahkan sistem tipe di atas pengetahuan itu. TypeScript adalah superset JavaScript yang memeriksa kecocokan tipe saat kompilasi, sehingga banyak bug ketahuan sebelum kode dijalankan.',
+    'Di sini kamu belajar cara kerja `tsc` dan type erasure, type annotation dan type inference, array dan tuple, union type, fungsi bertipe, interface, object type literal, type alias, class dengan access modifier, inheritance dan `implements`, enum, hingga generic dasar. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Sandbox di course ini mengompilasi kode dengan TypeScript 3.7.4 tanpa flag `--strict`, lalu menjalankannya dengan Node.js 12, tanpa akses jaringan dan tanpa input keyboard. Error tipe tetap menghentikan kode, tapi pemeriksaan ketat seperti `strict` tidak aktif di sandbox, dan fitur TypeScript yang lebih baru dari 3.7 tidak bisa dicoba di sana. Prasyaratnya: pemahaman dasar JavaScript. Tidak perlu menginstal apa pun untuk mencoba kode di sandbox.',
+  ].join('\n\n'),
   sandboxLanguage: 'typescript',
   modules,
 }
