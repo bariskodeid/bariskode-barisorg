@@ -38,8 +38,9 @@ const converters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => 
   },
 })
 
-// Konten lesson & deskripsi course. Sama dengan <RichText> bawaan, ditambah
-// render block Code. Blog tetap memakai <RichText> biasa.
+// Rich text lesson, deskripsi course, dan post blog. Sama dengan <RichText>
+// bawaan, ditambah render block Code (editor Lexical bersama, jadi semua
+// collection bisa menyisipkan block itu).
 export function LessonRichText({ data }: { data: SerializedEditorState }) {
   return <RichText data={data} converters={converters} />
 }

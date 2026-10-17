@@ -96,7 +96,7 @@ export default async function CourseDetailPage(props: PageProps<'/courses/[slug]
           <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">{course.title}</h1>
 
           {course.description && (
-            <div className="prose prose-invert max-w-none text-muted-foreground mb-12">
+            <div className="prose prose-invert prose-code:before:content-none prose-code:after:content-none max-w-none text-muted-foreground mb-12">
               <LessonRichText data={course.description} />
             </div>
           )}

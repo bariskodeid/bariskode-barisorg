@@ -126,7 +126,7 @@ export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]
           )}
 
           {lesson.content && (
-            <div className="prose prose-invert max-w-none">
+            <div className="prose prose-invert prose-code:before:content-none prose-code:after:content-none max-w-none">
               <LessonRichText data={lesson.content} />
             </div>
           )}

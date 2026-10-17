@@ -1,4 +1,3 @@
-import { RichText } from '@payloadcms/richtext-lexical/react'
 import { ArrowRight } from 'lucide-react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
@@ -7,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 import { GiscusComments } from '@/components/GiscusComments'
+import { LessonRichText } from '@/components/ui/LessonRichText'
 import { T } from '@/lib/i18n/LocaleContext'
 import { getPayload } from '@/lib/payload'
 
@@ -85,8 +85,8 @@ export default async function BlogDetailPage(props: PageProps<'/blog/[slug]'>) {
             </div>
           )}
 
-          <div className="prose prose-invert max-w-none">
-            <RichText data={post.content} />
+          <div className="prose prose-invert prose-code:before:content-none prose-code:after:content-none max-w-none">
+            <LessonRichText data={post.content} />
           </div>
 
           {relatedCourse && (
