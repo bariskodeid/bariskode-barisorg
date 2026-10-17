@@ -296,7 +296,7 @@ int main(void) {
         content: [
           '`printf` adalah fungsi standar C untuk mencetak teks ke layar, disediakan lewat header `<stdio.h>`. Untuk mencetak nilai variabel di tengah teks, `printf` memakai format specifier — placeholder yang diganti dengan nilai variabel sesuai urutan argumen.',
           'Format specifier yang paling umum:',
-          '- `%d` untuk `int` (bilangan bulat bertanda)\n- `%u` untuk `unsigned int` (bilangan bulat tanpa tanda)\n- `%ld` untuk `long`, dan `%lld` untuk `long long`\n- `%zu` untuk `size_t`, tipe hasil `sizeof` dan `strlen`\n- `%f` untuk `float` atau `double`\n- `%c` untuk satu karakter (`char`)\n- `%s` untuk string (array karakter yang diakhiri null terminator)\n- `%%` untuk mencetak tanda persen itu sendiri',
+          '- `%d` untuk `int` (bilangan bulat bertanda)\n- `%u` untuk `unsigned int` (bilangan bulat tanpa tanda)\n- `%ld` untuk `long`, dan `%lld` untuk `long long`\n- `%zu` untuk `size_t`, tipe hasil operator `sizeof`\n- `%f` untuk `float` atau `double`\n- `%c` untuk satu karakter (`char`)\n- `%s` untuk string (array karakter yang diakhiri null terminator)\n- `%%` untuk mencetak tanda persen itu sendiri',
           'Tipe argumen harus cocok dengan specifier-nya. Misalnya `printf("%d", 3.14)` adalah undefined behavior: hasilnya bisa berupa angka ngawur, bukan 3. Menyalakan opsi `-Wall` saat compile membuat GCC memperingatkan ketidakcocokan seperti ini.',
           'Karakter escape `\\n` menyisipkan baris baru (newline), dan `\\t` menyisipkan tab — keduanya sering dipakai di dalam string `printf` untuk merapikan tampilan output.',
           '## Lebar field dan presisi',
@@ -305,7 +305,6 @@ int main(void) {
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <stdio.h>
-#include <string.h>
 
 int main(void) {
     int umur = 20;
@@ -321,7 +320,7 @@ int main(void) {
     printf("Populasi (long): %ld\\n", populasi);
     printf("IPK: %.2f\\n", ipk);
     printf("Grade: %c\\n", grade);
-    printf("Panjang nama: %zu karakter\\n", strlen(nama));
+    printf("Ukuran int: %zu byte\\n", sizeof(int));
     printf("Lulus dengan nilai %d%%\\n", 85);
 
     printf("[%5d]\\n", 42);
@@ -336,7 +335,7 @@ int main(void) {
 `,
         hasQuiz: true,
         quizQuestions: [
-          q('Format specifier mana yang tepat untuk mencetak hasil strlen atau sizeof (bertipe size_t)?', [
+          q('Format specifier mana yang tepat untuk mencetak hasil sizeof (bertipe size_t)?', [
             ['%zu', true],
             ['%d', false],
             ['%u', false],
