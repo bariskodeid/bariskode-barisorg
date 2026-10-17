@@ -109,8 +109,8 @@ int main(void) {
         slug: 'cfz-variabel-tipe-data-dasar',
         content: [
           'Berbeda dengan Python yang dynamically typed, C adalah statically typed — setiap variabel harus dideklarasikan dengan tipe data eksplisit sebelum dipakai, dan tipe itu tidak bisa berubah selama program berjalan.',
-          'Empat tipe data dasar yang paling sering dipakai: `int` (bilangan bulat, misal 10), `float` (bilangan desimal presisi tunggal, misal 3.14f), `double` (bilangan desimal presisi ganda, lebih akurat dari float), dan `char` (satu karakter tunggal, misal \'A\').',
-          'Deklarasi variabel di C mengikuti pola `tipe nama_variabel = nilai;`, contoh: `int umur = 20;`. Variabel bisa dideklarasikan tanpa nilai awal lalu diisi belakangan, tapi untuk variabel lokal (yang dideklarasikan di dalam fungsi, seperti di `main`) nilainya akan berisi sampah (garbage value) — nilai acak yang tidak boleh diandalkan — sampai benar-benar diisi. Variabel global (dideklarasikan di luar fungsi apa pun) dan variabel `static` berbeda: keduanya otomatis diisi 0 kalau tidak diberi nilai awal.',
+          'Empat tipe data dasar yang paling sering dipakai: `int` (bilangan bulat, misal 10), `float` (bilangan desimal presisi tunggal, misal 3.14f), `double` (bilangan desimal presisi ganda, lebih akurat dari float), dan `char` (satu karakter tunggal, misal \'A\'). Ukuran tiap tipe dan tipe integer lain seperti `short`, `long`, dan `unsigned` dibahas di lesson berikutnya.',
+          'Deklarasi variabel di C mengikuti pola `tipe nama_variabel = nilai;`, contoh: `int umur = 20;`. Variabel bisa dideklarasikan tanpa nilai awal lalu diisi belakangan, tapi untuk variabel lokal (yang dideklarasikan di dalam fungsi, seperti di `main`) nilainya akan berisi sampah (garbage value) — nilai acak yang tidak boleh diandalkan — sampai benar-benar diisi. Variabel global (dideklarasikan di luar fungsi apa pun) dan variabel `static` berbeda: keduanya otomatis diisi 0 kalau tidak diberi nilai awal (keduanya dibahas di lesson scope nanti).',
           'Aturan penamaan variabel di C: hanya huruf, angka, underscore (`_`), tidak boleh diawali angka, case-sensitive, dan tidak boleh memakai kata kunci reserved seperti `int` atau `return` sebagai nama variabel.',
         ],
         hasSandbox: true,
@@ -149,6 +149,72 @@ int main(void) {
             ['Otomatis bernilai 0 karena C mengisi nol untuk semua variabel baru', false],
             ['Program pasti gagal compile', false],
             ['Program berhenti dengan pesan error runtime saat variabel itu dibaca', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Tipe Integer, sizeof & size_t',
+        slug: 'cfz-tipe-integer-sizeof',
+        content: [
+          '## Keluarga tipe integer',
+          'Selain `int`, C punya satu keluarga tipe bilangan bulat dengan ukuran berbeda: `char`, `short`, `int`, `long`, dan `long long` (dari kecil ke besar). Masing-masing punya varian `unsigned` yang hanya menyimpan nol dan bilangan positif, dengan jangkauan positif dua kali lebih besar (misal `unsigned char` menyimpan 0 sampai 255). Header `<limits.h>` menyediakan macro batas nilai tiap tipe, seperti `INT_MIN`, `INT_MAX`, `UINT_MAX`, dan `LONG_MAX`, jadi kamu tidak perlu menghafal angkanya.',
+          '## sizeof dan size_t',
+          'Standar C tidak menetapkan ukuran pasti tiap tipe; ia hanya menjamin urutannya (`short` tidak lebih besar dari `int`, `int` tidak lebih besar dari `long`, dan seterusnya) dan jangkauan minimumnya. Yang dijamin pasti hanya `sizeof(char)`, yaitu 1 byte. Di Linux 64-bit seperti sandbox ini umumnya `short` 2 byte, `int` 4 byte, dan `long` serta `long long` 8 byte, tapi di platform lain bisa berbeda (misal `long` hanya 4 byte di Windows 64-bit). Operator `sizeof` menghasilkan ukuran sebuah tipe atau variabel dalam byte, ditulis `sizeof(tipe)` atau `sizeof variabel`. Hasilnya bertipe `size_t`, bilangan bulat tanpa tanda untuk ukuran, yang dicetak dengan `%zu` di `printf`. Format lain untuk keluarga integer: `%u` untuk `unsigned int`, `%ld` untuk `long`, dan `%lld` untuk `long long`.',
+          '```c\nint umur = 20;\nprintf("%zu\\n", sizeof(int));    // 4 di sistem umum\nprintf("%zu\\n", sizeof umur);    // 4: ukuran variabel umur\nprintf("%zu\\n", sizeof(long));   // 8 di Linux 64-bit\nprintf("%d\\n", INT_MAX);         // 2147483647 (butuh #include <limits.h>)\n```',
+          '## Overflow dan tipe ekspresi',
+          'Kalau hasil perhitungan melewati batas tipenya, terjadi overflow, dan aturannya berbeda. Pada tipe `unsigned`, nilai "melingkar" (wrap-around) secara terdefinisi: `UINT_MAX + 1` menjadi `0`, dan `0 - 1` pada `size_t` menjadi angka yang sangat besar, bukan -1. Pada tipe bertanda seperti `int`, overflow adalah undefined behavior: hasilnya tidak bisa diandalkan, tidak otomatis "melingkar" ke `INT_MIN`, dan compiler boleh berasumsi hal itu tidak pernah terjadi.',
+          'Tipe sebuah ekspresi ditentukan oleh operand-nya, bukan oleh variabel penampungnya. Akhiran pada literal menentukan tipenya: `5u` bertipe `unsigned int`, `5L` bertipe `long`, `5LL` bertipe `long long`. Maka `100000 * 100000` dihitung sebagai `int` dan overflow walau disimpan ke `long long`, sedangkan `100000LL * 100000` aman. Terakhir, `char` sebenarnya juga tipe integer kecil: yang disimpan adalah kode angka karakternya (huruf `A` berkode 65 di tabel ASCII), jadi `%c` mencetak karakternya dan `%d` mencetak kode angkanya.',
+          '```c\nunsigned int u = UINT_MAX;\nu = u + 1;                      // 0: wrap-around\nlong long besar = 100000LL * 100000;   // 10000000000\nchar huruf = \'A\';\nprintf("%c %d\\n", huruf, huruf);  // A 65\n```',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#include <stdio.h>
+#include <limits.h>
+
+int main(void) {
+    printf("sizeof(char)      = %zu\\n", sizeof(char));
+    printf("sizeof(short)     = %zu\\n", sizeof(short));
+    printf("sizeof(int)       = %zu\\n", sizeof(int));
+    printf("sizeof(long)      = %zu\\n", sizeof(long));
+    printf("sizeof(long long) = %zu\\n", sizeof(long long));
+    printf("sizeof(double)    = %zu\\n", sizeof(double));
+
+    printf("INT_MIN  = %d\\n", INT_MIN);
+    printf("INT_MAX  = %d\\n", INT_MAX);
+    printf("UINT_MAX = %u\\n", UINT_MAX);
+    printf("LONG_MAX = %ld\\n", LONG_MAX);
+
+    unsigned int u = UINT_MAX;
+    u = u + 1;
+    printf("UINT_MAX + 1 = %u (wrap-around ke 0)\\n", u);
+
+    long long besar = 100000LL * 100000;
+    printf("100000 * 100000 = %lld\\n", besar);
+
+    char huruf = 'A';
+    printf("char 'A': %c, kode angkanya: %d\\n", huruf, huruf);
+
+    return 0;
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Mana pernyataan yang dijamin benar oleh standar C?', [
+            ['sizeof(char) selalu bernilai 1', true],
+            ['sizeof(int) selalu bernilai 4 di semua platform', false],
+            ['sizeof(long) selalu bernilai 8 di semua platform', false],
+            ['sizeof(long long) selalu dua kali sizeof(int)', false],
+          ]),
+          q('Tipe apa yang dihasilkan operator sizeof, dan format printf mana yang tepat untuknya?', [
+            ['size_t, dicetak dengan %zu', true],
+            ['int, dicetak dengan %d', false],
+            ['unsigned int, dicetak dengan %u', false],
+            ['long, dicetak dengan %ld', false],
+          ]),
+          q('Bagaimana overflow pada unsigned int dibandingkan overflow pada int?', [
+            ['unsigned melingkar dengan terdefinisi (UINT_MAX + 1 jadi 0); overflow int adalah undefined behavior', true],
+            ['Keduanya selalu melingkar kembali ke nilai minimum tipenya', false],
+            ['Keduanya menghentikan program dengan pesan error saat runtime', false],
+            ['Overflow int aman karena compiler otomatis memperbesar tipenya menjadi long', false],
           ]),
         ],
       },
@@ -300,7 +366,7 @@ int main(void) {
           '## Konversi otomatis antar tipe',
           'Tanpa cast pun C tetap mengubah tipe secara otomatis kalau kedua operand berbeda tipe, lewat aturan yang disebut usual arithmetic conversions: operand dikonversi ke common type yang lebih "tinggi", bukan yang paling sempit. Tipe floating-point mengalahkan tipe integer (`double` mengalahkan `float`), dan di antara integer, umumnya tipe yang lebih lebar menang (`long` mengalahkan `int`). Tipe yang lebih sempit dari `int`, seperti `char`, lebih dulu dinaikkan menjadi `int`.',
           'Jadi `5 / 2.0` menghasilkan `2.5`: `5` otomatis dikonversi ke `double` sebelum dibagi. Sedangkan `7 / 2` yang dua-duanya `int` tidak punya apa-apa untuk dikonversi, jadi hasilnya tetap `3`. Konversi ke arah sebaliknya (dari desimal ke integer) membuang bagian desimal, bukan membulatkan. Perhatikan juga bahwa cast harus diletakkan sebelum pembagian terjadi: `(float) (a / b)` terlambat, karena `a / b` sudah dihitung sebagai integer.',
-          '```c\nint a = 7;\nint b = 2;\ndouble d1 = a / b;            // 3.0: a / b dihitung sebagai int (3) dulu\ndouble d2 = (double) a / b;   // 3.5: a dinaikkan menjadi double\ndouble d3 = a / 2.0;          // 3.5: a otomatis menjadi double\ndouble desimal = 3.9;\nint n = desimal;               // 3: desimal dibuang, bukan dibulatkan\n```',
+          '```c\nint a = 7;\nint b = 2;\ndouble d1 = a / b;            // 3.0: a / b dihitung sebagai int (3) dulu\ndouble d2 = (double) a / b;   // 3.5: a dinaikkan menjadi double\ndouble d3 = a / 2.0;          // 3.5: a otomatis menjadi double\ndouble desimal = 3.9;\nint n = desimal;              // 3: desimal dibuang, bukan dibulatkan\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <stdio.h>
@@ -585,14 +651,14 @@ int main(void) {
     ],
   },
   {
-    title: 'Fungsi & Pointer',
+    title: 'Fungsi, Scope & Pointer',
     lessons: [
       {
         title: 'Fungsi & Parameter',
         slug: 'cfz-fungsi-parameter',
         content: [
           'Fungsi di C dideklarasikan dengan pola `tipe_kembalian nama_fungsi(parameter) { ... }`. Tipe kembalian menyatakan tipe data yang dikembalikan lewat `return`; kalau fungsi tidak mengembalikan apa-apa, tipe kembaliannya `void`.',
-          'Parameter fungsi di C dikirim secara pass by value secara default — artinya fungsi menerima salinan nilai argumen, bukan variabel aslinya. Mengubah parameter di dalam fungsi tidak memengaruhi variabel asli di pemanggil (berbeda dengan pass by reference yang baru dibahas lewat pointer di lesson berikutnya).',
+          'Parameter fungsi di C dikirim secara pass by value secara default — artinya fungsi menerima salinan nilai argumen, bukan variabel aslinya. Mengubah parameter di dalam fungsi tidak memengaruhi variabel asli di pemanggil (berbeda dengan pass by reference yang baru dibahas lewat pointer beberapa lesson lagi).',
           'Fungsi harus dideklarasikan (atau didefinisikan penuh) sebelum dipakai di `main` — kalau fungsi didefinisikan setelah `main`, biasanya perlu forward declaration (prototype fungsi) di bagian atas file.',
         ],
         hasSandbox: true,
@@ -632,6 +698,89 @@ int main(void) {
             ['Variabel asli di pemanggil ikut berubah', false],
             ['Program akan error saat compile', false],
             ['Nilai parameter otomatis dikembalikan ke pemanggil', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Scope, static & Rekursi',
+        slug: 'cfz-scope-static-rekursi',
+        content: [
+          '## Scope variabel',
+          'Scope (cakupan) menentukan di bagian program mana sebuah variabel bisa dipakai. Variabel yang dideklarasikan di dalam fungsi atau blok `{}` bersifat lokal: hanya dikenal di blok itu, dibuat setiap kali blok dijalankan, dan hilang saat blok selesai. Parameter fungsi juga lokal. Variabel global dideklarasikan di luar semua fungsi dan bisa dipakai oleh semua fungsi yang ada setelahnya. Kalau variabel lokal memakai nama yang sama dengan variabel global, yang lokal "menutupi" (shadowing) yang global di dalam blok itu.',
+          '```c\n#include <stdio.h>\n\nint total = 10;   // variabel global\n\nvoid coba(void) {\n    int total = 5;   // variabel lokal, menutupi yang global\n    printf("Di dalam coba: %d\\n", total);   // 5\n}\n\nint main(void) {\n    coba();\n    printf("Di main: %d\\n", total);   // 10: variabel global tidak berubah\n    return 0;\n}\n```',
+          '## Variabel global dan static',
+          'Variabel global yang tidak diberi nilai awal otomatis bernilai 0 (berbeda dengan variabel lokal yang berisi sampah), tapi karena bisa diubah dari mana saja, program jadi sulit dilacak. Pakai secukupnya dan lebih baik kirim data lewat parameter. Kalau sebuah fungsi perlu "mengingat" nilai antar pemanggilan, pakai variabel lokal `static`: ia hanya dibuat dan diinisialisasi sekali, nilainya bertahan sampai program selesai, dan tetap hanya bisa dipakai di dalam fungsi itu. Nilai awal variabel `static` harus berupa nilai konstan, misal `0`.',
+          '```c\nvoid hitung(void) {\n    static int pemanggilan = 0;   // diinisialisasi sekali saja\n    int biasa = 0;                // dibuat ulang di setiap panggilan\n    pemanggilan++;\n    biasa++;\n    printf("static: %d, biasa: %d\\n", pemanggilan, biasa);\n}\n// Tiga kali memanggil hitung() mencetak:\n// static: 1, biasa: 1\n// static: 2, biasa: 1\n// static: 3, biasa: 1\n```',
+          '## Rekursi',
+          'Rekursi adalah fungsi yang memanggil dirinya sendiri. Fungsi rekursif butuh dua bagian: base case (kondisi berhenti yang tidak memanggil diri sendiri lagi) dan recursive case (memanggil diri sendiri dengan masalah yang lebih kecil). Setiap pemanggilan punya parameter dan variabel lokalnya sendiri di stack. Kalau base case tidak pernah tercapai, fungsi memanggil dirinya terus sampai stack habis (stack overflow) dan program crash. Contoh klasik adalah faktorial: `faktorial(3)` menghitung `3 * faktorial(2)`, lalu `2 * faktorial(1)`, dan berhenti di base case `faktorial(1)` yang mengembalikan 1, sehingga hasilnya 3 * 2 * 1 = 6.',
+          '```c\nlong long faktorial(int n) {   // long long: faktorial tumbuh sangat cepat\n    if (n <= 1) {\n        return 1;                     // base case\n    }\n    return n * faktorial(n - 1);      // recursive case\n}\n```',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#include <stdio.h>
+
+int total = 10;
+
+void coba(void) {
+    int total = 5;
+    printf("Di dalam coba, total lokal: %d\\n", total);
+}
+
+void hitung(void) {
+    static int pemanggilan = 0;
+    int biasa = 0;
+    pemanggilan++;
+    biasa++;
+    printf("static: %d, biasa: %d\\n", pemanggilan, biasa);
+}
+
+long long faktorial(int n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * faktorial(n - 1);
+}
+
+int jumlahSampai(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    return n + jumlahSampai(n - 1);
+}
+
+int main(void) {
+    coba();
+    printf("Di main, total global: %d\\n", total);
+
+    hitung();
+    hitung();
+    hitung();
+
+    printf("faktorial(5) = %lld\\n", faktorial(5));
+    printf("faktorial(10) = %lld\\n", faktorial(10));
+    printf("jumlahSampai(4) = %d\\n", jumlahSampai(4));
+
+    return 0;
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Sebuah fungsi berisi static int n = 0; n++; printf("%d ", n); — apa yang tercetak kalau fungsi itu dipanggil tiga kali berturut-turut?', [
+            ['1 2 3', true],
+            ['1 1 1', false],
+            ['0 1 2', false],
+            ['0 0 0', false],
+          ]),
+          q('Variabel global total bernilai 10. Sebuah fungsi mendeklarasikan int total = 5; lalu mencetaknya. Apa yang terjadi?', [
+            ['Fungsi mencetak 5, dan total global tetap 10', true],
+            ['Fungsi mencetak 10 karena variabel global selalu didahulukan', false],
+            ['Fungsi mencetak 5, dan total global ikut berubah menjadi 5', false],
+            ['Compile error karena nama total sudah dipakai oleh variabel global', false],
+          ]),
+          q('Apa yang terjadi kalau base case sebuah fungsi rekursif tidak pernah tercapai?', [
+            ['Fungsi terus memanggil dirinya sampai stack habis (stack overflow) dan program crash', true],
+            ['Compiler menolak meng-compile fungsi rekursif yang tidak punya base case', false],
+            ['Fungsi berhenti sendiri setelah beberapa ribu pemanggilan dan mengembalikan 0', false],
+            ['Program menunggu tanpa memakai memori tambahan sampai dihentikan manual', false],
           ]),
         ],
       },
@@ -856,6 +1005,94 @@ int main(void) {
         ],
       },
       {
+        title: 'Pointer ke Struct & Operator ->',
+        slug: 'cfz-pointer-ke-struct',
+        content: [
+          '## Pointer ke struct dan operator ->',
+          'Pointer juga bisa menunjuk ke struct, misal `Mahasiswa *p = &m1;` dengan `Mahasiswa` dari `typedef` di lesson sebelumnya. Untuk mengakses field lewat pointer, dereference dulu lalu pakai titik: `(*p).ipk`. Kurungnya wajib, karena titik lebih diprioritaskan daripada `*`, jadi `*p.ipk` dibaca `*(p.ipk)` dan salah. Karena sering dipakai, C menyediakan singkatannya: `p->ipk` sama persis dengan `(*p).ipk`. Aturannya: titik untuk variabel struct langsung, panah `->` untuk pointer ke struct.',
+          '```c\n// melanjutkan typedef Mahasiswa dari lesson struct\nMahasiswa m1 = {"Budi", 20, 3.50f};\nMahasiswa *p = &m1;\n\nprintf("%.2f\\n", m1.ipk);     // lewat variabel: titik\nprintf("%.2f\\n", (*p).ipk);   // lewat pointer, versi panjang\nprintf("%.2f\\n", p->ipk);     // lewat pointer, versi ringkas\np->ipk = 3.90f;               // mengubah m1.ipk\n```',
+          '## Struct dan fungsi',
+          'Seperti variabel biasa, struct yang dikirim ke fungsi diterima sebagai salinan (pass by value), jadi mengubah field-nya di dalam fungsi tidak memengaruhi struct aslinya, berbeda dengan array. Kalau fungsi perlu mengubah struct asli, atau struct-nya besar dan sayang disalin, kirim pointer ke struct itu. Kalau fungsi hanya membaca, tandai parameternya `const Mahasiswa *m` (pointer ke data yang tidak boleh diubah lewat pointer itu), sehingga compiler menolak perubahan yang tidak sengaja.',
+          '```c\nvoid naikkanIpk(Mahasiswa *m, float tambahan) {\n    m->ipk += tambahan;           // mengubah struct asli\n}\n\nvoid cetak(const Mahasiswa *m) {  // hanya membaca\n    printf("%s: %.2f\\n", m->nama, m->ipk);\n}\n\nvoid salahUbah(Mahasiswa m) {     // menerima SALINAN\n    m.ipk = 0.0f;                 // struct asli tidak terpengaruh\n}\n```',
+          '## Struct di heap',
+          'Pointer ke struct juga yang dipakai bersama `malloc`: `sizeof *m` adalah ukuran struct yang ditunjuk `m`, tidak perlu menyebut nama tipenya lagi. Field diakses dengan `->`, array `char` di dalam struct tidak bisa diisi dengan `=` sehingga dipakai `strcpy`, dan `free` dipanggil kalau sudah selesai. Jangan pernah memakai `->` pada pointer `NULL`; program akan crash.',
+          '```c\nMahasiswa *m = malloc(sizeof *m);\nif (m == NULL) {\n    return 1;\n}\nstrcpy(m->nama, "Siti");   // array char tidak bisa di-assign dengan =\nm->umur = 21;\nm->ipk = 3.90f;\nfree(m);\n```',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    char nama[30];
+    int umur;
+    float ipk;
+} Mahasiswa;
+
+void cetak(const Mahasiswa *m) {
+    printf("%s, %d tahun, IPK %.2f\\n", m->nama, m->umur, m->ipk);
+}
+
+void naikkanIpk(Mahasiswa *m, float tambahan) {
+    m->ipk += tambahan;
+}
+
+void salahUbah(Mahasiswa m) {
+    m.ipk = 0.0f;
+    printf("Di dalam salahUbah, salinan IPK: %.2f\\n", m.ipk);
+}
+
+int main(void) {
+    Mahasiswa m1 = {"Budi", 20, 3.50f};
+    Mahasiswa *p = &m1;
+
+    printf("Lewat titik   : %.2f\\n", m1.ipk);
+    printf("Lewat (*p).   : %.2f\\n", (*p).ipk);
+    printf("Lewat panah ->: %.2f\\n", p->ipk);
+
+    salahUbah(m1);
+    cetak(&m1);
+
+    naikkanIpk(&m1, 0.25f);
+    cetak(&m1);
+
+    Mahasiswa *m2 = malloc(sizeof *m2);
+    if (m2 == NULL) {
+        printf("Alokasi memori gagal\\n");
+        return 1;
+    }
+    strcpy(m2->nama, "Siti");
+    m2->umur = 21;
+    m2->ipk = 3.90f;
+    cetak(m2);
+    free(m2);
+
+    return 0;
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Kalau p adalah pointer ke struct Mahasiswa, ekspresi mana yang setara dengan p->ipk?', [
+            ['(*p).ipk', true],
+            ['*p.ipk', false],
+            ['&p.ipk', false],
+            ['p.ipk', false],
+          ]),
+          q('Fungsi void ubah(Mahasiswa m) mengubah m.ipk di dalam fungsi. Apa efeknya pada struct asli di pemanggil?', [
+            ['Tidak berubah, karena fungsi menerima salinan seluruh struct', true],
+            ['Berubah, karena struct selalu dikirim sebagai alamat seperti array', false],
+            ['Berubah, tapi hanya untuk field yang bertipe angka', false],
+            ['Compile error, karena struct tidak boleh menjadi parameter fungsi', false],
+          ]),
+          q('Kapan operator -> dipakai, bukan titik?', [
+            ['Saat sisi kirinya pointer ke struct; titik dipakai untuk variabel struct langsung', true],
+            ['Saat field-nya bertipe pointer; titik dipakai untuk field bertipe biasa', false],
+            ['Hanya pada struct yang dibuat dengan malloc; struct biasa tidak boleh memakainya', false],
+            ['Saat field akan diubah; titik hanya boleh dipakai untuk membaca field', false],
+          ]),
+        ],
+      },
+      {
         title: 'Header File & Modularitas',
         slug: 'cfz-header-file-modularitas',
         content: [
@@ -910,7 +1147,7 @@ int main(void) {
           'Sekarang saatnya menggabungkan semua yang sudah dipelajari sepanjang course ini: variabel, tipe data, operator, percabangan, perulangan, array, fungsi, pointer, dan struct — semuanya dipakai bersama dalam satu program yang lebih realistis.',
           'Studi kasus di bawah ini adalah program sederhana pencatat nilai beberapa siswa: menyimpan data siswa dalam array of struct, menghitung rata-rata nilai tiap siswa lewat fungsi, lalu menentukan kelulusan lewat percabangan — pola yang sangat umum ditemui di program pengolahan data nyata.',
           'Perhatikan bagaimana fungsi `hitungRataRata` menerima array nilai (`int nilai[]`, yang di baliknya adalah pointer, seperti dibahas di modul sebelumnya) dari field `nilaiUjian` tiap siswa, dan bagaimana perulangan dipakai untuk memproses banyak data sekaligus tanpa menulis kode berulang-ulang secara manual.',
-          'Sepanjang course "C from Zero" ini kita sudah belajar dari sintaks paling dasar, tipe data, kontrol alur, array, fungsi, pointer, alokasi memori dinamis, hingga struct — fondasi yang cukup kuat untuk mulai menulis program C yang lebih kompleks, termasuk memahami kode sumber proyek open source yang ditulis dalam C.',
+          'Sepanjang course "C from Zero" ini kita sudah belajar dari sintaks paling dasar, tipe data (termasuk keluarga tipe integer dan `sizeof`), kontrol alur, array, fungsi (termasuk scope, `static`, dan rekursi), pointer, alokasi memori dinamis, hingga struct dan pointer ke struct — fondasi yang cukup kuat untuk mulai menulis program C yang lebih kompleks, termasuk memahami kode sumber proyek open source yang ditulis dalam C.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <stdio.h>
@@ -981,7 +1218,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'C from Zero adalah course pengantar untuk kamu yang belum pernah menulis kode sama sekali. C adalah bahasa di balik sistem operasi, firmware, dan banyak interpreter bahasa lain, jadi belajar C juga membantumu memahami apa yang sebenarnya terjadi di balik bahasa pemrograman yang lebih tinggi.',
-    'Di sini kamu belajar dari dasar: struktur program dan proses compile, variabel dan tipe data, operator, `printf` dengan format specifier, konstanta dan type casting, percabangan dan perulangan, array dan string sebagai array `char`, fungsi, pointer dan hubungannya dengan array, alokasi memori dinamis dengan `malloc` dan `free`, `struct`, hingga memecah program menjadi beberapa file dengan header. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar dari dasar: struktur program dan proses compile, variabel dan tipe data (termasuk keluarga tipe integer, `sizeof`, dan `size_t`), operator, `printf` dengan format specifier, konstanta dan type casting, percabangan dan perulangan, array dan string sebagai array `char`, fungsi (termasuk scope, variabel `static`, dan rekursi), pointer dan hubungannya dengan array, alokasi memori dinamis dengan `malloc` dan `free`, `struct` beserta pointer ke struct dan operator `->`, hingga memecah program menjadi beberapa file dengan header. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini menjalankan kode dengan GCC 9.2 (mode C11 `gnu11`), tanpa akses jaringan dan tanpa input keyboard, jadi `scanf` tidak bisa dicoba di sana. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun dan tidak perlu pengalaman programming sebelumnya.',
   ].join('\n\n'),
   sandboxLanguage: 'c',
