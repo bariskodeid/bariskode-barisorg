@@ -601,6 +601,81 @@ print("Setelah update:", siswa)
           ]),
         ],
       },
+      {
+        title: 'Set',
+        slug: 'pfz-set',
+        content: [
+          'Set adalah kumpulan item yang unik dan tidak punya urutan (unordered): item yang sama otomatis hanya disimpan sekali. Kegunaan utamanya menghapus data ganda dan mengecek keanggotaan dengan cepat. Set dibuat dengan `{}` berisi item, atau dengan fungsi `set()` dari sequence lain seperti list.',
+          'Hati-hati: `{}` kosong membuat dictionary, bukan set. Untuk membuat set kosong, pakai `set()`.',
+          `\`\`\`python
+angka = {3, 1, 2, 3, 1}
+print(sorted(angka))   # [1, 2, 3], duplikat dibuang
+
+unik = set([1, 1, 2, 2, 3])   # set dari sebuah list
+print(sorted(unik))            # [1, 2, 3]
+
+print(type(set()), type({}))   # set kosong vs dictionary kosong
+\`\`\``,
+          '## Anggota dan perubahan',
+          'Karena tidak punya urutan, set tidak punya index: `angka[0]` menghasilkan `TypeError`. Gunakan `in` untuk mengecek keanggotaan, `.add()` untuk menambah item, `.remove()` untuk menghapus item (`KeyError` kalau item tidak ada), dan `.discard()` untuk menghapus tanpa error kalau item tidak ada. Urutan item saat set dicetak tidak dijamin, jadi pakai `sorted()` kalau butuh tampilan yang terurut. Anggota set juga harus immutable: angka, string, dan tuple boleh, tapi list tidak.',
+          '## Operasi himpunan',
+          'Set mendukung operasi himpunan seperti di matematika: `a | b` (union, semua item dari keduanya), `a & b` (intersection, item yang ada di keduanya), `a - b` (difference, item di `a` yang tidak ada di `b`), dan `a ^ b` (symmetric difference, item yang hanya ada di salah satunya).',
+          `\`\`\`python
+a = {1, 2, 3, 4}
+b = {3, 4, 5}
+print(sorted(a | b))   # [1, 2, 3, 4, 5]
+print(sorted(a & b))   # [3, 4]
+print(sorted(a - b))   # [1, 2]
+print(sorted(a ^ b))   # [1, 2, 5]
+\`\`\``,
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `angka = [3, 1, 2, 3, 1, 2]
+unik = set(angka)
+print("List asli:", angka)
+print("Setelah jadi set (diurutkan):", sorted(unik))
+print("Jumlah item unik:", len(unik))
+
+print("set() kosong bertipe:", type(set()))
+print("{} kosong bertipe:", type({}))
+
+buah = {"apel", "jeruk"}
+buah.add("mangga")
+buah.add("apel")  # sudah ada, tidak menambah apa-apa
+print("Ada jeruk?", "jeruk" in buah)
+buah.discard("durian")  # tidak ada, tapi tidak error
+buah.remove("jeruk")
+print("Buah sekarang:", sorted(buah))
+
+a = {1, 2, 3, 4}
+b = {3, 4, 5}
+print("Union a | b:", sorted(a | b))
+print("Intersection a & b:", sorted(a & b))
+print("Difference a - b:", sorted(a - b))
+print("Symmetric difference a ^ b:", sorted(a ^ b))
+
+# print(a[0])  # hapus tanda # di awal untuk melihat TypeError: set tidak punya index
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Bagaimana cara membuat set kosong di Python?', [
+            ['set()', true],
+            ['{}', false],
+            ['()', false],
+          ]),
+          q('Operator mana yang menghasilkan item yang ada di KEDUA set a dan b?', [
+            ['a & b', true],
+            ['a | b', false],
+            ['a - b', false],
+            ['a ^ b', false],
+          ]),
+          q('Kenapa set tidak bisa diakses dengan index seperti angka[0]?', [
+            ['Set tidak punya urutan, jadi tidak ada posisi (index) tetap untuk tiap item', true],
+            ['Set bersifat immutable seperti tuple, jadi index dilarang', false],
+            ['Set hanya boleh berisi satu item', false],
+          ]),
+        ],
+      },
     ],
   },
   {
@@ -976,12 +1051,194 @@ Siswa.perkenalan(siswa1)
         ],
       },
       {
+        title: 'Inheritance (Pewarisan Class)',
+        slug: 'pfz-inheritance',
+        content: [
+          'Inheritance memungkinkan sebuah class (child class) mewarisi atribut dan method dari class lain (parent class), jadi kode yang sama tidak perlu ditulis ulang. Sintaksnya: tulis nama parent di dalam kurung setelah nama class, misal `class Kucing(Hewan):`. Semua method parent otomatis bisa dipakai oleh object child.',
+          `\`\`\`python
+class Hewan:
+    def __init__(self, nama):
+        self.nama = nama
+
+    def suara(self):
+        return "..."
+
+class Kucing(Hewan):
+    pass
+
+tom = Kucing("Tom")
+print(tom.nama)      # Tom, diwarisi dari Hewan
+print(tom.suara())   # ...
+\`\`\``,
+          '## Override method',
+          'Child class bisa menimpa (override) method milik parent dengan mendefinisikan method bernama sama. Untuk object child, yang dipakai adalah versi milik child. Contoh ini melanjutkan class `Hewan` di atas.',
+          `\`\`\`python
+class Kucing(Hewan):
+    def suara(self):
+        return "Meong"
+\`\`\``,
+          '## super()',
+          'Kalau child class punya `__init__` sendiri, `__init__` milik parent tidak otomatis ikut berjalan. Panggil lewat `super().__init__(...)` supaya bagian parent dari object tetap diinisialisasi. Contoh ini juga melanjutkan class `Hewan` di atas.',
+          `\`\`\`python
+class Anjing(Hewan):
+    def __init__(self, nama, ras):
+        super().__init__(nama)   # inisialisasi bagian Hewan
+        self.ras = ras
+
+    def suara(self):
+        return "Guk"
+\`\`\``,
+          '## isinstance dan issubclass',
+          '`isinstance(obj, Kelas)` bernilai `True` kalau `obj` adalah instance dari `Kelas` atau dari class turunannya. `issubclass(A, B)` bernilai `True` kalau class `A` adalah turunan dari class `B`. Jadi object `Kucing` juga dianggap instance dari `Hewan`.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `class Hewan:
+    def __init__(self, nama):
+        self.nama = nama
+
+    def suara(self):
+        return "..."
+
+    def perkenalan(self):
+        print(f"{self.nama} berkata: {self.suara()}")
+
+
+class Kucing(Hewan):
+    def suara(self):
+        return "Meong"
+
+
+class Anjing(Hewan):
+    def __init__(self, nama, ras):
+        super().__init__(nama)
+        self.ras = ras
+
+    def suara(self):
+        return "Guk"
+
+
+hewan_umum = Hewan("Hewan")
+tom = Kucing("Tom")
+rex = Anjing("Rex", "Labrador")
+
+hewan_umum.perkenalan()
+tom.perkenalan()
+rex.perkenalan()
+print("Ras Rex:", rex.ras)
+
+print("tom adalah Kucing?", isinstance(tom, Kucing))
+print("tom adalah Hewan?", isinstance(tom, Hewan))
+print("tom adalah Anjing?", isinstance(tom, Anjing))
+print("Anjing turunan Hewan?", issubclass(Anjing, Hewan))
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Bagaimana sintaks membuat class Kucing yang mewarisi class Hewan?', [
+            ['class Kucing(Hewan):', true],
+            ['class Hewan(Kucing):', false],
+            ['class Kucing extends Hewan:', false],
+          ]),
+          q('Apa yang terjadi kalau child class mendefinisikan method dengan nama yang sama seperti method di parent-nya?', [
+            ['Object child memakai method milik child (override)', true],
+            ['Python melempar error karena nama method harus unik di seluruh hierarki class', false],
+            ['Method milik parent tetap dipakai dan method child diabaikan', false],
+          ]),
+          q('Untuk apa super().__init__(nama) dipanggil di dalam __init__ milik child class?', [
+            ['Menjalankan __init__ parent supaya bagian parent dari object ikut diinisialisasi', true],
+            ['Tidak perlu dipanggil, __init__ parent selalu otomatis berjalan sebelum __init__ child', false],
+            ['Membuat object parent baru yang terpisah dari object child', false],
+          ]),
+        ],
+      },
+      {
+        title: 'File I/O dengan with open',
+        slug: 'pfz-file-io-with',
+        content: [
+          'Program sering perlu menyimpan atau membaca data dari file. Fungsi bawaan `open(nama_file, mode)` membuka file dan mengembalikan file object. Mode yang paling umum: `"r"` untuk membaca (default), `"w"` untuk menulis (isi lama dihapus lebih dulu), dan `"a"` untuk menambah di akhir file (isi lama tetap ada). Untuk file teks, tambahkan `encoding="utf-8"` supaya karakter non-ASCII aman.',
+          '## with menutup file otomatis',
+          'File yang sudah dibuka harus ditutup. Dengan `with`, file otomatis ditutup begitu blok selesai, bahkan kalau terjadi exception di dalam blok, jadi tidak perlu memanggil `close()` manual. Perhatikan juga bahwa `write()` tidak menambah baris baru sendiri seperti `print()`, jadi tulis `\\n` secara eksplisit.',
+          `\`\`\`python
+with open("catatan.txt", "w", encoding="utf-8") as f:
+    f.write("Baris pertama\\n")
+    f.write("Baris kedua\\n")
+
+print(f.closed)   # True: di luar blok with, file sudah tertutup
+\`\`\``,
+          '## Membaca file',
+          '`f.read()` membaca seluruh isi file sebagai satu string. Meng-iterasi file object dengan `for` membaca satu baris per iterasi; tiap baris masih berakhiran `\\n`, jadi pakai `.strip()` kalau tidak ingin ikut tercetak.',
+          `\`\`\`python
+with open("catatan.txt", "r", encoding="utf-8") as f:
+    for baris in f:
+        print(baris.strip())
+\`\`\``,
+          '## File yang tidak ada',
+          'Membuka file yang tidak ada dengan mode `"r"` menghasilkan `FileNotFoundError`. Tangani dengan `try`/`except` seperti di lesson Exception Handling.',
+          `\`\`\`python
+try:
+    with open("tidak_ada.txt", "r", encoding="utf-8") as f:
+        print(f.read())
+except FileNotFoundError:
+    print("File tidak ditemukan")
+\`\`\``,
+          'File yang dibuat di sandbox hanya ada selama program berjalan. Di komputer sendiri, file tersimpan permanen di folder tempat program dijalankan.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `nama_file = "catatan.txt"
+
+# Mode "w": membuat file baru (atau menimpa isi lama)
+with open(nama_file, "w", encoding="utf-8") as f:
+    f.write("Baris pertama\\n")
+    f.write("Baris kedua\\n")
+
+# Mode "a": menambah di akhir file tanpa menghapus isi lama
+with open(nama_file, "a", encoding="utf-8") as f:
+    f.write("Baris ketiga (ditambahkan)\\n")
+
+# Baca seluruh isi sekaligus
+with open(nama_file, "r", encoding="utf-8") as f:
+    isi = f.read()
+print("Isi file:")
+print(isi)
+
+# Baca baris demi baris
+with open(nama_file, "r", encoding="utf-8") as f:
+    for baris in f:
+        print("-", baris.strip())
+print("File sudah ditutup?", f.closed)
+
+# Membuka file yang tidak ada
+try:
+    with open("tidak_ada.txt", "r", encoding="utf-8") as f:
+        print(f.read())
+except FileNotFoundError:
+    print("File tidak_ada.txt tidak ditemukan")
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa keuntungan memakai with open(...) as f dibanding memanggil open() biasa?', [
+            ['File otomatis ditutup setelah blok with selesai, bahkan kalau terjadi exception', true],
+            ['File dibaca jauh lebih cepat karena isinya di-cache oleh with', false],
+            ['File otomatis menjadi read-only sehingga isinya aman dari perubahan', false],
+          ]),
+          q('Apa yang terjadi kalau file yang sudah berisi data dibuka dengan mode "w"?', [
+            ['Isi lama dihapus lebih dulu, lalu penulisan dimulai dari file kosong', true],
+            ['Data baru ditambahkan di akhir file, isi lama tetap ada', false],
+            ['Python melempar FileExistsError karena file sudah ada', false],
+          ]),
+          q('Kode f.write("Halo") lalu f.write("Dunia") dijalankan pada file yang sama. Bagaimana isi file-nya?', [
+            ['HaloDunia dalam satu baris, karena write() tidak menambah baris baru otomatis', true],
+            ['Halo dan Dunia di dua baris terpisah, seperti print()', false],
+            ['Hanya Dunia, karena write() kedua menimpa yang pertama', false],
+          ]),
+        ],
+      },
+      {
         title: 'List Comprehension & Ringkasan',
         slug: 'pfz-list-comprehension-ringkasan',
         content: [
           'List comprehension adalah cara ringkas membuat list baru dari list/sequence lain dalam satu baris, ditulis `[ekspresi for item in sequence]`, opsional ditambah kondisi `if`.',
           'Contoh: `[x**2 for x in range(5)]` menghasilkan list kuadrat dari 0 sampai 4, setara dengan loop `for` biasa tapi lebih ringkas dan sering lebih cepat dieksekusi.',
-          'Sepanjang course ini kita sudah belajar sintaks dasar, tipe data, kontrol alur, fungsi, error handling, hingga OOP dasar — fondasi yang cukup untuk mulai membangun program Python yang lebih kompleks.',
+          'Sepanjang course ini kita sudah belajar sintaks dasar, tipe data (termasuk string, list, tuple, dictionary, dan set), kontrol alur, fungsi, error handling, membaca dan menulis file, hingga OOP dasar dengan inheritance — fondasi yang cukup untuk mulai membangun program Python yang lebih kompleks.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `kuadrat = [x**2 for x in range(5)]
@@ -1027,7 +1284,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'Python from Zero adalah course pengantar untuk kamu yang belum pernah menulis kode sama sekali. Python dikenal sintaksnya yang sederhana dan mudah dibaca, sehingga cocok sebagai bahasa pemrograman pertama, dan tetap dipakai luas untuk web, data science, dan automasi.',
-    'Di sini kamu belajar dari dasar: menjalankan Python, sintaks dan komentar, variabel, tipe data, string, operator, percabangan dan perulangan, struktur data (list, tuple, dictionary), fungsi dan scope, modul bawaan, exception handling, dasar OOP, hingga list comprehension. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar dari dasar: menjalankan Python, sintaks dan komentar, variabel, tipe data, string, operator, percabangan dan perulangan, struktur data (list, tuple, dictionary, set), fungsi dan scope, modul bawaan, exception handling, dasar OOP (class, object, inheritance), membaca dan menulis file dengan `with open`, hingga list comprehension. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini menjalankan kode dengan Python 3.8, tanpa akses jaringan dan tanpa input keyboard (jadi `input()` tidak bisa dicoba di sana). Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun dan tidak perlu pengalaman programming sebelumnya.',
   ].join('\n\n'),
   sandboxLanguage: 'python',
