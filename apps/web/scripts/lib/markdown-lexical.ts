@@ -95,6 +95,13 @@ export function markdownToLexical(markdown: string | string[]): SerializedEditor
           closed = true
           break
         }
+        // Penutup berindentasi bukan penutup, tapi tanpa guard ini diam-diam
+        // dianggap kode dan menelan prosa sampai fence polos berikutnya.
+        if (lines[i].trim() === '```') {
+          throw new Error(
+            `Penutup code fence tidak valid di baris ${i + 1}: ${JSON.stringify(lines[i])} (harus tepat \`\`\` tanpa indentasi)`,
+          )
+        }
         codeLines.push(lines[i])
       }
       if (!closed) {

@@ -64,6 +64,19 @@ describe('markdownToLexical()', () => {
     expect(() => markdownToLexical('a\n  ```python\nx\n```')).toThrow(/pembuka.*baris 2.*```python/i)
   })
 
+  it('penutup fence berindentasi (bukan penutup polos) melempar dengan nomor baris dan isi baris', () => {
+    expect(() =>
+      markdownToLexical('```python\nprint(1)\n  ```\n\nprosa yang tidak boleh ikut tertelan\n\n```python\nprint(2)\n```'),
+    ).toThrow(/penutup.*baris 3.*  ```/i)
+    expect(() => markdownToLexical('```python\nprint(1)\n\t```\n```')).toThrow(/penutup.*baris 3/i)
+  })
+
+  it('penutup polos dengan spasi di belakang tetap valid', () => {
+    const res = kids('```python\nprint(1)\n```  \n\nprosa')
+    expect(res).toHaveLength(2)
+    expect(res[0].fields.code).toBe('print(1)')
+  })
+
   it('nama bahasa dari prototype (constructor, toString) ditolak', () => {
     expect(() => markdownToLexical('```constructor\nx\n```')).toThrow(/bahasa.*constructor/i)
     expect(() => markdownToLexical('```toString\nx\n```')).toThrow(/bahasa.*toString/i)
