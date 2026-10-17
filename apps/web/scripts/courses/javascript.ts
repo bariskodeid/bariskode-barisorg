@@ -441,6 +441,91 @@ while (hitung < 3) {
 `,
       },
       {
+        title: 'Perulangan for...of & for...in',
+        slug: 'jsfz-for-of-for-in',
+        content: [
+          'Selain `for` biasa, JavaScript punya dua perulangan khusus untuk menelusuri koleksi data: `for...of` dan `for...in`. Keduanya sering tertukar, padahal yang ditelusuri berbeda. Array dan object dibahas lengkap di dua lesson berikutnya; di sini cukup tahu bentuknya: array ditulis `["apel", "jeruk"]` dan object ditulis `{ nama: "Budi" }`.',
+          '## for...of: menelusuri nilai',
+          '`for...of` mengambil nilai satu per satu dari sesuatu yang bisa ditelusuri (iterable), misalnya array dan string. Ia cocok kalau yang dibutuhkan adalah isi koleksinya, tanpa perlu mengurus index. `break` dan `continue` bekerja seperti di `for` biasa.',
+          `\`\`\`javascript
+const buah = ["apel", "jeruk", "mangga"];
+for (const item of buah) {
+  console.log(item); // apel, jeruk, lalu mangga
+}
+
+for (const huruf of "JS") {
+  console.log(huruf); // J, lalu S
+}
+\`\`\``,
+          '## for...in: menelusuri nama properti',
+          '`for...in` mengambil nama properti (key) dari sebuah object, satu per satu, dan key itu selalu bertipe string. Untuk mengambil nilainya, pakai bracket notation seperti `siswa[key]`.',
+          `\`\`\`javascript
+const siswa = { nama: "Budi", umur: 20 };
+for (const key in siswa) {
+  console.log(key, "=", siswa[key]); // nama = Budi, lalu umur = 20
+}
+\`\`\``,
+          '## Jebakan: for...in pada array',
+          'Kalau `for...in` dipakai pada array, yang didapat adalah index sebagai string ("0", "1", dan seterusnya), bukan nilainya, dan loop juga bisa ikut menelusuri properti tambahan non-index milik array. Sebaliknya, `for...of` tidak bisa dipakai langsung pada object biasa: JavaScript melempar `TypeError` karena object biasa bukan iterable. Aturan praktisnya:',
+          '- `for...of`: untuk menelusuri nilai, dipakai pada array dan string.\n- `for...in`: untuk menelusuri nama properti (key), dipakai pada object.',
+          `\`\`\`javascript
+const buah = ["apel", "jeruk"];
+for (const index in buah) {
+  console.log(index, typeof index); // 0 string, lalu 1 string
+}
+\`\`\``,
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `const buah = ["apel", "jeruk", "mangga"];
+
+console.log("for...of pada array (nilai):");
+for (const item of buah) {
+  console.log("-", item);
+}
+
+console.log("for...of dengan break:");
+for (const item of buah) {
+  if (item === "mangga") break;
+  console.log("-", item);
+}
+
+console.log("for...of pada string (huruf):");
+for (const huruf of "JS") {
+  console.log("-", huruf);
+}
+
+const siswa = { nama: "Budi", umur: 20, kelas: "12 IPA" };
+
+console.log("for...in pada object (key):");
+for (const key in siswa) {
+  console.log("-", key, "=", siswa[key]);
+}
+
+console.log("for...in pada array (index sebagai string):");
+for (const index in buah) {
+  console.log("-", index, typeof index);
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang diambil oleh for (const x of ["a", "b"]) pada setiap putaran?', [
+            ['Nilai item: "a" lalu "b"', true],
+            ['Index item sebagai angka: 0 lalu 1', false],
+            ['Index item sebagai string: "0" lalu "1"', false],
+          ]),
+          q('Apa yang diberikan for (const k in { nama: "Budi", umur: 20 }) pada setiap putaran?', [
+            ['Nama propertinya: "nama" lalu "umur"', true],
+            ['Nilainya: "Budi" lalu 20', false],
+            ['Pasangan key dan value dalam bentuk array', false],
+          ]),
+          q('Kalau for...in dipakai pada array ["a", "b"], variabel loop-nya bertipe apa?', [
+            ['string, yaitu "0" dan "1"', true],
+            ['number, yaitu 0 dan 1', false],
+            ['Sama dengan nilai itemnya, yaitu "a" dan "b"', false],
+          ]),
+        ],
+      },
+      {
         title: 'Array & Method Array',
         slug: 'jsfz-array-method-array',
         content: [
@@ -877,6 +962,97 @@ console.log("Spread object (override kelas):", siswaBaru);
         ],
       },
       {
+        title: 'Penanganan Error: try/catch/throw',
+        slug: 'jsfz-try-catch-throw',
+        content: [
+          'Saat program berjalan, kadang terjadi kesalahan yang baru ketahuan di tengah jalan (runtime error), misalnya mengakses properti dari `null`. Pada saat itu JavaScript melempar (throw) sebuah error. Kalau tidak ada yang menangkapnya, program berhenti dan sisa kode tidak dijalankan. `try...catch` memungkinkan kita menangkap error itu supaya program bisa lanjut dengan cara yang terkendali.',
+          '## try, catch, dan finally',
+          'Kode yang berisiko error ditaruh di blok `try`. Kalau terjadi error, sisa baris di dalam `try` dilewati dan eksekusi langsung pindah ke blok `catch`, dengan object error sebagai parameternya. Blok `finally` (opsional) selalu dijalankan, ada error atau tidak, cocok untuk langkah "bersih-bersih". Blok `try` harus diikuti `catch`, `finally`, atau keduanya.',
+          `\`\`\`javascript
+try {
+  console.log("Mulai");
+  const pengguna = null;
+  console.log(pengguna.nama); // error: null tidak punya properti
+  console.log("Baris ini dilewati");
+} catch (error) {
+  console.log("Tertangkap:", error.name); // TypeError
+} finally {
+  console.log("finally selalu dijalankan");
+}
+\`\`\``,
+          '## Object error',
+          'Error adalah object dengan properti `name` (jenis error, misalnya `TypeError`, `ReferenceError`, atau `SyntaxError`) dan `message` (penjelasannya). Teks `message` bawaan JavaScript bisa berbeda antar versi Node.js dan browser, jadi jangan bergantung pada bunyi persisnya.',
+          '## throw: melempar error sendiri',
+          'Kita juga bisa melempar error sendiri dengan `throw`. Eksekusi fungsi berhenti saat itu juga dan langsung pindah ke `catch` terdekat. Biasakan melempar object `Error` (`throw new Error("pesan")`), bukan string biasa, supaya error punya `name` dan `message`. Ini berguna untuk menolak input yang tidak masuk akal. Misalnya JavaScript tidak menganggap `10 / 0` sebagai error (hasilnya `Infinity`), jadi fungsi pembagian berikut melempar error sendiri.',
+          `\`\`\`javascript
+function bagi(a, b) {
+  if (b === 0) {
+    throw new Error("Pembagi tidak boleh nol");
+  }
+  return a / b;
+}
+
+try {
+  console.log(bagi(10, 2)); // 5
+  console.log(bagi(10, 0)); // melempar error
+} catch (error) {
+  console.log("Gagal:", error.message); // Gagal: Pembagi tidak boleh nol
+}
+\`\`\``,
+          'Catatan: `try...catch` hanya menangkap error yang dilempar selagi kode di dalam `try` berjalan. Error yang baru dilempar kemudian, di dalam callback asynchronous seperti `setTimeout`, tidak tertangkap oleh `try...catch` di luarnya.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `// 1. Error bawaan JavaScript
+try {
+  console.log("Mulai");
+  const pengguna = null;
+  console.log(pengguna.nama);
+  console.log("Baris ini dilewati");
+} catch (error) {
+  console.log("Tertangkap:", error.name);
+} finally {
+  console.log("finally selalu dijalankan");
+}
+
+// 2. Error buatan sendiri dengan throw
+function bagi(a, b) {
+  if (b === 0) {
+    throw new Error("Pembagi tidak boleh nol");
+  }
+  return a / b;
+}
+
+try {
+  console.log("10 / 2 =", bagi(10, 2));
+  console.log("10 / 0 =", bagi(10, 0));
+  console.log("Baris ini tidak pernah dijalankan");
+} catch (error) {
+  console.log("Gagal:", error.message);
+}
+
+console.log("Program tetap lanjut setelah error ditangkap");
+console.log("10 / 0 tanpa pengecekan:", 10 / 0);
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang terjadi pada sisa baris di dalam blok try setelah sebuah error dilempar?', [
+            ['Dilewati, eksekusi langsung pindah ke blok catch', true],
+            ['Tetap dijalankan sampai selesai, baru blok catch dijalankan', false],
+            ['Program langsung berhenti total walaupun ada blok catch', false],
+          ]),
+          q('Kapan blok finally dijalankan?', [
+            ['Selalu, baik ada error maupun tidak', true],
+            ['Hanya kalau ada error dan sudah ditangkap oleh catch', false],
+            ['Hanya kalau tidak ada error di blok try', false],
+          ]),
+          q('Apa fungsi throw new Error("pesan")?', [
+            ['Menghentikan fungsi saat itu juga dan melempar error ke catch terdekat', true],
+            ['Mencetak pesan ke layar lalu program lanjut seperti biasa', false],
+            ['Menangkap error yang terjadi sebelumnya', false],
+          ]),
+        ],
+      },
+      {
         title: 'Promise & Async/Await Dasar',
         slug: 'jsfz-promise-async-await-dasar',
         content: [
@@ -890,7 +1066,7 @@ const janji = new Promise((resolve, reject) => {
 \`\`\``,
           '## async dan await',
           '`async`/`await` adalah sintaks yang lebih mudah dibaca untuk bekerja dengan Promise. Fungsi yang diberi kata kunci `async` otomatis mengembalikan Promise, bahkan kalau isinya cuma `return 42` (hasilnya Promise yang fulfilled dengan nilai 42). Di dalamnya, `await` "menunggu" sebuah Promise selesai sebelum melanjutkan baris berikutnya — tanpa perlu menulis `.then()` berantai.',
-          'Kalau Promise yang ditunggu berakhir rejected, `await` melempar error, jadi bisa ditangkap dengan blok `try`/`catch` (lihat starter code di sandbox).',
+          'Kalau Promise yang ditunggu berakhir rejected, `await` melempar error, jadi bisa ditangkap dengan blok `try`/`catch` seperti di lesson sebelumnya (contohnya ada di starter code).',
           '## Di mana await boleh dipakai',
           '`await` boleh dipakai di dalam fungsi `async`, atau di level atas sebuah ES module (top-level await). Skrip Node.js biasa (CommonJS) tidak mendukung top-level await, dan Node.js 12 di sandbox ini juga tidak mendukungnya sama sekali: hasilnya SyntaxError. Kalau ingin memakai `await` langsung di level atas skrip, pola umum yang aman adalah membungkusnya dalam sebuah async IIFE (Immediately Invoked Function Expression):',
           `\`\`\`javascript
@@ -953,12 +1129,117 @@ const janji = new Promise((resolve, reject) => {
         ],
       },
       {
+        title: 'Class Dasar',
+        slug: 'jsfz-class-dasar',
+        content: [
+          'Class adalah "cetak biru" (blueprint) untuk membuat banyak object dengan bentuk dan perilaku yang sama. Sebelumnya kita membuat object satu per satu dengan `{}`; kalau butuh banyak object serupa (banyak siswa, banyak produk), class menghindarkan kita dari menulis ulang bentuknya berkali-kali.',
+          '## Class, constructor, dan method',
+          'Class ditulis dengan kata kunci `class`. `constructor` adalah method khusus yang dijalankan otomatis saat object dibuat dengan `new`. Di dalamnya, `this` merujuk ke object baru yang sedang dibuat (disebut instance) dan biasanya dipakai untuk mengisi properti awal. Method lain ditulis tanpa kata kunci `function` dan bisa dipakai oleh semua instance.',
+          `\`\`\`javascript
+class Siswa {
+  constructor(nama, umur) {
+    this.nama = nama;
+    this.umur = umur;
+  }
+
+  perkenalan() {
+    return \`Halo, saya \${this.nama}, umur \${this.umur} tahun\`;
+  }
+}
+
+const budi = new Siswa("Budi", 20);
+const siti = new Siswa("Siti", 19);
+console.log(budi.perkenalan()); // Halo, saya Budi, umur 20 tahun
+console.log(siti.perkenalan()); // Halo, saya Siti, umur 19 tahun
+\`\`\``,
+          'Setiap `new Siswa(...)` menghasilkan instance baru yang independen: mengubah `budi.nama` tidak memengaruhi `siti.nama`. Class wajib dipanggil dengan `new`; memanggil `Siswa("Budi", 20)` tanpa `new` memicu `TypeError`.',
+          '## Inheritance dengan extends',
+          'Class bisa mewarisi class lain lewat `extends`. Class turunan (subclass) otomatis punya properti dan method milik class induk, dan boleh menambah method baru atau menimpa (override) method induk. Di constructor class turunan, `super(...)` memanggil constructor class induk dan harus dipanggil sebelum memakai `this`. Sedangkan `super.namaMethod()` memanggil versi method milik class induk.',
+          `\`\`\`javascript
+// melanjutkan class Siswa di atas
+class Mahasiswa extends Siswa {
+  constructor(nama, umur, jurusan) {
+    super(nama, umur);
+    this.jurusan = jurusan;
+  }
+
+  perkenalan() {
+    return \`\${super.perkenalan()}, jurusan \${this.jurusan}\`;
+  }
+}
+
+const rina = new Mahasiswa("Rina", 21, "Informatika");
+console.log(rina.perkenalan()); // Halo, saya Rina, umur 21 tahun, jurusan Informatika
+\`\`\``,
+          'Di balik layar, class JavaScript dibangun di atas mekanisme prototype. Kamu belum perlu mempelajarinya sekarang; sintaks `class` sudah cukup untuk memulai.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `class Siswa {
+  constructor(nama, umur) {
+    this.nama = nama;
+    this.umur = umur;
+  }
+
+  perkenalan() {
+    return \`Halo, saya \${this.nama}, umur \${this.umur} tahun\`;
+  }
+}
+
+class Mahasiswa extends Siswa {
+  constructor(nama, umur, jurusan) {
+    super(nama, umur);
+    this.jurusan = jurusan;
+  }
+
+  perkenalan() {
+    return \`\${super.perkenalan()}, jurusan \${this.jurusan}\`;
+  }
+}
+
+const budi = new Siswa("Budi", 20);
+const siti = new Siswa("Siti", 19);
+const rina = new Mahasiswa("Rina", 21, "Informatika");
+
+console.log(budi.perkenalan());
+console.log(siti.perkenalan());
+console.log(rina.perkenalan());
+
+budi.nama = "Budi Baru";
+console.log("Setelah budi diubah:", budi.nama, "|", siti.nama);
+console.log("Isi object:", rina);
+
+try {
+  Siswa("Tanpa new", 18);
+} catch (error) {
+  console.log("Tanpa new ->", error.name);
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa peran constructor di dalam sebuah class?', [
+            ['Dijalankan otomatis saat new dipanggil, untuk mengisi properti awal object baru', true],
+            ['Dijalankan setiap kali method lain milik class itu dipanggil', false],
+            ['Menghapus object dari memori saat sudah tidak dipakai', false],
+          ]),
+          q('Apa yang terjadi kalau class Siswa dipanggil sebagai Siswa("Budi", 20) tanpa kata kunci new?', [
+            ['Muncul TypeError karena class wajib dipanggil dengan new', true],
+            ['Menghasilkan object kosong tanpa properti', false],
+            ['Berjalan seperti function biasa dan mengembalikan undefined', false],
+          ]),
+          q('Apa yang dilakukan super(nama, umur) di constructor class turunan?', [
+            ['Memanggil constructor class induk, dan harus dipanggil sebelum memakai this', true],
+            ['Membuat salinan dari object class induk yang sudah ada', false],
+            ['Menghapus method class induk supaya tidak ikut diwarisi', false],
+          ]),
+        ],
+      },
+      {
         title: 'Studi Kasus Gabungan',
         slug: 'jsfz-studi-kasus-gabungan',
         content: [
           'Sebagai penutup course ini, kita akan menggabungkan beberapa konsep yang sudah dipelajari: array method (`filter`, `map`, `reduce`), destructuring parameter fungsi, dan template literal — semua dalam satu studi kasus sederhana: mengelola daftar produk.',
           'Perhatikan bagaimana `filter()` dipakai untuk menyaring produk yang stoknya masih ada, lalu `map()` dipakai untuk mengubah tiap produk jadi teks yang siap ditampilkan, dan `reduce()` dipakai untuk menghitung total nilai seluruh stok.',
-          'Sepanjang course ini kita sudah belajar dari dasar JavaScript, tipe data, operator, kontrol alur, array, object, fungsi (termasuk arrow function dan closure), sampai dasar-dasar asynchronous dengan Promise/async-await — fondasi yang cukup untuk mulai membangun program JavaScript yang lebih kompleks, baik di browser maupun dengan Node.js.',
+          'Sepanjang course ini kita sudah belajar dari dasar JavaScript, tipe data, operator, kontrol alur (termasuk for...of dan for...in), array, object, fungsi (termasuk arrow function dan closure), penanganan error dengan try/catch, dasar-dasar asynchronous dengan Promise/async-await, sampai class — fondasi yang cukup untuk mulai membangun program JavaScript yang lebih kompleks, baik di browser maupun dengan Node.js.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `const produkList = [
@@ -992,7 +1273,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'JavaScript from Zero adalah course pengantar untuk kamu yang belum pernah menulis kode sama sekali. JavaScript adalah bahasa utama untuk membuat halaman web interaktif, dan lewat Node.js ia juga dipakai di sisi server, sehingga cocok sebagai bahasa pemrograman pertama.',
-    'Di sini kamu belajar dari dasar: menjalankan JavaScript, variabel (`var`, `let`, `const`), tipe data dan operator, type coercion, template literal, percabangan dan perulangan, array dan object, fungsi (function expression, arrow function, scope dan closure, callback), destructuring dan spread, hingga dasar asynchronous dengan Promise dan async/await. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar dari dasar: menjalankan JavaScript, variabel (`var`, `let`, `const`), tipe data dan operator, type coercion, template literal, percabangan dan perulangan (`for`, `while`, `for...of`, `for...in`), array dan object, fungsi (function expression, arrow function, scope dan closure, callback), destructuring dan spread, penanganan error dengan `try`/`catch`/`throw`, dasar asynchronous dengan Promise dan async/await, hingga class dasar. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini menjalankan kode dengan Node.js 12, tanpa akses jaringan dan tanpa input keyboard, jadi fitur JavaScript yang lebih baru seperti optional chaining dan operator `??` tidak bisa dicoba di sana. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun dan tidak perlu pengalaman programming sebelumnya.',
   ].join('\n\n'),
   sandboxLanguage: 'javascript',
