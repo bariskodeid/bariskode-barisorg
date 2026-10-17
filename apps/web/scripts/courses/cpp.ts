@@ -225,6 +225,80 @@ int main() {
         ],
       },
       {
+        title: 'Konstanta (const) & auto',
+        slug: 'cppfz-const-auto',
+        content: [
+          'Kata kunci `const` menandai sebuah variabel sebagai konstanta: nilainya diisi saat deklarasi dan tidak bisa diubah lagi. Variabel `const` wajib langsung diberi nilai (`const int x;` tanpa nilai awal adalah error), dan setiap usaha mengubahnya ditolak compiler. Jadi `const` cocok untuk nilai yang memang tidak boleh berubah, seperti `PI` — kesalahannya tertangkap saat compile, bukan jadi bug saat program berjalan.',
+          '```cpp\n#include <iostream>\nusing namespace std;\n\nint main() {\n    const double PI = 3.14159;\n    // PI = 3.14;  // error: PI adalah const dan tidak bisa diubah\n    double jariJari = 2.0;\n    cout << PI * jariJari * jariJari << endl;  // 12.5664\n    return 0;\n}\n```',
+          '`const` juga bisa dipasang pada referensi. Tanda `&` setelah tipe membuat referensi (alias, nama lain untuk variabel yang sama) — dibahas lengkap di lesson Referensi Dasar. Untuk saat ini cukup tahu bahwa parameter `const string& nama` berarti fungsi memakai string aslinya tanpa menyalin isinya, sekaligus berjanji tidak mengubahnya; compiler menolak setiap usaha mengubah `nama` di dalam fungsi. Ini pola standar untuk parameter yang hanya dibaca, terutama untuk data besar seperti `std::string` dan `std::vector`. Bonusnya, `const&` boleh menerima nilai sementara seperti teks literal `"Siti"`, sedangkan referensi biasa (`string&`) tidak.',
+          'Dengan `auto`, compiler menebak tipe variabel dari nilai awalnya: `auto umur = 20;` bertipe `int`, `auto berat = 55.25;` bertipe `double`. Ini BUKAN dynamic typing: tipenya tetap ditentukan saat compile dan tidak bisa berubah setelahnya; `auto` hanya menghemat penulisan tipe. Karena tipenya diambil dari nilai awal, variabel `auto` wajib punya nilai awal (`auto y;` adalah error). Perhatikan juga hasil ekspresinya: `auto a = 7 / 2;` bertipe `int` (nilainya `3`), sedangkan `auto b = 7 / 2.0;` bertipe `double` (nilainya `3.5`).',
+          'Dua jebakan `auto`. Pertama, `auto teks = "halo";` bertipe `const char*` (pointer ke teks gaya C), BUKAN `std::string`; tulis `auto teks = string("halo");` kalau butuh `std::string`. Kedua, `auto` selalu membuat salinan baru: kalau nilai awalnya variabel `const` atau referensi, hasilnya tetap salinan biasa (bukan `const`, bukan alias). Kalau butuh alias baca-saja, tulis `const auto&`.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#include <iostream>
+#include <string>
+using namespace std;
+
+// const& : fungsi memakai string aslinya (tanpa menyalin) dan tidak boleh mengubahnya.
+void sapa(const string& nama) {
+    // nama = "lain";  // hapus tanda // untuk melihat error: nama bersifat const
+    cout << "Halo, " << nama << "!" << endl;
+}
+
+int main() {
+    const double PI = 3.14159;
+    // PI = 3.14;  // error: PI adalah const, tidak bisa diubah
+    double jariJari = 2.0;
+    cout << "Luas lingkaran: " << PI * jariJari * jariJari << endl;
+
+    string nama = "Budi";
+    sapa(nama);
+    sapa("Siti");  // teks literal boleh karena parameternya const&
+
+    // auto: compiler menebak tipe dari nilai awal (tipe tetap, bukan dynamic typing)
+    auto umur = 20;                // int
+    auto berat = 55.25;            // double
+    auto hasilInt = 7 / 2;         // int, jadi 3
+    auto hasilDesimal = 7 / 2.0;   // double, jadi 3.5
+    auto sapaan = string("Halo");  // std::string
+    cout << "umur = " << umur << ", berat = " << berat << endl;
+    cout << "7 / 2 = " << hasilInt << ", 7 / 2.0 = " << hasilDesimal << endl;
+    cout << "sapaan: " << sapaan << endl;
+
+    // auto menyalin: salinan bertipe int biasa, BUKAN const
+    const int batas = 100;
+    auto salinan = batas;
+    salinan = 5;  // boleh diubah
+    cout << "batas = " << batas << ", salinan = " << salinan << endl;
+
+    // auto teks = "halo";  // bertipe const char*, BUKAN std::string
+
+    return 0;
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang terjadi kalau program menulis PI = 3.14; padahal PI dideklarasikan const double PI = 3.14159; ?', [
+            ['Compile error karena PI bersifat const', true],
+            ['Nilai PI berubah, const hanya memberi peringatan', false],
+            ['Nilai PI tetap, perubahannya diabaikan tanpa error', false],
+            ['Program ter-compile, errornya baru muncul saat baris itu dijalankan', false],
+          ]),
+          q('Apa arti parameter const string& nama pada sebuah fungsi?', [
+            ['Memakai string aslinya tanpa menyalin, dan fungsi tidak boleh mengubahnya', true],
+            ['Menerima salinan string, jadi perubahannya tidak memengaruhi variabel asli', false],
+            ['Boleh mengubah string asli, tapi tidak boleh membaca isinya', false],
+            ['Fungsi hanya bisa dipanggil dengan variabel, bukan dengan teks literal', false],
+          ]),
+          q('Apa tipe variabel hasil pada auto hasil = 7 / 2.0; ?', [
+            ['double, bernilai 3.5', true],
+            ['int, bernilai 3, karena 7 dan 2 adalah bilangan bulat', false],
+            ['float, bernilai 3.5', false],
+            ['Tidak punya tipe pasti, tipenya bisa berubah saat program berjalan', false],
+          ]),
+        ],
+      },
+      {
         title: 'Operator',
         slug: 'cppfz-operator',
         content: [
@@ -799,7 +873,7 @@ int main() {
           'Class turunan juga bisa mendefinisikan ulang method milik induk dengan nama yang sama, seperti `bersuara()` di contoh sandbox. Tapi hati-hati: kalau method di induk tidak ditandai `virtual`, versi di turunan hanya menyembunyikan (name hiding) versi induk, bukan meng-override-nya. Lewat object bertipe `Kucing`, yang terpanggil memang versi `Kucing`. Tapi lewat referensi bertipe `Hewan`, yang terpanggil tetap versi `Hewan`, karena compiler memilih versi berdasarkan tipe referensinya, bukan object aslinya.',
           'Intinya (potongan dari contoh sandbox di bawah, bukan program utuh):',
           '```cpp\nKucing kucing("Kitty");\nkucing.bersuara();          // versi Kucing\n\nHewan& ref = kucing;\nref.bersuara();             // versi Hewan: name hiding, bukan override\n```',
-          'Supaya versi yang terpanggil ditentukan oleh object aslinya (bukan tipe referensinya), method di induk harus ditandai `virtual`. Itulah override yang sebenarnya, dan menjadi dasar dari polymorphism.',
+          'Supaya versi yang terpanggil ditentukan oleh object aslinya (bukan tipe referensinya), method di induk harus ditandai `virtual`. Itulah override yang sebenarnya, dan menjadi dasar dari polymorphism — dibahas di lesson berikutnya, Virtual Function & Polymorphism.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <iostream>
@@ -862,6 +936,104 @@ int main() {
             ['Anggota private milik Induk', true],
             ['Anggota protected milik Induk', false],
             ['Anggota public milik Induk', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Virtual Function & Polymorphism',
+        slug: 'cppfz-virtual-polymorphism',
+        content: [
+          'Di lesson Inheritance kita melihat jebakannya: lewat referensi bertipe `Hewan`, method `bersuara()` yang tidak `virtual` selalu memanggil versi `Hewan`, meski object aslinya `Kucing`. Padahal sering kita justru ingin sebaliknya: kode yang hanya tahu `Hewan` tetap menjalankan perilaku khas tiap jenis hewan. Itulah runtime polymorphism ("banyak bentuk"): satu pemanggilan `h.bersuara()`, hasilnya menyesuaikan tipe object yang sebenarnya pada saat program berjalan.',
+          'Caranya: tandai method di class induk dengan `virtual`. Setelah itu method di class turunan dengan nama dan parameter yang sama meng-override-nya, dan versi yang dijalankan dipilih berdasarkan object aslinya. Di class turunan, tulis juga `override` setelah daftar parameter. Kata kunci ini opsional, tapi sangat dianjurkan: kalau method itu ternyata tidak menimpa method virtual mana pun (misal salah ketik nama atau beda tipe parameter), compiler langsung memberi error, bukan diam-diam membuat method baru yang menyembunyikan.',
+          '```cpp\n#include <iostream>\n#include <string>\nusing namespace std;\n\nclass Hewan {\npublic:\n    string nama;\n    Hewan(string n) : nama(n) {}\n    virtual ~Hewan() {}\n    virtual void bersuara() { cout << nama << " mengeluarkan suara" << endl; }\n};\n\nclass Kucing : public Hewan {\npublic:\n    Kucing(string n) : Hewan(n) {}\n    void bersuara() override { cout << nama << " berkata: Meong!" << endl; }\n};\n\nvoid perintahkanBersuara(Hewan& h) {\n    h.bersuara();  // versi mana yang jalan ditentukan oleh object aslinya\n}\n\nint main() {\n    Kucing kucing("Kitty");\n    perintahkanBersuara(kucing);  // Kitty berkata: Meong!\n    return 0;\n}\n```',
+          'Polymorphism hanya bekerja lewat referensi atau pointer ke class induk, seperti parameter `Hewan& h` di atas. Kalau object turunan disalin ke variabel bertipe induk, `Hewan salinan = kucing;`, bagian `Kucing`-nya terpotong (object slicing) dan yang dipanggil tetap versi `Hewan`. Di kode nyata, object turunan biasanya disimpan lewat pointer ke class induk (`Hewan*`); pointer dibahas di lesson Pointer di modul berikutnya.',
+          'Satu kebiasaan penting: kalau sebuah class punya method `virtual`, beri juga destructor `virtual` (`virtual ~Hewan() {}`, seperti di contoh). Meng-`delete` object turunan lewat pointer ke class induk yang destructor-nya bukan virtual adalah undefined behavior (biasanya destructor turunan tidak ikut dijalankan). Alasan lengkapnya akan jelas setelah kamu belajar `new` dan `delete`.',
+          'Method virtual yang tidak punya implementasi masuk akal di class induk bisa ditulis `virtual void bersuara() = 0;` (pure virtual). Class yang punya pure virtual method disebut abstract class: object-nya tidak bisa dibuat langsung, dan class turunan wajib meng-override method itu kalau ingin bisa dibuat object-nya.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#include <iostream>
+#include <string>
+using namespace std;
+
+class Hewan {
+public:
+    string nama;
+
+    Hewan(string namaHewan) : nama(namaHewan) {}
+
+    // Destructor virtual: kebiasaan baik untuk class dengan method virtual
+    virtual ~Hewan() {}
+
+    // virtual: versi yang jalan ditentukan oleh object aslinya (saat program berjalan)
+    virtual void bersuara() {
+        cout << nama << " mengeluarkan suara" << endl;
+    }
+};
+
+class Kucing : public Hewan {
+public:
+    Kucing(string namaKucing) : Hewan(namaKucing) {}
+
+    // override: compiler akan error kalau ini tidak benar-benar menimpa method virtual
+    void bersuara() override {
+        cout << nama << " berkata: Meong!" << endl;
+    }
+};
+
+class Anjing : public Hewan {
+public:
+    Anjing(string namaAnjing) : Hewan(namaAnjing) {}
+
+    void bersuara() override {
+        cout << nama << " berkata: Guk guk!" << endl;
+    }
+};
+
+// Parameter berupa referensi ke Hewan: bisa menerima Hewan, Kucing, maupun Anjing.
+void perintahkanBersuara(Hewan& h) {
+    h.bersuara();
+}
+
+int main() {
+    Hewan hewan("Hewan generik");
+    Kucing kucing("Kitty");
+    Anjing anjing("Doggo");
+
+    perintahkanBersuara(hewan);
+    perintahkanBersuara(kucing);
+    perintahkanBersuara(anjing);
+
+    // Object slicing: kucing DISALIN ke variabel bertipe Hewan, bagian Kucing-nya
+    // terpotong, jadi yang terpanggil versi Hewan walau method-nya virtual.
+    Hewan salinan = kucing;
+    salinan.bersuara();
+
+    // Coba hapus kata "virtual" di Hewan::bersuara(): compiler menolak "override"
+    // di Kucing dan Anjing karena tidak ada method virtual yang ditimpa. Hapus juga
+    // semua "override" untuk melihat semua pemanggilan memakai versi Hewan.
+
+    return 0;
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa efek menandai method di class induk dengan virtual?', [
+            ['Versi yang jalan ditentukan oleh object aslinya, saat program berjalan', true],
+            ['Method itu terkunci dan tidak bisa ditimpa oleh class turunan mana pun', false],
+            ['Method itu otomatis dipanggil sekali setiap object turunan dibuat', false],
+            ['Method itu hanya bisa dipanggil dari dalam class induknya sendiri', false],
+          ]),
+          q('Apa manfaat menulis override pada method di class turunan?', [
+            ['Compiler memberi error kalau method itu tidak menimpa method virtual induk', true],
+            ['Tanpa override, method turunan pasti tidak akan menimpa method virtual induk', false],
+            ['Method itu berjalan lebih cepat karena sudah ditandai sebagai penimpa', false],
+            ['Method induk jadi tersembunyi dan tidak bisa dipanggil lagi dari luar class', false],
+          ]),
+          q('Method bersuara() di Hewan sudah virtual. Apa yang dicetak oleh Hewan salinan = kucing; salinan.bersuara(); ?', [
+            ['Versi Hewan, karena kucing disalin menjadi object Hewan (object slicing)', true],
+            ['Versi Kucing, karena method-nya sudah virtual', false],
+            ['Compile error karena object Kucing tidak boleh disalin ke variabel Hewan', false],
+            ['Kedua versi dicetak berurutan, versi Hewan dulu baru versi Kucing', false],
           ]),
         ],
       },
@@ -1006,11 +1178,115 @@ int main() {
         ],
       },
       {
+        title: 'Map (std::map) & Sort (std::sort)',
+        slug: 'cppfz-stl-map-sort',
+        content: [
+          'Selain `vector`, STL punya `std::map` (header `<map>`): koleksi pasangan key-value, mirip dictionary di Python. Tiap key unik, dan isinya otomatis terurut berdasarkan key. Deklarasinya menyebut tipe key dan tipe value, misal `map<string, int> nilai;` (key `string`, value `int`). Mengisi atau mengubah: `nilai["Budi"] = 80;` — kalau key belum ada, entry baru dibuat; kalau sudah ada, nilainya ditimpa (tidak pernah ada key ganda). `.size()` memberi jumlah entry dan `.erase(key)` menghapus satu entry.',
+          'Hati-hati: membaca `nilai["Dewi"]` untuk key yang belum ada TIDAK error. `map` justru menambahkan entry baru `"Dewi"` dengan nilai default (`0` untuk `int`), sehingga `.size()` ikut bertambah. Untuk sekadar mengecek apakah sebuah key ada tanpa menambahkannya, pakai `.find(key)` (kalau hasilnya sama dengan `.end()`, artinya key tidak ketemu) atau `.count(key)` (hasilnya `0` atau `1`).',
+          'Untuk mengulang isi map, pakai range-for. Setiap elemennya adalah sepasang data: `.first` adalah key dan `.second` adalah value. Urutannya mengikuti key (alfabet untuk `string`), bukan urutan data dimasukkan.',
+          '```cpp\n#include <iostream>\n#include <map>\n#include <string>\nusing namespace std;\n\nint main() {\n    map<string, int> nilai;\n    nilai["Siti"] = 90;\n    nilai["Budi"] = 80;\n    nilai["Budi"] = 85;  // key sudah ada: nilainya ditimpa\n\n    for (const auto& pasangan : nilai) {\n        cout << pasangan.first << ": " << pasangan.second << endl;\n    }\n    return 0;\n}\n```',
+          '`std::sort` (header `<algorithm>`) mengurutkan isi `vector` di tempatnya. Ia menerima dua iterator, yaitu penanda posisi dalam wadah: `v.begin()` menunjuk elemen pertama dan `v.end()` menunjuk posisi tepat setelah elemen terakhir. `sort(v.begin(), v.end());` mengurutkan menaik (kecil ke besar; `string` urut alfabet). Untuk urutan lain, beri argumen ketiga berupa fungsi pembanding yang menerima dua elemen dan mengembalikan `true` kalau elemen pertama harus berada sebelum elemen kedua, misal `bool lebihBesar(int a, int b) { return a > b; }`, lalu `sort(v.begin(), v.end(), lebihBesar);` untuk urutan menurun.',
+          '`std::sort` tidak bisa dipakai pada `std::map`: map selalu terurut berdasarkan key-nya, dan iterator-nya tidak mendukung akses acak yang dibutuhkan `sort`. `sort` cocok untuk `vector` (dan array).',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <algorithm>
+using namespace std;
+
+// Fungsi pembanding untuk sort: true kalau a harus berada SEBELUM b.
+bool lebihBesar(int a, int b) {
+    return a > b;
+}
+
+void cetak(const vector<int>& v) {
+    for (int x : v) {
+        cout << x << " ";
+    }
+    cout << endl;
+}
+
+void cetak(const vector<string>& v) {
+    for (const string& s : v) {
+        cout << s << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    // map: nama siswa -> nilai
+    map<string, int> nilai;
+    nilai["Budi"] = 80;
+    nilai["Siti"] = 90;
+    nilai["Andi"] = 70;
+    nilai["Budi"] = 85;  // key sudah ada: nilainya ditimpa, bukan entry baru
+
+    cout << "Jumlah siswa: " << nilai.size() << endl;
+    cout << "Nilai Siti: " << nilai["Siti"] << endl;
+
+    // find: cek key tanpa menambahkannya. end() berarti "tidak ketemu".
+    if (nilai.find("Dewi") == nilai.end()) {
+        cout << "Dewi tidak ada di map" << endl;
+    }
+
+    // Iterasi: urut berdasarkan key (alfabet), bukan urutan insert.
+    cout << "Isi map (urut berdasarkan key):" << endl;
+    for (const auto& pasangan : nilai) {
+        cout << pasangan.first << " -> " << pasangan.second << endl;
+    }
+
+    // Jebakan: membaca key yang belum ada lewat [] MENAMBAHKAN entry baru.
+    cout << "Nilai Dewi (key baru lewat []): " << nilai["Dewi"] << endl;
+    cout << "Jumlah siswa sekarang: " << nilai.size() << endl;
+
+    // sort pada vector
+    vector<int> angka = {40, 10, 30, 20};  // cara singkat mengisi vector dengan {}
+    sort(angka.begin(), angka.end());
+    cout << "Menaik: ";
+    cetak(angka);
+
+    sort(angka.begin(), angka.end(), lebihBesar);
+    cout << "Menurun: ";
+    cetak(angka);
+
+    vector<string> nama = {"Siti", "Budi", "Andi"};
+    sort(nama.begin(), nama.end());
+    cout << "Nama terurut: ";
+    cetak(nama);
+
+    return 0;
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Berapa nilai m.size() setelah map<string, int> m; m["a"] = 1; m["a"] = 2; ?', [
+            ['1, karena key sama hanya satu entry dan nilainya ditimpa', true],
+            ['2, karena setiap penugasan menambah satu entry baru ke dalam map', false],
+            ['0, karena penugasan kedua menghapus entry dari penugasan pertama', false],
+            ['Compile error karena key "a" sudah ada di dalam map', false],
+          ]),
+          q('Apa yang terjadi kalau kode membaca m["zzz"] padahal key "zzz" belum ada di map<string, int> m?', [
+            ['Entry "zzz" ditambahkan dengan nilai default 0, jadi size() naik', true],
+            ['Program berhenti dengan error runtime karena key tidak ditemukan', false],
+            ['Mengembalikan 0 sebagai nilai bawaan, namun isi map tidak berubah', false],
+            ['Mengembalikan nilai acak dari memori, dan map tidak berubah', false],
+          ]),
+          q('Mana yang mengurutkan vector<int> v dari besar ke kecil, kalau lebihBesar(a, b) mengembalikan a > b?', [
+            ['sort(v.begin(), v.end(), lebihBesar);', true],
+            ['sort(v.begin(), v.end());', false],
+            ['v.sort(lebihBesar);', false],
+            ['sort(lebihBesar, v.begin(), v.end());', false],
+          ]),
+        ],
+      },
+      {
         title: 'Studi Kasus: Program Sederhana Gabungan',
         slug: 'cppfz-studi-kasus-gabungan',
         content: [
           'Sekarang saatnya menggabungkan konsep yang sudah dipelajari — class, vector, dan fungsi — ke dalam satu program sederhana yang lebih realistis: sistem pencatat nilai beberapa siswa.',
-          'Program di bawah mendefinisikan class `Siswa` dengan constructor untuk inisialisasi, menyimpan beberapa object `Siswa` di dalam `std::vector<Siswa>`, lalu memakai fungsi terpisah untuk menghitung rata-rata nilai — menunjukkan bagaimana class, vector, dan fungsi biasa saling melengkapi dalam satu program.',
+          'Program di bawah mendefinisikan class `Siswa` dengan constructor untuk inisialisasi, menyimpan beberapa object `Siswa` di dalam `std::vector<Siswa>`, lalu memakai fungsi terpisah untuk menghitung rata-rata nilai — menunjukkan bagaimana class, vector, dan fungsi biasa saling melengkapi dalam satu program. Perhatikan dua pola dari lesson sebelumnya: constructor memakai member initializer list, dan fungsi `hitungRataRata` menerima `const vector<Siswa>&` karena hanya membaca data (tanpa menyalin vector dan tanpa mengubahnya).',
           'Pola seperti ini — memisahkan data (class), koleksi data (vector), dan logika pemrosesan (fungsi) — adalah struktur umum yang akan sering ditemui saat menulis program C++ yang lebih besar.',
         ],
         hasSandbox: true,
@@ -1024,15 +1300,13 @@ public:
     string nama;
     int nilai;
 
-    Siswa(string namaSiswa, int nilaiSiswa) {
-        nama = namaSiswa;
-        nilai = nilaiSiswa;
-    }
+    Siswa(string namaSiswa, int nilaiSiswa) : nama(namaSiswa), nilai(nilaiSiswa) {}
 };
 
-double hitungRataRata(vector<Siswa>& daftarSiswa) {
+// const& : hanya membaca daftar, tidak menyalin dan tidak mengubahnya
+double hitungRataRata(const vector<Siswa>& daftarSiswa) {
     double total = 0;
-    for (Siswa& s : daftarSiswa) {
+    for (const Siswa& s : daftarSiswa) {
         total = total + s.nilai;
     }
     return total / daftarSiswa.size();
@@ -1045,7 +1319,7 @@ int main() {
     daftarSiswa.push_back(Siswa("Andi", 70));
 
     cout << "Daftar nilai siswa:" << endl;
-    for (Siswa& s : daftarSiswa) {
+    for (const Siswa& s : daftarSiswa) {
         cout << "- " << s.nama << ": " << s.nilai << endl;
     }
 
@@ -1060,11 +1334,11 @@ int main() {
         slug: 'cppfz-ringkasan-best-practice',
         content: [
           'RAII (Resource Acquisition Is Initialization) adalah prinsip penting di C++: sebuah resource (memori, file, koneksi) sebaiknya diikat ke lifetime sebuah object — dialokasikan saat object dibuat (constructor) dan dibebaskan otomatis saat object hancur (destructor). Ini mencegah lupa membersihkan resource secara manual.',
-          'Aturan praktis memilih referensi vs pointer: pakai referensi (`&`) sebagai default untuk parameter fungsi, karena lebih sederhana dan tidak bisa `nullptr`. Tapi referensi bukan tanpa risiko: ia bisa menggantung (dangling) kalau objek yang dirujuk sudah hancur, misalnya fungsi yang mengembalikan referensi ke variabel lokalnya sendiri. Baru pakai pointer kalau memang butuh merepresentasikan "mungkin tidak ada nilai" (`nullptr`) atau butuh mengubah target yang ditunjuk di tengah jalan.',
+          'Aturan praktis memilih referensi vs pointer: pakai referensi (`&`) sebagai default untuk parameter fungsi — dan `const&` untuk parameter yang hanya dibaca — karena lebih sederhana dan tidak bisa `nullptr`. Tapi referensi bukan tanpa risiko: ia bisa menggantung (dangling) kalau objek yang dirujuk sudah hancur, misalnya fungsi yang mengembalikan referensi ke variabel lokalnya sendiri. Baru pakai pointer kalau memang butuh merepresentasikan "mungkin tidak ada nilai" (`nullptr`) atau butuh mengubah target yang ditunjuk di tengah jalan.',
           'Contoh referensi menggantung (SALAH, jangan ditiru):',
           '```cpp\nint& salah() {\n    int lokal = 5;\n    return lokal;  // lokal hancur saat fungsi selesai: referensi menggantung\n}\n```',
           'C++ modern (C++11 ke atas) menyediakan "smart pointer" (`std::unique_ptr`, `std::shared_ptr`) yang otomatis menerapkan RAII untuk memori dinamis, sehingga `delete` manual jarang dibutuhkan lagi di kode modern — meski penting tetap memahami `new`/`delete` mentah sebagai fondasi.',
-          'Sepanjang course ini kita sudah belajar dari struktur program dasar, tipe data, operator, kontrol alur, fungsi, OOP (class, constructor, encapsulation, inheritance), hingga pointer dan STL (`std::vector`) — fondasi yang cukup untuk mulai membangun program C++ yang lebih kompleks dan mengeksplorasi topik lanjutan seperti template dan smart pointer.',
+          'Sepanjang course ini kita sudah belajar dari struktur program dasar, tipe data, `const` dan `auto`, operator, kontrol alur, fungsi, OOP (class, constructor, encapsulation, inheritance, virtual function dan polymorphism), hingga pointer dan STL (`std::vector`, `std::map`, `std::sort`) — fondasi yang cukup untuk mulai membangun program C++ yang lebih kompleks dan mengeksplorasi topik lanjutan seperti template dan smart pointer.',
         ],
         hasQuiz: true,
         quizQuestions: [
@@ -1105,7 +1379,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'C++ from Zero adalah course pengantar untuk kamu yang belum pernah menulis kode sama sekali, maupun yang sudah kenal bahasa lain seperti Python dan ingin memahami bahasa yang dekat dengan mesin. C++ dipakai di balik game engine, sistem operasi, driver, dan software yang butuh kecepatan tinggi, jadi belajar C++ juga membantumu memahami apa yang terjadi di balik bahasa pemrograman yang lebih tinggi.',
-    'Di sini kamu belajar dari dasar: struktur program dan proses compile, variabel dan tipe data (termasuk implicit conversion dan narrowing), operator, array dan `std::string`, referensi, percabangan, perulangan (`for`, `while`, dan `do-while`), fungsi dan function overloading, OOP (class, constructor dan destructor, encapsulation, inheritance), pointer dengan alokasi memori dinamis (`new` dan `delete`), `std::vector`, hingga studi kasus gabungan dan best practice seperti RAII dan smart pointer. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar dari dasar: struktur program dan proses compile, variabel dan tipe data (termasuk implicit conversion dan narrowing), `const` dan `auto`, operator, array dan `std::string`, referensi, percabangan, perulangan (`for`, `while`, dan `do-while`), fungsi dan function overloading, OOP (class, constructor dan destructor, encapsulation, inheritance, `virtual` dan polymorphism), pointer dengan alokasi memori dinamis (`new` dan `delete`), `std::vector`, `std::map` dan `std::sort`, hingga studi kasus gabungan dan best practice seperti RAII dan smart pointer. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini menjalankan kode dengan GCC 9.2 (mode C++14, `gnu++14`), tanpa akses jaringan dan tanpa input keyboard, jadi `std::cin` tidak bisa dicoba di sana dan fitur C++17 ke atas (misalnya `std::optional` dan structured bindings) tidak tersedia. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun dan tidak perlu pengalaman programming sebelumnya.',
   ].join('\n\n'),
   sandboxLanguage: 'cpp',
