@@ -83,7 +83,7 @@ console.log(pengguna.nmaa.toUpperCase())
           '## Sandbox di course ini',
           'Sandbox memakai TypeScript 3.7.4 yang dikompilasi TANPA flag `--strict` (sandbox tidak bisa diberi flag atau `tsconfig.json`), lalu hasilnya dijalankan di Node.js 12. Kalau `tsc` melaporkan error tipe, sandbox menampilkan error kompilasi itu dan tidak menjalankan kodenya — ini perilaku sandbox, bukan perilaku default TypeScript. Karena `--strict` mati, beberapa error yang muncul di proyek sungguhan (misalnya mengisi `null` ke variabel `string`) tidak akan terlihat di sandbox.',
           '## tsconfig.json dan strict',
-          'Di proyek sungguhan, opsi compiler disimpan di file `tsconfig.json` (bisa dibuat dengan `npx tsc --init`), lalu cukup jalankan `npx tsc` tanpa nama file. Opsi `"strict": true` menyalakan sekelompok pemeriksaan tipe yang lebih ketat, termasuk `noImplicitAny` dan `strictNullChecks`; hampir semua proyek TypeScript modern menyalakannya.',
+          'Di proyek sungguhan, opsi compiler disimpan di file `tsconfig.json` (bisa dibuat dengan `npx tsc --init`), lalu cukup jalankan `npx tsc` tanpa nama file. Opsi `"strict": true` menyalakan sekelompok pemeriksaan tipe yang lebih ketat, termasuk `noImplicitAny` dan `strictNullChecks` (dibahas di lesson any/unknown dan lesson null/undefined); hampir semua proyek TypeScript modern menyalakannya.',
           '```plaintext\n{\n  "compilerOptions": {\n    "target": "es2017",\n    "strict": true\n  }\n}\n```',
           '## Type erasure',
           'Setelah dikompilasi menjadi JavaScript biasa, semua anotasi tipe TypeScript dihapus (fitur ini disebut "type erasure") — artinya tipe data hanya berguna saat development untuk pengecekan, sama sekali tidak memperlambat kode saat dijalankan. Catatan: Node.js versi baru (misalnya v24) bisa menjalankan file `.ts` langsung dengan membuang anotasi tipe, tapi tanpa memeriksa tipe sama sekali, jadi `tsc` tetap dibutuhkan untuk pengecekan.',
@@ -120,7 +120,7 @@ console.log("TypeScript berhasil dikompilasi dan dijalankan.")
     ],
   },
   {
-    title: 'Type Annotation Dasar',
+    title: 'Type Annotation, Union & Narrowing',
     lessons: [
       {
         title: 'Tipe Data Dasar & Annotation',
@@ -172,6 +172,106 @@ console.log("Tipe tinggi:", typeof tinggi)
             ['TypeScript otomatis mengubah nilainya menjadi tipe yang sesuai', false],
             ['Kode tetap jalan normal dan tidak ada pesan apa pun', false],
             ['Program berjalan dulu, error baru muncul saat baris itu dieksekusi (runtime)', false],
+          ]),
+        ],
+      },
+      {
+        title: 'any, unknown, never & Literal Type',
+        slug: 'tsfz-any-unknown-never',
+        content: [
+          'Selain tipe dasar seperti `number` dan `string`, TypeScript punya tiga tipe khusus yang perlu dipahami sejak awal: `any`, `unknown`, dan `never`. Setelah itu kita bahas literal type, yaitu tipe yang hanya punya satu nilai persis.',
+          '## any: mematikan pengecekan tipe',
+          '`any` berarti "tipe apa saja". Nilai bertipe `any` boleh diisi apa pun dan boleh dipakai seperti tipe apa pun tanpa dicek compiler. Itu membuatnya praktis, tapi sama saja dengan menulis JavaScript biasa: kesalahan baru ketahuan saat program berjalan. Anggap `any` sebagai jalan keluar darurat, bukan pilihan default. Variabel tanpa tipe dan tanpa nilai awal (misal `let x`) juga otomatis bertipe `any` (implicit any); opsi `noImplicitAny`, bagian dari `strict`, melarangnya.',
+          `\`\`\`typescript
+let bebas: any = "teks"
+bebas = 42                // boleh: any menerima nilai apa saja
+bebas.toUpperCase()       // lolos kompilasi, tapi TypeError saat dijalankan: angka tidak punya toUpperCase
+\`\`\``,
+          '## unknown: any yang aman',
+          '`unknown` juga menerima nilai apa pun, tapi sebelum dipakai nilainya harus dipersempit (narrowing) dulu, misalnya dengan `typeof`. Selama belum dipersempit, compiler menolak memakainya, misalnya memanggil method atau mengakses property. Karena itu `unknown` cocok untuk data yang tipenya belum pasti, misal hasil parsing JSON, sebagai pengganti `any` yang aman. Narrowing dibahas lebih lengkap di lesson Narrowing & Type Assertion.',
+          `\`\`\`typescript
+let data: unknown = "halo"
+// data.toUpperCase()   // error: Property 'toUpperCase' does not exist on type 'unknown'.
+
+if (typeof data === "string") {
+  console.log(data.toUpperCase())   // aman: di dalam if ini data sudah dipersempit jadi string
+}
+\`\`\``,
+          '## never: tidak pernah ada nilainya',
+          '`never` adalah tipe untuk sesuatu yang tidak pernah terjadi. Pemakaian paling umum adalah return type fungsi yang tidak pernah selesai secara normal: selalu melempar error atau berputar selamanya. Bedakan dari `void`: fungsi `void` selesai tapi tidak mengembalikan nilai, sedangkan fungsi `never` tidak pernah sampai ke akhir. `never` juga muncul sebagai sisa tipe kalau semua kemungkinan sudah dicek; pemakaian itu dibahas di lesson Narrowing & Type Assertion.',
+          `\`\`\`typescript
+function gagal(pesan: string): never {
+  throw new Error(pesan)   // tidak pernah return secara normal
+}
+\`\`\``,
+          '## Literal type',
+          'Selain tipe umum seperti `string` dan `number`, kita bisa menulis nilai persisnya sebagai tipe — disebut literal type. Variabel bertipe `"kiri"` hanya boleh bernilai `"kiri"`. Literal type baru berguna kalau digabung dengan tanda `|` (artinya "atau", dibahas di lesson Union Type): variabel hanya boleh salah satu dari beberapa nilai tertentu, jadi salah ketik langsung ketahuan.',
+          `\`\`\`typescript
+let arah: "kiri" | "kanan" = "kiri"
+arah = "kanan"
+// arah = "atas"   // error: Type '"atas"' is not assignable to type '"kiri" | "kanan"'.
+\`\`\``,
+          'TypeScript sendiri memakai literal type saat meng-infer: `const salam = "halo"` bertipe literal `"halo"` karena `const` tidak bisa diubah, sedangkan `let salam = "halo"` bertipe `string` karena nilainya boleh diganti.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `let bebas: any = "teks"
+console.log("any, tipe awal:", typeof bebas)
+bebas = 42
+console.log("any, setelah diubah:", typeof bebas)
+try {
+  bebas.toUpperCase()   // lolos kompilasi karena any, tapi gagal saat dijalankan
+} catch (e) {
+  console.log("Runtime error dari any:", e.message)
+}
+
+function deskripsi(nilai: unknown): string {
+  if (typeof nilai === "string") {
+    return "string dengan panjang " + nilai.length
+  }
+  if (typeof nilai === "number") {
+    return "number dengan nilai " + nilai.toFixed(1)
+  }
+  return "tipe lain"
+}
+
+console.log(deskripsi("halo"))
+console.log(deskripsi(3))
+console.log(deskripsi(true))
+
+function gagal(pesan: string): never {
+  throw new Error(pesan)
+}
+
+try {
+  gagal("fungsi never selalu melempar error")
+} catch (e) {
+  console.log("Ditangkap:", e.message)
+}
+
+let arah: "kiri" | "kanan" = "kiri"
+console.log("Arah awal:", arah)
+arah = "kanan"
+console.log("Arah sekarang:", arah)
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa perbedaan utama any dan unknown?', [
+            ['unknown harus dipersempit dulu sebelum dipakai, sedangkan any bisa langsung dipakai tanpa dicek', true],
+            ['any hanya menerima number dan string, sedangkan unknown menerima semua tipe', false],
+            ['unknown berarti nilai kosong seperti null, sedangkan any berarti nilai apa saja', false],
+            ['Tidak ada beda, keduanya sama-sama dicek ketat oleh compiler sebelum dipakai', false],
+          ]),
+          q('Fungsi function gagal(pesan: string): never { throw new Error(pesan) } bertipe return never. Apa maksudnya?', [
+            ['Fungsi itu tidak pernah selesai secara normal: selalu melempar error atau berputar selamanya', true],
+            ['Fungsi itu selesai dengan normal tapi tidak mengembalikan nilai apa pun, sama seperti void', false],
+            ['Fungsi itu tidak boleh dipanggil sama sekali di bagian mana pun dari program', false],
+            ['Fungsi itu selalu mengembalikan nilai null ketika dipanggil', false],
+          ]),
+          q('Pada let arah: "kiri" | "kanan" = "kiri", apa yang terjadi kalau kita menulis arah = "atas"?', [
+            ['tsc melaporkan error karena "atas" bukan salah satu nilai literal yang diizinkan', true],
+            ['Boleh, karena "atas" tetap bertipe string', false],
+            ['Boleh, TypeScript otomatis menambahkan "atas" ke daftar nilai yang diizinkan', false],
+            ['Nilainya otomatis kembali menjadi "kiri" karena "atas" tidak dikenal', false],
           ]),
         ],
       },
@@ -228,7 +328,7 @@ console.log("Tuple siswa - nama:", siswa[0], "umur:", siswa[1])
         content: [
           'Union type memungkinkan sebuah variabel menerima lebih dari satu tipe data, ditulis dengan tanda `|` (pipe) di antara tipe-tipenya, contoh: `let id: string | number` — variabel `id` boleh diisi `string` ATAU `number`.',
           'Union type berguna untuk kasus yang di JavaScript murni sering ditangani dengan longgar, misal ID yang kadang berupa angka dari database, kadang berupa string UUID — TypeScript tetap memastikan hanya dua tipe itu yang diizinkan, bukan tipe lain seperti `boolean`.',
-          'Saat memakai variabel bertipe union, TypeScript sering meminta kita melakukan "narrowing" (penyempitan tipe) dengan `typeof` sebelum memanggil method yang spesifik untuk satu tipe saja, supaya compiler yakin operasi itu aman untuk kedua kemungkinan tipe.',
+          'Saat memakai variabel bertipe union, TypeScript sering meminta kita melakukan "narrowing" (penyempitan tipe) dengan `typeof` sebelum memanggil method yang spesifik untuk satu tipe saja, supaya compiler yakin operasi itu aman untuk kedua kemungkinan tipe. Teknik narrowing lain (`instanceof`, `in`, discriminated union) dibahas di lesson Narrowing & Type Assertion.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `function tampilkanId(id: string | number): void {
@@ -265,13 +365,231 @@ tampilkanId(456)
         ],
       },
       {
+        title: 'null, undefined & strictNullChecks',
+        slug: 'tsfz-null-undefined-strict',
+        content: [
+          'Di JavaScript, `null` dan `undefined` sama-sama berarti "tidak ada nilai": `undefined` muncul otomatis (variabel belum diisi, argumen tidak diberikan, property tidak ada), sedangkan `null` diisi sengaja oleh programmer. Nasib keduanya di TypeScript bergantung pada opsi compiler `strictNullChecks`, bagian dari `strict`.',
+          '## strictNullChecks',
+          'Kalau `strictNullChecks` mati (default `tsc` tanpa konfigurasi), `null` dan `undefined` boleh diisi ke tipe apa pun — dan itu sumber klasik error seperti `Cannot read property ... of null` saat program berjalan. Kalau aktif (otomatis lewat `"strict": true`), `null` dan `undefined` menjadi tipe tersendiri: variabel bertipe `string` tidak boleh diisi `null`, kecuali tipenya ditulis sebagai union `string | null`.',
+          'Contoh berikut mengasumsikan `strictNullChecks` aktif. Sandbox kita tidak mengaktifkannya (tanpa `--strict`), jadi error di komentar tidak akan muncul di sandbox; kamu hanya akan melihatnya di proyek yang memakai `"strict": true`.',
+          `\`\`\`typescript
+let nama: string = "Budi"
+// nama = null   // error (strictNullChecks aktif): Type 'null' is not assignable to type 'string'.
+
+let namaBisaKosong: string | null = "Budi"
+namaBisaKosong = null   // aman: null memang bagian dari tipenya
+\`\`\``,
+          '## Menangani nilai yang bisa null',
+          'Dengan tipe seperti `string | null`, TypeScript memaksa kita mengecek `null` dulu sebelum memakai nilainya; pengecekan itu sekaligus mempersempit (narrow) tipenya. Dua operator membantu menangani nilai kosong: `??` (nullish coalescing) memberi nilai cadangan hanya kalau sisi kirinya `null` atau `undefined`, dan `?.` (optional chaining) berhenti dan menghasilkan `undefined` kalau nilainya `null` atau `undefined`. Keduanya didukung TypeScript sejak versi 3.7; compiler menerjemahkannya ke JavaScript lama, jadi tetap jalan di sandbox (Node.js 12). Bedakan `??` dari `||`: `||` menganggap `0` dan string kosong juga "kosong", sedangkan `??` tidak.',
+          `\`\`\`typescript
+function sapa(nama: string | null): string {
+  if (nama === null) {
+    return "Halo, tamu"
+  }
+  return "Halo, " + nama.toUpperCase()   // di sini nama sudah dipersempit jadi string
+}
+
+const stok: number | null = 0
+console.log(stok || 10)   // 10: || menganggap 0 sebagai "kosong"
+console.log(stok ?? 10)   // 0: ?? hanya mengganti null atau undefined
+\`\`\``,
+          'Ada juga `!` (non-null assertion), yang menegaskan bahwa sebuah nilai pasti bukan `null` atau `undefined`. Itu salah satu bentuk type assertion, dibahas di lesson Narrowing & Type Assertion setelah ini.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `function sapa(nama: string | null): string {
+  if (nama === null) {
+    return "Halo, tamu"
+  }
+  return "Halo, " + nama.toUpperCase()
+}
+
+console.log(sapa("Budi"))
+console.log(sapa(null))
+
+// ?. berhenti dan menghasilkan undefined kalau nilainya null atau undefined
+function hurufBesar(teks: string | null | undefined): string | undefined {
+  return teks?.toUpperCase()
+}
+
+console.log(hurufBesar("halo"))
+console.log(hurufBesar(null))
+console.log(hurufBesar(undefined))
+
+// || menganggap 0 sebagai "kosong", ?? hanya mengganti null atau undefined
+const stok: number | null = 0
+console.log("stok || 10 =", stok || 10)
+console.log("stok ?? 10 =", stok ?? 10)
+
+const kosong: string | null = null
+console.log(kosong ?? "(tanpa nama)")
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Dengan strictNullChecks aktif, apa yang terjadi pada let nama: string = null?', [
+            ['tsc melaporkan error karena null bukan bagian dari tipe string', true],
+            ['Boleh, karena null boleh diisi ke variabel bertipe apa pun', false],
+            ['Boleh, karena null otomatis diubah menjadi string kosong oleh compiler', false],
+            ['Boleh, tapi baru bermasalah saat variabel nama dipakai di runtime', false],
+          ]),
+          q('Bagaimana menulis variabel nama yang boleh berisi string atau null di proyek dengan strictNullChecks?', [
+            ['let nama: string | null', true],
+            ['let nama: string?', false],
+            ['let nama: string || null', false],
+            ['let nama = string | null', false],
+          ]),
+          q('Berapa hasil 0 ?? 10 dan 0 || 10?', [
+            ['0 ?? 10 menghasilkan 0, sedangkan 0 || 10 menghasilkan 10', true],
+            ['Keduanya menghasilkan 10', false],
+            ['Keduanya menghasilkan 0', false],
+            ['0 ?? 10 menghasilkan 10, sedangkan 0 || 10 menghasilkan 0', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Narrowing & Type Assertion',
+        slug: 'tsfz-narrowing-type-assertion',
+        content: [
+          'Narrowing (penyempitan tipe) artinya TypeScript mempersempit tipe sebuah variabel dari tipe yang luas (misal union) menjadi tipe yang lebih spesifik, berdasarkan pengecekan di dalam kode. Kita sudah memakai `typeof` dan perbandingan `=== null`; di sini ada tiga teknik lain, lalu type assertion untuk saat kita tahu lebih baik daripada compiler.',
+          '## instanceof',
+          '`instanceof` mengecek apakah sebuah object dibuat dari class tertentu. Di dalam blok `if`-nya, TypeScript mempersempit tipe ke class itu.',
+          `\`\`\`typescript
+function infoWaktu(nilai: Date | string): string {
+  if (nilai instanceof Date) {
+    return "Tahun " + nilai.getFullYear()   // di sini nilai bertipe Date
+  }
+  return nilai.toUpperCase()                 // di sini nilai bertipe string
+}
+\`\`\``,
+          '## Operator in',
+          '`"properti" in objek` mengecek apakah sebuah property ada di object. TypeScript memakainya untuk memilih anggota union yang punya property itu. (Bentuk object ditulis `{ properti: tipe }`; dibahas lengkap di modul berikutnya.)',
+          `\`\`\`typescript
+function jenisHewan(hewan: { sayap: number } | { sirip: number }): string {
+  if ("sayap" in hewan) {
+    return "bersayap: " + hewan.sayap
+  }
+  return "bersirip: " + hewan.sirip
+}
+\`\`\``,
+          '## Discriminated union',
+          'Pola yang sangat umum: setiap anggota union punya property penanda (misal `jenis`) dengan nilai literal yang berbeda. Memeriksa property penanda itu mempersempit seluruh object ke anggota union yang cocok. (`type Bentuk = ...` di bawah memberi nama pada sebuah tipe; dibahas di lesson Type Alias.)',
+          `\`\`\`typescript
+type Bentuk =
+  | { jenis: "lingkaran"; radius: number }
+  | { jenis: "persegi"; sisi: number }
+
+function luas(bentuk: Bentuk): number {
+  if (bentuk.jenis === "lingkaran") {
+    return Math.PI * bentuk.radius * bentuk.radius
+  }
+  return bentuk.sisi * bentuk.sisi
+}
+\`\`\``,
+          'Kalau semua kemungkinan sudah dicek, sisa tipenya adalah `never`. Trik exhaustive checking: di cabang `default`, oper nilainya ke fungsi yang parameternya bertipe `never`. Kalau suatu hari ada anggota union baru yang belum ditangani, compiler langsung melaporkan error. Contoh ini melanjutkan `Bentuk` di atas.',
+          `\`\`\`typescript
+function tidakMungkin(nilai: never): never {
+  throw new Error("Kasus tidak tertangani: " + JSON.stringify(nilai))
+}
+
+function namaBentuk(bentuk: Bentuk): string {
+  switch (bentuk.jenis) {
+    case "lingkaran":
+      return "lingkaran dengan radius " + bentuk.radius
+    case "persegi":
+      return "persegi dengan sisi " + bentuk.sisi
+    default:
+      return tidakMungkin(bentuk)   // error kalau ada jenis baru yang belum ditangani
+  }
+}
+\`\`\``,
+          '## Type assertion',
+          'Kadang kita tahu tipe sebuah nilai lebih baik daripada compiler. Type assertion, ditulis `nilai as Tipe`, menyuruh compiler memperlakukan nilai itu sebagai `Tipe`. Penting: assertion hanya ada saat kompilasi dan dihapus dari JavaScript hasil kompilasi, jadi tidak ada pengecekan atau konversi saat program berjalan. Kalau tebakan kita salah, kode tetap lolos kompilasi dan baru error saat dijalankan. Karena itu, narrowing yang benar-benar mengecek lebih aman daripada assertion. TypeScript juga hanya mengizinkan assertion ke tipe yang lebih spesifik atau lebih umum: `"teks" as number` ditolak karena kedua tipe itu tidak berhubungan.',
+          `\`\`\`typescript
+const nilai: unknown = 42
+const teks = nilai as string      // lolos kompilasi, padahal isinya number
+console.log(teks.toUpperCase())   // TypeError saat dijalankan: assertion tidak mengubah nilai
+\`\`\``,
+          'Ada juga non-null assertion `nilai!`, yang menegaskan bahwa `nilai` bukan `null` atau `undefined`. Risikonya sama dengan `as`: tanda `!` hanya menenangkan compiler dan dihapus saat kompilasi, jadi program tetap error kalau nilainya ternyata `null`.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `function infoWaktu(nilai: Date | string): string {
+  if (nilai instanceof Date) {
+    return "Tahun " + nilai.getFullYear()
+  }
+  return nilai.toUpperCase()
+}
+
+function jenisHewan(hewan: { sayap: number } | { sirip: number }): string {
+  if ("sayap" in hewan) {
+    return "bersayap: " + hewan.sayap
+  }
+  return "bersirip: " + hewan.sirip
+}
+
+type Bentuk =
+  | { jenis: "lingkaran"; radius: number }
+  | { jenis: "persegi"; sisi: number }
+
+function tidakMungkin(nilai: never): never {
+  throw new Error("Kasus tidak tertangani: " + JSON.stringify(nilai))
+}
+
+function luas(bentuk: Bentuk): number {
+  switch (bentuk.jenis) {
+    case "lingkaran":
+      return Math.PI * bentuk.radius * bentuk.radius
+    case "persegi":
+      return bentuk.sisi * bentuk.sisi
+    default:
+      return tidakMungkin(bentuk)
+  }
+}
+
+console.log(infoWaktu(new Date(2024, 0, 15)))
+console.log(infoWaktu("halo"))
+console.log(jenisHewan({ sayap: 2 }))
+console.log(jenisHewan({ sirip: 4 }))
+console.log("Luas lingkaran:", luas({ jenis: "lingkaran", radius: 1 }).toFixed(2))
+console.log("Luas persegi:", luas({ jenis: "persegi", sisi: 4 }))
+
+// Type assertion tidak mengubah nilai: salah tebak baru ketahuan saat runtime
+const nilai: unknown = 42
+const teks = nilai as string
+try {
+  console.log(teks.toUpperCase())
+} catch (e) {
+  console.log("Runtime error:", e.message)
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang dilakukan ekspresi "sayap" in hewan pada hewan bertipe union?', [
+            ['Mengecek apakah object punya property sayap, lalu mempersempit tipenya', true],
+            ['Mengecek apakah nilai property sayap lebih besar dari nol (truthy)', false],
+            ['Mengulang semua property hewan satu per satu seperti pada for...in', false],
+            ['Mengubah tipe hewan menjadi tipe yang punya property sayap tanpa pengecekan', false],
+          ]),
+          q('Apa yang terjadi saat program dijalankan kalau type assertion nilai as string ternyata salah (nilainya number)?', [
+            ['Tidak ada pengecekan: assertion dihapus saat kompilasi, error baru muncul saat nilainya dipakai', true],
+            ['Program langsung melempar error tepat di baris yang berisi assertion itu, sebelum baris lain berjalan', false],
+            ['Nilainya otomatis dikonversi menjadi string saat assertion dijalankan', false],
+            ['tsc menolak mengompilasi kode itu sejak awal karena tipenya tidak cocok', false],
+          ]),
+          q('Apa gunanya cabang default berisi tidakMungkin(bentuk) pada switch atas discriminated union?', [
+            ['Compiler melaporkan error kalau ada anggota union baru yang belum ditangani di switch', true],
+            ['Membuat switch berjalan lebih cepat karena tipe sisanya sudah diketahui', false],
+            ['Mengubah semua kasus yang belum ditangani menjadi nilai null secara otomatis', false],
+            ['Mencegah switch dipakai pada tipe union supaya kode tetap sederhana', false],
+          ]),
+        ],
+      },
+      {
         title: 'Type Inference',
         slug: 'tsfz-type-inference',
         content: [
           'Type inference adalah kemampuan TypeScript menebak (infer) tipe data sebuah variabel secara otomatis dari nilai yang diberikan, tanpa kita perlu menulis anotasi tipe secara eksplisit. Contoh: `let nama = "Budi"` — TypeScript otomatis menganggap `nama` bertipe `string`.',
           'Meski tipe tidak dituliskan eksplisit, TypeScript tetap menegakkan aturan tipe itu setelahnya — mencoba `nama = 100` pada variabel di atas tetap akan ditolak compiler, karena `nama` sudah "terkunci" sebagai `string` sejak inisialisasi pertama.',
           '## Kapan menulis tipe, kapan membiarkan inference',
-          'Praktik umum: biarkan inference bekerja untuk variabel lokal yang nilai awalnya sudah jelas, dan untuk return type fungsi — TypeScript menyimpulkan return type dari pernyataan `return` di dalam fungsi, jadi biasanya tidak perlu ditulis. Sebaliknya, parameter fungsi sebaiknya selalu diberi tipe, karena TypeScript tidak bisa menebaknya dari isi fungsi (tanpa anotasi, parameter jadi bertipe `any`, tipe yang mematikan pengecekan). Return type boleh tetap ditulis kalau kamu ingin mendokumentasikan kontrak fungsi.',
+          'Praktik umum: biarkan inference bekerja untuk variabel lokal yang nilai awalnya sudah jelas, dan untuk return type fungsi — TypeScript menyimpulkan return type dari pernyataan `return` di dalam fungsi, jadi biasanya tidak perlu ditulis. Sebaliknya, parameter fungsi sebaiknya selalu diberi tipe, karena TypeScript tidak bisa menebaknya dari isi fungsi (tanpa anotasi, parameter jadi bertipe `any`, tipe yang mematikan pengecekan, dibahas di lesson any/unknown). Return type boleh tetap ditulis kalau kamu ingin mendokumentasikan kontrak fungsi.',
           'Inference juga tidak membantu kalau variabel dideklarasikan tanpa nilai awal: `let nilai` bertipe `any`. Kalau nilainya baru diisi nanti, tulis tipenya: `let nilai: number`.',
           `\`\`\`typescript
 function kali(a: number, b: number) {   // return type di-infer: number
@@ -548,6 +866,7 @@ console.log("Stok produk:", produk.stok ?? "tidak diketahui")
           'Type alias dibuat dengan kata kunci `type`, memberi nama baru untuk sebuah tipe (termasuk union type, object type literal, atau tipe primitif) — setelah itu nama tersebut bisa dipakai sebagai annotation tipe di mana saja.',
           `\`\`\`typescript
 type ID = string | number
+type Arah = "kiri" | "kanan"   // alias untuk union dari literal type
 type Siswa = { id: ID; nama: string; umur: number }
 
 function cetak(siswa: Siswa): void {
@@ -872,7 +1191,7 @@ const pilihan: Warna = Warna.Biru
 console.log(pilihan)   // BIRU
 \`\`\``,
           'Enum membuat kode lebih mudah dibaca dibanding memakai angka atau string mentah secara langsung tersebar di banyak tempat — cukup memakai `StatusPesanan.Selesai` daripada mengingat-ingat angka `2` artinya apa.',
-          'Berbeda dengan interface dan type alias yang hilang total saat kompilasi, enum menghasilkan kode JavaScript sungguhan (sebuah object), jadi enum ada juga saat program berjalan. Banyak tim juga memakai union dari beberapa nilai string persis, misal `"baru" | "diproses" | "selesai"`, sebagai alternatif ringan yang tidak menghasilkan kode JavaScript tambahan; pilih sesuai konvensi tim.',
+          'Berbeda dengan interface dan type alias yang hilang total saat kompilasi, enum menghasilkan kode JavaScript sungguhan (sebuah object), jadi enum ada juga saat program berjalan. Banyak tim juga memakai union dari beberapa literal type string, misal `"baru" | "diproses" | "selesai"`, sebagai alternatif ringan yang tidak menghasilkan kode JavaScript tambahan; pilih sesuai konvensi tim.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `enum StatusPesanan {
@@ -1075,8 +1394,8 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'TypeScript from Zero adalah course pengantar untuk kamu yang sudah mengenal dasar JavaScript (variabel, fungsi, array, object, dan class) dan ingin menambahkan sistem tipe di atas pengetahuan itu. TypeScript adalah superset JavaScript yang memeriksa kecocokan tipe saat kompilasi, sehingga banyak bug ketahuan sebelum kode dijalankan.',
-    'Di sini kamu belajar cara kerja `tsc` dan type erasure, type annotation dan type inference, array dan tuple, union type, fungsi bertipe, interface, object type literal, type alias, class dengan access modifier, inheritance dan `implements`, enum, hingga generic dasar. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
-    'Sandbox di course ini mengompilasi kode dengan TypeScript 3.7.4 tanpa flag `--strict`, lalu menjalankannya dengan Node.js 12, tanpa akses jaringan dan tanpa input keyboard. Error tipe tetap menghentikan kode, tapi pemeriksaan ketat seperti `strict` tidak aktif di sandbox, dan fitur TypeScript yang lebih baru dari 3.7 tidak bisa dicoba di sana. Prasyaratnya: pemahaman dasar JavaScript. Tidak perlu menginstal apa pun untuk mencoba kode di sandbox.',
+    'Di sini kamu belajar cara kerja `tsc` dan type erasure, type annotation dan type inference, `any`/`unknown`/`never` dan literal type, array dan tuple, union type, `null`/`undefined` dengan `strictNullChecks`, narrowing dan type assertion, fungsi bertipe, interface, object type literal, type alias, class dengan access modifier, inheritance dan `implements`, enum, hingga generic dasar. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Sandbox di course ini mengompilasi kode dengan TypeScript 3.7.4 tanpa flag `--strict`, lalu menjalankannya dengan Node.js 12, tanpa akses jaringan dan tanpa input keyboard. Error tipe tetap menghentikan kode, tapi pemeriksaan ketat seperti `strict` tidak aktif di sandbox, jadi bagian `strictNullChecks` hanya dibahas lewat teks dan quiz, dan fitur TypeScript yang lebih baru dari 3.7 tidak bisa dicoba di sana. Prasyaratnya: pemahaman dasar JavaScript. Tidak perlu menginstal apa pun untuk mencoba kode di sandbox.',
   ].join('\n\n'),
   sandboxLanguage: 'typescript',
   modules,
