@@ -23,9 +23,9 @@ const modules: ModuleDef[] = [
           ]),
           q('C awalnya dibuat untuk keperluan apa?', [
             ['Menulis ulang sistem operasi Unix', true],
-            ['Membuat halaman web', false],
-            ['Analisis data', false],
-            ['Machine learning', false],
+            ['Menulis kernel Linux', false],
+            ['Membuat bahasa scripting untuk mengotomasi tugas di terminal', false],
+            ['Menggantikan Fortran untuk komputasi ilmiah di superkomputer', false],
           ]),
           q('C adalah jenis bahasa apa dari segi eksekusi?', [
             ['Compiled language', true],
@@ -64,18 +64,20 @@ int main(void) {
         title: 'Compile & Run',
         slug: 'cfz-compile-run',
         content: [
-          'Compiler adalah program yang menerjemahkan source code (`.c`) menjadi bahasa mesin (biner) yang bisa langsung dieksekusi prosesor. Untuk C, compiler yang umum dipakai adalah GCC (GNU Compiler Collection).',
-          'Prosesnya biasanya dua langkah: `gcc program.c -o program` untuk compile menjadi file executable bernama `program`, lalu `./program` untuk menjalankannya. Kalau ada kesalahan sintaks, compiler akan menolak menghasilkan executable dan menampilkan pesan error di tahap compile — bukan saat program berjalan.',
-          'Ini beda mendasar dengan interpreted language seperti Python: di Python, error baru ketahuan saat baris bermasalah itu benar-benar dieksekusi (runtime), sedangkan di C banyak kesalahan (tipe data salah, titik koma hilang, fungsi tidak dikenal) sudah tertangkap sebelum program pernah dijalankan sekali pun.',
+          'Compiler adalah program yang menerjemahkan source code (`.c`) menjadi bahasa mesin (biner) yang bisa langsung dieksekusi prosesor. Untuk C, compiler yang umum dipakai adalah GCC (GNU Compiler Collection); Clang adalah alternatif lain yang cara pakainya mirip.',
+          'Prosesnya biasanya dua langkah: compile dulu, lalu jalankan hasilnya. Opsi `-o` menentukan nama file executable yang dihasilkan; kalau `-o` tidak ditulis, GCC menamainya `a.out`.',
+          '```bash\ngcc program.c -o program\n./program\n```',
+          'Awalan `./` berarti "file di folder saat ini". Kalau ada kesalahan sintaks, compiler menolak menghasilkan executable dan menampilkan pesan `error` di tahap compile — bukan saat program berjalan. Pesan `warning` berbeda: compile tetap berhasil, tapi compiler memberi tahu ada kode yang mencurigakan. Opsi `-Wall` (warning all) menyalakan peringatan tambahan, dan sebaiknya selalu dipakai: `gcc -Wall program.c -o program`.',
+          'Ini beda mendasar dengan interpreted language seperti Python: di Python, error baru ketahuan saat baris bermasalah itu benar-benar dieksekusi (runtime), sedangkan di C banyak kesalahan (tipe data salah, titik koma hilang, fungsi tidak dikenal) sudah tertangkap sebelum program pernah dijalankan sekali pun. Tapi compiler tidak menangkap semuanya: kesalahan seperti mengakses index array di luar batas tetap lolos compile dan baru bermasalah saat program berjalan.',
           'Konsekuensinya, program C yang sudah berhasil di-compile umumnya berjalan lebih cepat karena tidak ada overhead penerjemahan saat runtime — semua penerjemahan sudah selesai di tahap compile.',
         ],
         hasQuiz: true,
         quizQuestions: [
-          q('Apa nama compiler C yang paling umum dipakai?', [
-            ['GCC', true],
-            ['pip', false],
-            ['npm', false],
-            ['JVM', false],
+          q('Apa yang dihasilkan compiler dari file program.c?', [
+            ['File executable berisi instruksi mesin yang bisa dijalankan sistem operasi', true],
+            ['File bytecode yang harus dijalankan oleh interpreter C setiap kali program dipakai', false],
+            ['File program.c baru yang sudah dioptimalkan sehingga bisa langsung dieksekusi', false],
+            ['File executable yang baru terbentuk setelah perintah ./program dijalankan', false],
           ]),
           q('Kapan kesalahan sintaks di C biasanya terdeteksi?', [
             ['Saat proses compile, sebelum program dijalankan', true],
@@ -85,9 +87,15 @@ int main(void) {
           ]),
           q('Perintah apa untuk meng-compile program.c menjadi executable bernama program?', [
             ['gcc program.c -o program', true],
-            ['python program.c', false],
-            ['node program.c', false],
-            ['run program.c', false],
+            ['gcc program.c (nama executable otomatis mengikuti nama file sumber)', false],
+            ['gcc -o program.c program', false],
+            ['./program.c', false],
+          ]),
+          q('Mana kesalahan yang biasanya lolos compile dan baru bermasalah saat program berjalan?', [
+            ['Mengakses index array di luar batas ukurannya', true],
+            ['Lupa menulis titik koma di akhir statement', false],
+            ['Lupa menutup kurung kurawal di akhir fungsi', false],
+            ['Memakai nama variabel yang belum pernah dideklarasikan', false],
           ]),
         ],
       },
@@ -102,7 +110,7 @@ int main(void) {
         content: [
           'Berbeda dengan Python yang dynamically typed, C adalah statically typed — setiap variabel harus dideklarasikan dengan tipe data eksplisit sebelum dipakai, dan tipe itu tidak bisa berubah selama program berjalan.',
           'Empat tipe data dasar yang paling sering dipakai: `int` (bilangan bulat, misal 10), `float` (bilangan desimal presisi tunggal, misal 3.14f), `double` (bilangan desimal presisi ganda, lebih akurat dari float), dan `char` (satu karakter tunggal, misal \'A\').',
-          'Deklarasi variabel di C mengikuti pola `tipe nama_variabel = nilai;`, contoh: `int umur = 20;`. Variabel bisa dideklarasikan tanpa nilai awal lalu diisi belakangan, tapi nilainya akan berisi sampah (garbage value) sampai benar-benar diisi.',
+          'Deklarasi variabel di C mengikuti pola `tipe nama_variabel = nilai;`, contoh: `int umur = 20;`. Variabel bisa dideklarasikan tanpa nilai awal lalu diisi belakangan, tapi untuk variabel lokal (yang dideklarasikan di dalam fungsi, seperti di `main`) nilainya akan berisi sampah (garbage value) — nilai acak yang tidak boleh diandalkan — sampai benar-benar diisi. Variabel global (dideklarasikan di luar fungsi apa pun) dan variabel `static` berbeda: keduanya otomatis diisi 0 kalau tidak diberi nilai awal.',
           'Aturan penamaan variabel di C: hanya huruf, angka, underscore (`_`), tidak boleh diawali angka, case-sensitive, dan tidak boleh memakai kata kunci reserved seperti `int` atau `return` sebagai nama variabel.',
         ],
         hasSandbox: true,
@@ -136,11 +144,11 @@ int main(void) {
             ['float', false],
             ['double', false],
           ]),
-          q('Apa yang terjadi kalau variabel dideklarasikan tanpa nilai awal lalu langsung dipakai?', [
-            ['Berisi garbage value (nilai sampah) yang tidak terdefinisi', true],
-            ['Otomatis bernilai 0', false],
+          q('Apa yang terjadi kalau variabel lokal di dalam main dideklarasikan tanpa nilai awal lalu langsung dipakai?', [
+            ['Berisi garbage value (nilai sampah) yang tidak boleh diandalkan', true],
+            ['Otomatis bernilai 0 karena C mengisi nol untuk semua variabel baru', false],
             ['Program pasti gagal compile', false],
-            ['Otomatis bernilai string kosong', false],
+            ['Program berhenti dengan pesan error runtime saat variabel itu dibaca', false],
           ]),
         ],
       },
@@ -149,11 +157,20 @@ int main(void) {
         slug: 'cfz-operator',
         content: [
           'Operator aritmatika di C: `+` tambah, `-` kurang, `*` kali, `/` bagi, `%` sisa bagi (modulo, hanya untuk integer). Perlu hati-hati: pembagian antar dua `int` di C menghasilkan hasil integer (desimalnya dibuang), misal `7 / 2` menghasilkan `3`, bukan `3.5`.',
-          'Operator perbandingan: `==` sama dengan, `!=` tidak sama, `>`, `<`, `>=`, `<=` — hasilnya berupa integer, `1` untuk benar dan `0` untuk salah (C klasik tidak punya tipe boolean native seperti bahasa lain, meski C99 ke atas menyediakan `_Bool` lewat `<stdbool.h>`).',
+          '## Assignment, increment, dan decrement',
+          'Selain `=`, ada operator assignment gabungan: `+=`, `-=`, `*=`, `/=`, dan `%=`. Ekspresi `x += 3` artinya `x = x + 3`. Untuk menambah atau mengurangi 1 ada `++` dan `--`, yang sering dipakai di perulangan.',
+          'Operator `++` dan `--` punya dua bentuk. Bentuk postfix (`x++`) menghasilkan nilai x yang lama lalu menaikkan x; bentuk prefix (`++x`) menaikkan x dulu lalu menghasilkan nilai barunya. Kalau ditulis sebagai statement sendiri hasilnya sama; bedanya baru terasa saat nilai ekspresinya dipakai:',
+          '```c\nint x = 5;\nx += 3;           // x menjadi 8\nx++;              // x menjadi 9\nint lama = x++;   // lama = 9, x menjadi 10\nint baru = ++x;   // x menjadi 11, baru = 11\n```',
+          '## Operator perbandingan dan logika',
+          'Operator perbandingan: `==` sama dengan, `!=` tidak sama, `>`, `<`, `>=`, `<=` — hasilnya berupa `int`, `1` untuk benar dan `0` untuk salah. Sejak C99, C punya tipe boolean bawaan bernama `_Bool` yang hanya menyimpan `0` atau `1`. Header `<stdbool.h>` tidak menambah tipe baru, hanya menyediakan macro `bool` (sama dengan `_Bool`), `true` (sama dengan `1`), dan `false` (sama dengan `0`) supaya kode lebih enak dibaca.',
           'Operator logika: `&&` (AND), `||` (OR), `!` (NOT) — dipakai menggabungkan beberapa kondisi, mengembalikan `1` atau `0` sama seperti operator perbandingan.',
+          '## Urutan prioritas (precedence)',
+          'Kalau satu ekspresi memakai beberapa operator, C mengikuti urutan prioritas, bukan sekadar kiri ke kanan. Dari yang paling dulu dihitung: `!`, `++`, `--`; lalu `*`, `/`, `%`; lalu `+`, `-`; lalu `<`, `<=`, `>`, `>=`; lalu `==`, `!=`; lalu `&&`; lalu `||`; terakhir assignment (`=`, `+=`, dan sejenisnya). Tanda kurung `()` selalu didahulukan, jadi pakai kurung kalau ragu atau supaya maksud kode lebih jelas.',
+          '```c\nint a = 2 + 3 * 4;      // 14: perkalian dulu\nint b = (2 + 3) * 4;    // 20: kurung didahulukan\nint c = 10 - 4 / 2;     // 8, bukan 3\nint d = 2 + 3 > 4;      // (2 + 3) > 4, hasilnya 1\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <stdio.h>
+#include <stdbool.h>
 
 int main(void) {
     int a = 10;
@@ -166,46 +183,124 @@ int main(void) {
     printf("Perbandingan a > b: %d\\n", a > b);
     printf("Logika (a > b) && (b > 0): %d\\n", (a > b) && (b > 0));
 
+    int skor = 5;
+    skor += 3;
+    printf("skor setelah += 3: %d\\n", skor);
+    skor++;
+    printf("skor setelah ++: %d\\n", skor);
+    int lama = skor++;
+    printf("lama = %d, skor = %d\\n", lama, skor);
+    int baru = ++skor;
+    printf("baru = %d, skor = %d\\n", baru, skor);
+
+    printf("2 + 3 * 4 = %d\\n", 2 + 3 * 4);
+    printf("(2 + 3) * 4 = %d\\n", (2 + 3) * 4);
+
+    bool lulus = skor >= 10;
+    printf("lulus = %d\\n", lulus);
+
     return 0;
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Setelah int x = 5; int y = x++; berapa nilai x dan y?', [
+            ['x = 6 dan y = 5', true],
+            ['x = 6 dan y = 6', false],
+            ['x = 5 dan y = 5', false],
+            ['x = 5 dan y = 6', false],
+          ]),
+          q('Bagaimana urutan prioritas operator di C, dari yang dihitung paling dulu?', [
+            ['Perkalian (*), penjumlahan (+), perbandingan (>), lalu logika (&&)', true],
+            ['Logika (&&), perbandingan (>), penjumlahan (+), lalu perkalian (*)', false],
+            ['Penjumlahan (+), perkalian (*), logika (&&), lalu perbandingan (>)', false],
+            ['Semua operator setara prioritasnya dan dihitung dari kiri ke kanan', false],
+          ]),
+          q('Pernyataan mana yang benar tentang _Bool dan <stdbool.h>?', [
+            ['_Bool adalah tipe bawaan sejak C99; <stdbool.h> hanya menambah macro bool, true, dan false', true],
+            ['Tipe boolean baru ada kalau <stdbool.h> di-include; tanpa itu C tidak punya tipe boolean', false],
+            ['<stdbool.h> mengubah hasil operator perbandingan dari int menjadi tipe bool', false],
+            ['true dan false adalah keyword bawaan C sejak versi pertamanya', false],
+          ]),
+        ],
       },
       {
         title: 'printf & Format Specifier',
         slug: 'cfz-printf-format-specifier',
         content: [
           '`printf` adalah fungsi standar C untuk mencetak teks ke layar, disediakan lewat header `<stdio.h>`. Untuk mencetak nilai variabel di tengah teks, `printf` memakai format specifier — placeholder yang diganti dengan nilai variabel sesuai urutan argumen.',
-          'Format specifier yang paling umum: `%d` untuk integer, `%f` untuk float/double, `%c` untuk karakter tunggal, `%s` untuk string (array karakter yang diakhiri null terminator).',
+          'Format specifier yang paling umum:',
+          '- `%d` untuk `int` (bilangan bulat bertanda)\n- `%u` untuk `unsigned int` (bilangan bulat tanpa tanda)\n- `%ld` untuk `long`, dan `%lld` untuk `long long`\n- `%zu` untuk `size_t`, tipe hasil `sizeof` dan `strlen`\n- `%f` untuk `float` atau `double`\n- `%c` untuk satu karakter (`char`)\n- `%s` untuk string (array karakter yang diakhiri null terminator)\n- `%%` untuk mencetak tanda persen itu sendiri',
+          'Tipe argumen harus cocok dengan specifier-nya. Misalnya `printf("%d", 3.14)` adalah undefined behavior: hasilnya bisa berupa angka ngawur, bukan 3. Menyalakan opsi `-Wall` saat compile membuat GCC memperingatkan ketidakcocokan seperti ini.',
           'Karakter escape `\\n` menyisipkan baris baru (newline), dan `\\t` menyisipkan tab — keduanya sering dipakai di dalam string `printf` untuk merapikan tampilan output.',
-          'Untuk float/double, bisa ditentukan jumlah digit desimal yang ditampilkan, misal `%.2f` menampilkan tepat 2 angka di belakang koma.',
+          '## Lebar field dan presisi',
+          'Antara `%` dan huruf specifier boleh disisipkan lebar minimum field. `%5d` mencetak integer rata kanan dalam 5 kolom, `%-5d` rata kiri, dan `%05d` mengisi kolom kosong dengan angka 0. Untuk `float`/`double`, `%.2f` menampilkan tepat 2 angka di belakang koma, dan keduanya bisa digabung: `%8.2f` berarti lebar 8 kolom dengan 2 desimal.',
+          '```c\nprintf("[%5d]\\n", 42);        // [   42]\nprintf("[%-5d]\\n", 42);       // [42   ]\nprintf("[%05d]\\n", 42);       // [00042]\nprintf("[%8.2f]\\n", 3.14159); // [    3.14]\nprintf("Diskon %d%%\\n", 15);  // Diskon 15%\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <stdio.h>
+#include <string.h>
 
 int main(void) {
     int umur = 20;
+    unsigned int stok = 4000000000u;
+    long populasi = 270000000L;
     float ipk = 3.75f;
     char grade = 'A';
     char nama[] = "Siswa BarisORG";
 
     printf("Nama: %s\\n", nama);
     printf("Umur: %d tahun\\n", umur);
+    printf("Stok (unsigned): %u\\n", stok);
+    printf("Populasi (long): %ld\\n", populasi);
     printf("IPK: %.2f\\n", ipk);
     printf("Grade: %c\\n", grade);
+    printf("Panjang nama: %zu karakter\\n", strlen(nama));
+    printf("Lulus dengan nilai %d%%\\n", 85);
+
+    printf("[%5d]\\n", 42);
+    printf("[%-5d]\\n", 42);
+    printf("[%05d]\\n", 42);
+    printf("[%8.2f]\\n", 3.14159);
+
     printf("Baris ini\\tpakai tab\\ndan baris ini baris baru.\\n");
 
     return 0;
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Format specifier mana yang tepat untuk mencetak hasil strlen atau sizeof (bertipe size_t)?', [
+            ['%zu', true],
+            ['%d', false],
+            ['%u', false],
+            ['%f', false],
+          ]),
+          q('Apa yang dicetak oleh printf("[%5d]", 42)?', [
+            ['[   42]', true],
+            ['[42   ]', false],
+            ['[00042]', false],
+            ['[42]', false],
+          ]),
+          q('Bagaimana mencetak tanda persen sungguhan, misalnya "Diskon 15%"?', [
+            ['Menulis %% di dalam format string: "Diskon 15%%"', true],
+            ['Menulis % langsung di dalam format string: "Diskon 15%"', false],
+            ['Menulis garis miring terbalik sebelum persen: "Diskon 15\\%"', false],
+          ]),
+        ],
       },
       {
         title: 'Konstanta & Type Casting',
         slug: 'cfz-konstanta-type-casting',
         content: [
-          'Konstanta adalah nilai yang tidak boleh berubah setelah didefinisikan. Ada dua cara umum membuat konstanta di C: kata kunci `const` (misal `const int MAX = 100;`, diperiksa compiler) dan preprocessor directive `#define` (misal `#define MAX 100`, diganti langsung oleh preprocessor sebelum compile, tanpa tipe data).',
-          '`const` lebih disarankan di kode modern karena punya tipe data yang jelas dan diperiksa oleh compiler, sedangkan `#define` sekadar text substitution murni yang dilakukan sebelum tahap compile dimulai.',
-          'Type casting adalah mengubah nilai dari satu tipe data ke tipe lain secara eksplisit, ditulis dengan menaruh nama tipe dalam kurung sebelum nilai, misal `(float) 7 / 2` memaksa `7` jadi float dulu sehingga hasil pembagian jadi `3.5`, bukan `3` seperti pembagian integer biasa.',
-          'Type casting penting dipahami di C karena operasi antar tipe data yang berbeda (misal `int` dibagi `int`) mengikuti aturan tipe data yang paling "sempit" di antara operand — tanpa casting eksplisit, hasil desimal bisa hilang tanpa disadari.',
+          'Konstanta adalah nilai yang tidak boleh berubah setelah didefinisikan. Ada dua cara umum membuat konstanta di C: kata kunci `const` (misal `const int MAX = 100;`, variabel bertipe yang diperiksa compiler dan tidak boleh diubah) dan preprocessor directive `#define` (misal `#define MAX 100`, diganti langsung oleh preprocessor sebelum compile, tanpa tipe data).',
+          'Keduanya punya tempat masing-masing; `const` bukan pengganti yang "lebih modern" untuk `#define`. `const` punya tipe data yang jelas dan diperiksa compiler, sedangkan `#define` sekadar text substitution murni sebelum tahap compile. Bedanya penting di C: variabel `const int` bukan constant expression, jadi tidak bisa dipakai di tempat yang mewajibkan nilai konstan sungguhan, seperti label `case` di `switch` atau ukuran array global (keduanya dibahas di modul berikutnya). `#define MAX 100` boleh dipakai di sana, karena preprocessor mengganti `MAX` menjadi literal `100`.',
+          '## Type casting',
+          'Type casting adalah mengubah nilai dari satu tipe data ke tipe lain secara eksplisit, ditulis dengan menaruh nama tipe dalam kurung sebelum nilai, misal `(float) 7 / 2`. Cast hanya berlaku untuk `7` (prioritasnya lebih tinggi dari `/`), sehingga `7` jadi float dulu dan hasil pembagian jadi `3.5`, bukan `3` seperti pembagian integer biasa.',
+          '## Konversi otomatis antar tipe',
+          'Tanpa cast pun C tetap mengubah tipe secara otomatis kalau kedua operand berbeda tipe, lewat aturan yang disebut usual arithmetic conversions: operand dikonversi ke common type yang lebih "tinggi", bukan yang paling sempit. Tipe floating-point mengalahkan tipe integer (`double` mengalahkan `float`), dan di antara integer, umumnya tipe yang lebih lebar menang (`long` mengalahkan `int`). Tipe yang lebih sempit dari `int`, seperti `char`, lebih dulu dinaikkan menjadi `int`.',
+          'Jadi `5 / 2.0` menghasilkan `2.5`: `5` otomatis dikonversi ke `double` sebelum dibagi. Sedangkan `7 / 2` yang dua-duanya `int` tidak punya apa-apa untuk dikonversi, jadi hasilnya tetap `3`. Konversi ke arah sebaliknya (dari desimal ke integer) membuang bagian desimal, bukan membulatkan. Perhatikan juga bahwa cast harus diletakkan sebelum pembagian terjadi: `(float) (a / b)` terlambat, karena `a / b` sudah dihitung sebagai integer.',
+          '```c\nint a = 7;\nint b = 2;\ndouble d1 = a / b;            // 3.0: a / b dihitung sebagai int (3) dulu\ndouble d2 = (double) a / b;   // 3.5: a dinaikkan menjadi double\ndouble d3 = a / 2.0;          // 3.5: a otomatis menjadi double\ndouble desimal = 3.9;\nint n = desimal;               // 3: desimal dibuang, bukan dibulatkan\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <stdio.h>
@@ -222,17 +317,23 @@ int main(void) {
     int b = 2;
     printf("Pembagian integer biasa: %d\\n", a / b);
     printf("Pembagian setelah casting ke float: %.1f\\n", (float) a / b);
+    printf("Int dibagi double (konversi otomatis): %.1f\\n", a / 2.0);
+    printf("Cast setelah pembagian (terlambat): %.1f\\n", (float) (a / b));
+
+    double desimal = 3.9;
+    int terpotong = desimal;
+    printf("int dari 3.9: %d\\n", terpotong);
 
     return 0;
 }
 `,
         hasQuiz: true,
         quizQuestions: [
-          q('Perbedaan utama const dan #define adalah?', [
-            ['const punya tipe data & diperiksa compiler, #define hanya text substitution', true],
-            ['const dan #define benar-benar identik dalam segala hal', false],
-            ['#define hanya bisa dipakai untuk angka desimal', false],
-            ['const hanya bisa dipakai di dalam fungsi main', false],
+          q('Apa perbedaan utama const dan #define di C?', [
+            ['const adalah variabel bertipe yang diperiksa compiler; #define sekadar text substitution tanpa tipe', true],
+            ['const diganti preprocessor sebelum compile; #define adalah variabel bertipe yang diperiksa compiler', false],
+            ['const boleh diubah nilainya setelah dideklarasikan; #define tidak boleh', false],
+            ['const dan #define identik: keduanya variabel bertipe yang disimpan di memori', false],
           ]),
           q('Hasil dari 7 / 2 di C jika keduanya bertipe int adalah?', [
             ['3 (desimal dibuang)', true],
@@ -240,11 +341,17 @@ int main(void) {
             ['4 (dibulatkan ke atas)', false],
             ['Error compile', false],
           ]),
-          q('Bagaimana cara melakukan type casting eksplisit ke float pada variabel a?', [
-            ['(float) a', true],
-            ['float(a)', false],
-            ['a.toFloat()', false],
-            ['cast<float>(a)', false],
+          q('Apa hasil 5 / 2.0 di C, dan kenapa?', [
+            ['2.5, karena 5 otomatis dikonversi ke double sebelum dibagi', true],
+            ['2, karena operand dihitung dengan tipe paling sempit di antara keduanya (int)', false],
+            ['2.5, tapi hanya kalau ditulis dengan cast eksplisit: (double) 5 / 2.0', false],
+            ['Error compile, karena kedua operand berbeda tipe', false],
+          ]),
+          q('Dengan int a = 7 dan int b = 2, ekspresi mana yang menghasilkan 3.5?', [
+            ['(float) a / b', true],
+            ['(float) (a / b)', false],
+            ['float(a) / b', false],
+            ['a / b', false],
           ]),
         ],
       },
@@ -407,10 +514,17 @@ int main(void) {
         title: 'Array Multidimensi & String sebagai Array Char',
         slug: 'cfz-array-multidimensi-string-array-char',
         content: [
-          'Array multidimensi (misal array 2 dimensi) berguna merepresentasikan data berbentuk tabel/grid, dideklarasikan dengan dua ukuran: `int matriks[2][3];` membuat array 2 baris, 3 kolom. Akses elemen dengan dua index: `matriks[baris][kolom]`.',
+          '## Array 2 dimensi',
+          'Array multidimensi (misal array 2 dimensi) berguna merepresentasikan data berbentuk tabel/grid, dideklarasikan dengan dua ukuran: `int matriks[2][3];` membuat array 2 baris, 3 kolom. Akses elemen dengan dua index: `matriks[baris][kolom]`, dan seperti array biasa, kedua index mulai dari 0.',
+          '```c\nint matriks[2][3] = {\n    {1, 2, 3},\n    {4, 5, 6}\n};\nprintf("%d\\n", matriks[1][2]);  // 6: baris ke-1, kolom ke-2 (elemen terakhir)\n```',
+          '## String sebagai array char',
           'C tidak punya tipe data string bawaan seperti Python — string di C sebenarnya adalah array karakter (`char`) yang diakhiri karakter khusus null terminator (`\\0`) untuk menandai akhir string.',
           'String literal seperti `"Halo"` otomatis diberi null terminator oleh compiler, jadi `char teks[] = "Halo";` sebenarnya berisi 5 elemen: `H`, `a`, `l`, `o`, dan `\\0` di akhir — bukan 4 elemen seperti kelihatannya.',
-          'Fungsi `strlen` (dari header `<string.h>`) menghitung panjang string tanpa menghitung null terminator, sedangkan `strcpy` dan `strcat` masing-masing menyalin dan menggabungkan string — semuanya bekerja dengan memanipulasi array `char` di baliknya.',
+          'Fungsi `strlen` (dari header `<string.h>`) menghitung panjang string tanpa menghitung null terminator, dan mengembalikan tipe `size_t` (bilangan bulat tanpa tanda untuk ukuran), jadi dicetak dengan `%zu`. Operator `sizeof` menghasilkan ukuran array dalam byte, termasuk null terminator dan sisa ruang kosong di dalam array.',
+          '```c\nchar teks[] = "Halo";\nchar nama[20] = "Baris";\nprintf("%zu %zu\\n", strlen(teks), sizeof teks);  // 4 5\nprintf("%zu %zu\\n", strlen(nama), sizeof nama);  // 5 20\n```',
+          'Fungsi `strcpy` menyalin string dan `strcat` menggabungkan string, keduanya bekerja dengan memanipulasi array `char` di baliknya. Keduanya tidak mengecek ukuran array tujuan: kalau tidak cukup menampung isi string ditambah null terminator, program menulis melewati batas array (buffer overflow, undefined behavior) yang bisa merusak data lain atau membuat program crash. Pastikan ukuran array tujuan cukup, yaitu `strlen(tujuan) + strlen(sumber) + 1` byte atau lebih.',
+          'Contoh SALAH yang jangan ditiru (array `kecil` hanya muat 6 byte, sedangkan hasilnya butuh 9):',
+          '```c\nchar kecil[6] = "Baris";\nstrcat(kecil, "ORG");  // buffer overflow!\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#include <stdio.h>
@@ -430,13 +544,43 @@ int main(void) {
     }
 
     char nama[20] = "Baris";
-    strcat(nama, "ORG");
+    char tambahan[] = "ORG";
+
+    if (strlen(nama) + strlen(tambahan) + 1 <= sizeof nama) {
+        strcat(nama, tambahan);
+    }
     printf("Setelah strcat: %s\\n", nama);
-    printf("Panjang string: %lu\\n", strlen(nama));
+    printf("Panjang string (strlen): %zu\\n", strlen(nama));
+    printf("Ukuran array (sizeof): %zu\\n", sizeof nama);
+
+    char salinan[20];
+    strcpy(salinan, nama);
+    printf("Salinan: %s\\n", salinan);
 
     return 0;
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Pada int matriks[2][3], elemen terakhir (baris kedua, kolom ketiga) diakses dengan?', [
+            ['matriks[1][2]', true],
+            ['matriks[2][3]', false],
+            ['matriks[3][2]', false],
+            ['matriks[2][1]', false],
+          ]),
+          q('Untuk char nama[20] = "Baris"; berapa nilai strlen(nama) dan sizeof nama?', [
+            ['strlen = 5, sizeof = 20', true],
+            ['strlen = 20, sizeof = 5', false],
+            ['strlen = 6, sizeof = 20', false],
+            ['strlen = 5, sizeof = 5', false],
+          ]),
+          q('Apa yang terjadi kalau strcat dipakai pada array tujuan yang terlalu kecil?', [
+            ['Program menulis melewati batas array (buffer overflow, undefined behavior)', true],
+            ['strcat otomatis memperbesar array tujuan sampai cukup', false],
+            ['strcat memotong hasilnya supaya muat lalu menambah null terminator', false],
+            ['Compiler menolak meng-compile program itu', false],
+          ]),
+        ],
       },
     ],
   },
@@ -547,7 +691,7 @@ int main(void) {
         title: 'Pointer & Array',
         slug: 'cfz-pointer-array',
         content: [
-          'Di C, nama array sebenarnya "meluruh" (decay) menjadi pointer ke elemen pertamanya ketika dipakai dalam ekspresi — artinya `nilai` (nama array) hampir setara dengan `&nilai[0]`.',
+          'Di C, nama array sebenarnya "meluruh" (decay) menjadi pointer ke elemen pertamanya ketika dipakai dalam ekspresi (kecuali sebagai operand `sizeof` atau `&`) — artinya `nilai` (nama array) hampir setara dengan `&nilai[0]`.',
           'Karena hubungan erat ini, aritmatika pointer bisa dipakai untuk menjelajahi array: `*(nilai + i)` menghasilkan nilai yang sama dengan `nilai[i]` — compiler C menerjemahkan notasi index array menjadi aritmatika pointer di balik layar.',
           'Saat sebuah array dikirim sebagai argumen ke fungsi, yang sebenarnya dikirim adalah pointer ke elemen pertamanya (bukan salinan seluruh array) — inilah sebabnya fungsi yang menerima array sebagai parameter bisa mengubah isi array asli, berbeda dengan variabel biasa yang pass by value.',
           'Memahami relasi pointer-array ini penting karena banyak fungsi standar library C (seperti `strlen`, `strcpy`) sebenarnya bekerja dengan menggeser pointer melalui array karakter sampai menemukan null terminator.',
@@ -555,7 +699,7 @@ int main(void) {
         hasSandbox: true,
         sandboxStarterCode: `#include <stdio.h>
 
-void cetakSemua(int arr[], int ukuran) {
+void gandakanSemua(int arr[], int ukuran) {
     for (int i = 0; i < ukuran; i++) {
         arr[i] = arr[i] * 2;
     }
@@ -568,7 +712,7 @@ int main(void) {
     printf("Akses via index: %d\\n", nilai[2]);
     printf("Akses via pointer arithmetic: %d\\n", *(p + 2));
 
-    cetakSemua(nilai, 4);
+    gandakanSemua(nilai, 4);
     printf("Array setelah dikali 2 di dalam fungsi:\\n");
     for (int i = 0; i < 4; i++) {
         printf("%d ", nilai[i]);
@@ -584,23 +728,37 @@ int main(void) {
         slug: 'cfz-alokasi-memori-dinamis',
         content: [
           'Array biasa di C punya ukuran tetap yang harus diketahui saat compile. Kalau ukuran data baru diketahui saat program berjalan (runtime), kita butuh alokasi memori dinamis lewat fungsi `malloc` (memory allocate) dari header `<stdlib.h>`.',
-          '`malloc(n * sizeof(tipe))` meminta sejumlah `n` elemen bertipe tertentu dari heap (area memori terpisah dari stack biasa) dan mengembalikan pointer ke blok memori itu — perlu di-cast ke tipe pointer yang sesuai.',
+          '`malloc(n * sizeof(tipe))` meminta sejumlah `n` elemen bertipe tertentu dari heap (area memori terpisah dari stack biasa) dan mengembalikan pointer ke blok memori itu. Tipe kembaliannya `void *` (pointer generik), dan di C pointer ini otomatis dikonversi ke tipe pointer tujuan, jadi tidak perlu di-cast: tulis `int *data = malloc(n * sizeof(int));`, bukan `(int *) malloc(...)`. Cast itu wajib di C++, tapi tidak di C.',
+          'Isi blok hasil `malloc` belum diinisialisasi (berisi nilai sampah), dan `malloc` bisa gagal: kalau memori tidak cukup, ia mengembalikan `NULL` (pointer kosong, tidak menunjuk ke mana pun). Selalu cek hasilnya sebelum dipakai.',
+          '```c\nint *data = malloc(5 * sizeof(int));\nif (data == NULL) {\n    return 1;  // alokasi gagal\n}\ndata[0] = 10;\nfree(data);\n```',
           'Memori yang dialokasikan dengan `malloc` tidak dibersihkan otomatis oleh C (tidak ada garbage collector) — programmer wajib memanggil `free(pointer)` setelah selesai memakainya, kalau tidak akan terjadi memory leak (memori yang terpakai tapi tidak pernah dilepaskan kembali ke sistem).',
-          'Pola umum: alokasi dengan `malloc`, pakai memori itu, lalu `free` di akhir sebelum pointer keluar dari scope atau program selesai — kebiasaan ini krusial di program C yang berjalan lama seperti server atau aplikasi embedded.',
+          'Pola umum: alokasi dengan `malloc`, cek `NULL`, pakai memori itu, lalu `free` di akhir sebelum pointer keluar dari scope atau program selesai — kebiasaan ini krusial di program C yang berjalan lama seperti server atau aplikasi embedded.',
         ],
         hasQuiz: true,
         quizQuestions: [
-          q('Fungsi apa yang dipakai untuk alokasi memori dinamis di C?', [
-            ['malloc', true],
-            ['alloc', false],
-            ['new', false],
-            ['create', false],
+          q('Kapan alokasi memori dinamis dengan malloc dibutuhkan?', [
+            ['Saat ukuran data baru diketahui ketika program berjalan (runtime)', true],
+            ['Setiap kali mendeklarasikan variabel int biasa di dalam fungsi', false],
+            ['Supaya memori dibersihkan otomatis saat fungsi selesai tanpa perlu free', false],
+            ['Supaya isi array bisa diubah, karena array biasa bersifat read-only', false],
+          ]),
+          q('Bagaimana cara menyimpan hasil malloc ke pointer int di C?', [
+            ['int *p = malloc(n * sizeof(int)); — void * otomatis dikonversi, tanpa cast', true],
+            ['int *p = (int *) malloc(n * sizeof(int)); — cast wajib, void * tidak bisa dikonversi otomatis', false],
+            ['int p = malloc(n * sizeof(int)); — malloc mengembalikan bilangan bulat berisi alamat', false],
+            ['int *p = new int[n]; — malloc hanya bisa dipakai bersama operator new', false],
           ]),
           q('Apa yang terjadi kalau memori dari malloc tidak pernah di-free?', [
             ['Terjadi memory leak', true],
             ['Program otomatis membersihkannya saat fungsi selesai', false],
             ['Compiler menolak meng-compile', false],
-            ['Memori otomatis dikembalikan tiap 1 detik', false],
+            ['Memori langsung dibersihkan saat pointernya diberi nilai NULL', false],
+          ]),
+          q('Apa yang dikembalikan malloc kalau memori tidak cukup?', [
+            ['NULL', true],
+            ['Pointer ke blok yang lebih kecil dari yang diminta', false],
+            ['Alamat acak yang tetap aman dipakai', false],
+            ['0, yaitu bilangan bulat nol', false],
           ]),
           q('Header apa yang menyediakan fungsi malloc dan free?', [
             ['<stdlib.h>', true],
@@ -615,7 +773,7 @@ int main(void) {
 
 int main(void) {
     int jumlahData = 5;
-    int *data = (int *) malloc(jumlahData * sizeof(int));
+    int *data = malloc(jumlahData * sizeof(int));
 
     if (data == NULL) {
         printf("Alokasi memori gagal\\n");
@@ -685,7 +843,7 @@ int main(void) {
           ]),
           q('Bagaimana cara mengakses field nama dari variabel struct m1?', [
             ['m1.nama', true],
-            ['m1->nama() ', false],
+            ['nama.m1', false],
             ['m1[nama]', false],
             ['nama(m1)', false],
           ]),
@@ -702,30 +860,46 @@ int main(void) {
         slug: 'cfz-header-file-modularitas',
         content: [
           'Program C yang besar biasanya dipecah menjadi beberapa file supaya lebih terorganisir dan mudah dipelihara — pola umumnya adalah file header (`.h`) berisi deklarasi (prototype fungsi, definisi struct, konstanta), dan file implementasi (`.c`) berisi kode fungsi yang sesungguhnya.',
+          '## Contoh: tiga file dalam satu folder',
+          'Tiga file berikut dipakai bersama dalam satu folder (bukan satu program tunggal). Pertama `matematika.h`, yang hanya mendeklarasikan fungsi `tambah`:',
+          '```c\n#ifndef MATEMATIKA_H\n#define MATEMATIKA_H\n\nint tambah(int a, int b);\n\n#endif\n```',
+          'Lalu `matematika.c`, yang berisi implementasi fungsinya dan meng-include header-nya sendiri:',
+          '```c\n#include "matematika.h"\n\nint tambah(int a, int b) {\n    return a + b;\n}\n```',
+          'Terakhir `main.c`, yang memakai fungsi itu setelah meng-include header-nya:',
+          '```c\n#include <stdio.h>\n#include "matematika.h"\n\nint main(void) {\n    printf("2 + 3 = %d\\n", tambah(2, 3));\n    return 0;\n}\n```',
+          'Saat compile, semua file `.c` disebutkan sekaligus (header tidak ditulis di perintah, karena sudah ikut lewat `#include`):',
+          '```bash\ngcc main.c matematika.c -o program\n./program\n```',
+          '## Include dengan tanda kutip dan kurung siku',
           'File header di-include ke file `.c` lain dengan `#include "nama_header.h"` (tanda kutip untuk header buatan sendiri, beda dengan `#include <stdio.h>` yang tanda kurung siku untuk header standard library).',
           'Modularitas seperti ini memungkinkan tim bekerja di file berbeda tanpa saling tabrakan, dan file `.c` yang jarang berubah tidak perlu di-compile ulang setiap kali (di proyek besar biasanya dibantu tool build seperti `make`).',
-          'Guard header (`#ifndef`/`#define`/`#endif` atau `#pragma once`) dipakai di dalam file header untuk mencegah isi header ter-include dua kali dalam satu proses compile, yang bisa menyebabkan error "redefinition".',
-          'Catatan: topik pemisahan file `.h`/`.c` ini butuh beberapa file terpisah yang tidak bisa didemonstrasikan lewat satu potongan skrip sandbox tunggal, jadi dipelajari lewat penjelasan konsep dan quiz.',
+          '## Header guard',
+          'Guard header (`#ifndef`/`#define`/`#endif`, seperti pada `matematika.h` di atas) dipakai di dalam file header untuk mencegah isi header ter-include dua kali dalam satu proses compile, yang bisa menyebabkan error "redefinition". Alternatifnya adalah `#pragma once` di baris pertama header: bukan bagian standar C, tapi didukung oleh GCC dan compiler populer lain.',
         ],
         hasQuiz: true,
         quizQuestions: [
           q('Apa isi utama sebuah file header (.h) di C?', [
             ['Deklarasi (prototype fungsi, struct, konstanta)', true],
-            ['Selalu berisi seluruh implementasi program', false],
-            ['Hanya boleh berisi komentar', false],
-            ['Kode yang tidak bisa di-include ke file lain', false],
+            ['Implementasi lengkap semua fungsi, sedangkan file .c hanya berisi deklarasi', false],
+            ['Hasil compile berupa kode mesin dari file .c', false],
+            ['Hanya komentar dan dokumentasi, tidak boleh ada kode', false],
           ]),
           q('Bagaimana cara meng-include header buatan sendiri, bukan header standard library?', [
             ['#include "nama_header.h" dengan tanda kutip', true],
             ['#include <nama_header.h> dengan tanda kurung siku', false],
-            ['import nama_header.h', false],
-            ['require("nama_header.h")', false],
+            ['Tidak perlu di-include, cukup menyebut file .c-nya di perintah gcc', false],
+            ['#define "nama_header.h" di awal file', false],
           ]),
           q('Apa fungsi header guard (#ifndef/#define/#endif)?', [
             ['Mencegah isi header ter-include dua kali dalam satu compile', true],
             ['Mempercepat eksekusi program saat runtime', false],
             ['Mengubah header jadi file .c', false],
             ['Menghapus komentar dari header', false],
+          ]),
+          q('Perintah mana yang meng-compile main.c dan matematika.c menjadi satu program?', [
+            ['gcc main.c matematika.c -o program', true],
+            ['gcc main.c -o program (matematika.h sudah membawa implementasinya)', false],
+            ['gcc main.c matematika.h -o program', false],
+            ['gcc matematika.c -o program (main.c ikut otomatis lewat include)', false],
           ]),
         ],
       },
@@ -735,7 +909,7 @@ int main(void) {
         content: [
           'Sekarang saatnya menggabungkan semua yang sudah dipelajari sepanjang course ini: variabel, tipe data, operator, percabangan, perulangan, array, fungsi, pointer, dan struct — semuanya dipakai bersama dalam satu program yang lebih realistis.',
           'Studi kasus di bawah ini adalah program sederhana pencatat nilai beberapa siswa: menyimpan data siswa dalam array of struct, menghitung rata-rata nilai tiap siswa lewat fungsi, lalu menentukan kelulusan lewat percabangan — pola yang sangat umum ditemui di program pengolahan data nyata.',
-          'Perhatikan bagaimana fungsi `hitungRataRata` menerima array struct sebagai parameter (yang di baliknya adalah pointer, seperti dibahas di modul sebelumnya), dan bagaimana perulangan dipakai untuk memproses banyak data sekaligus tanpa menulis kode berulang-ulang secara manual.',
+          'Perhatikan bagaimana fungsi `hitungRataRata` menerima array nilai (`int nilai[]`, yang di baliknya adalah pointer, seperti dibahas di modul sebelumnya) dari field `nilaiUjian` tiap siswa, dan bagaimana perulangan dipakai untuk memproses banyak data sekaligus tanpa menulis kode berulang-ulang secara manual.',
           'Sepanjang course "C from Zero" ini kita sudah belajar dari sintaks paling dasar, tipe data, kontrol alur, array, fungsi, pointer, alokasi memori dinamis, hingga struct — fondasi yang cukup kuat untuk mulai menulis program C yang lebih kompleks, termasuk memahami kode sumber proyek open source yang ditulis dalam C.',
         ],
         hasSandbox: true,
@@ -788,11 +962,11 @@ int main(void) {
             ['Hanya satu nilai integer tunggal', false],
             ['Nama variabel dalam bentuk teks', false],
           ]),
-          q('Topik utama apa saja yang tercakup sepanjang course C from Zero ini?', [
-            ['Variabel, kontrol alur, array, fungsi, pointer, hingga struct', true],
-            ['Hanya sintaks dasar tanpa pointer maupun struct', false],
-            ['Hanya machine learning dengan C', false],
-            ['Hanya pengembangan web dengan C', false],
+          q('Kalau baris terakhir hitungRataRata ditulis return total / jumlah; (tanpa cast ke float), berapa rata-rata Budi (total 245 dari 3 nilai) yang tercetak?', [
+            ['81.00, karena total / jumlah dihitung sebagai pembagian integer lebih dulu', true],
+            ['81.67, karena tipe kembalian fungsinya float', false],
+            ['82.00, karena hasil pembagian otomatis dibulatkan', false],
+            ['Program gagal compile karena int dibagi int tidak boleh dikembalikan sebagai float', false],
           ]),
         ],
       },
@@ -805,7 +979,11 @@ const course: CourseDef = {
   slug: 'c-from-zero',
   category: { name: 'Programming', slug: 'programming' },
   level: 'pemula',
-  description: '',
+  description: [
+    'C from Zero adalah course pengantar untuk kamu yang belum pernah menulis kode sama sekali. C adalah bahasa di balik sistem operasi, firmware, dan banyak interpreter bahasa lain, jadi belajar C juga membantumu memahami apa yang sebenarnya terjadi di balik bahasa pemrograman yang lebih tinggi.',
+    'Di sini kamu belajar dari dasar: struktur program dan proses compile, variabel dan tipe data, operator, `printf` dengan format specifier, konstanta dan type casting, percabangan dan perulangan, array dan string sebagai array `char`, fungsi, pointer dan hubungannya dengan array, alokasi memori dinamis dengan `malloc` dan `free`, `struct`, hingga memecah program menjadi beberapa file dengan header. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Sandbox di course ini menjalankan kode dengan GCC 9.2 (mode C11 `gnu11`), tanpa akses jaringan dan tanpa input keyboard, jadi `scanf` tidak bisa dicoba di sana. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun dan tidak perlu pengalaman programming sebelumnya.',
+  ].join('\n\n'),
   sandboxLanguage: 'c',
   modules,
 }
