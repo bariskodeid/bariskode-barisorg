@@ -181,7 +181,7 @@ console.log("Tipe tinggi:", typeof tinggi)
         content: [
           'Selain tipe dasar seperti `number` dan `string`, TypeScript punya tiga tipe khusus yang perlu dipahami sejak awal: `any`, `unknown`, dan `never`. Setelah itu kita bahas literal type, yaitu tipe yang hanya punya satu nilai persis.',
           '## any: mematikan pengecekan tipe',
-          '`any` berarti "tipe apa saja". Nilai bertipe `any` boleh diisi apa pun dan boleh dipakai seperti tipe apa pun tanpa dicek compiler. Itu membuatnya praktis, tapi sama saja dengan menulis JavaScript biasa: kesalahan baru ketahuan saat program berjalan. Anggap `any` sebagai jalan keluar darurat, bukan pilihan default. Variabel tanpa tipe dan tanpa nilai awal (misal `let x`) juga otomatis bertipe `any` (implicit any); opsi `noImplicitAny`, bagian dari `strict`, melarangnya.',
+          '`any` berarti "tipe apa saja". Nilai bertipe `any` boleh diisi apa pun dan boleh dipakai seperti tipe apa pun tanpa dicek compiler. Itu membuatnya praktis, tapi sama saja dengan menulis JavaScript biasa: kesalahan baru ketahuan saat program berjalan. Anggap `any` sebagai jalan keluar darurat, bukan pilihan default. Parameter fungsi tanpa tipe (misal `function kali(a, b)`) juga otomatis bertipe `any` (implicit any); opsi `noImplicitAny`, bagian dari `strict`, menolaknya sebagai error.',
           `\`\`\`typescript
 let bebas: any = "teks"
 bebas = 42                // boleh: any menerima nilai apa saja
@@ -590,7 +590,7 @@ try {
           'Meski tipe tidak dituliskan eksplisit, TypeScript tetap menegakkan aturan tipe itu setelahnya — mencoba `nama = 100` pada variabel di atas tetap akan ditolak compiler, karena `nama` sudah "terkunci" sebagai `string` sejak inisialisasi pertama.',
           '## Kapan menulis tipe, kapan membiarkan inference',
           'Praktik umum: biarkan inference bekerja untuk variabel lokal yang nilai awalnya sudah jelas, dan untuk return type fungsi — TypeScript menyimpulkan return type dari pernyataan `return` di dalam fungsi, jadi biasanya tidak perlu ditulis. Sebaliknya, parameter fungsi sebaiknya selalu diberi tipe, karena TypeScript tidak bisa menebaknya dari isi fungsi (tanpa anotasi, parameter jadi bertipe `any`, tipe yang mematikan pengecekan, dibahas di lesson any/unknown). Return type boleh tetap ditulis kalau kamu ingin mendokumentasikan kontrak fungsi.',
-          'Inference juga tidak membantu kalau variabel dideklarasikan tanpa nilai awal: `let nilai` bertipe `any`. Kalau nilainya baru diisi nanti, tulis tipenya: `let nilai: number`.',
+          'Inference juga tidak banyak membantu kalau variabel dideklarasikan tanpa nilai awal: tanpa `strict`, `let nilai` jadi bertipe `any`. Kalau nilainya baru diisi nanti, tulis tipenya: `let nilai: number`.',
           `\`\`\`typescript
 function kali(a: number, b: number) {   // return type di-infer: number
   return a * b
