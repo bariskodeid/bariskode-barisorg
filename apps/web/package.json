@@ -26,6 +26,7 @@
     "seed:rust": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed-rust-from-zero.ts",
     "seed:sql": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed-sql-from-zero.ts",
     "seed:typescript": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed-typescript-from-zero.ts",
+    "seed:courses": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed-all-courses.ts",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
