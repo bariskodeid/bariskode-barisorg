@@ -398,12 +398,114 @@ puts "nil itu falsy, jadi unless jalan" unless data
         ],
       },
       {
+        title: 'Percabangan case/when & Range',
+        slug: 'rubyfz-case-when-range',
+        content: [
+          'Kalau `if`/`elsif` punya banyak cabang yang membandingkan satu nilai yang sama, `case`/`when` biasanya lebih rapi. `case` menerima sebuah nilai, tiap `when` memeriksa satu atau beberapa kemungkinan, `else` menangani sisanya, dan semuanya ditutup dengan `end`. Beberapa nilai dalam satu `when` dipisah koma dan artinya "atau".',
+          `\`\`\`ruby
+hari = "sabtu"
+
+case hari
+when "senin", "selasa", "rabu", "kamis", "jumat"
+  puts "Hari kerja"
+when "sabtu", "minggu"
+  puts "Akhir pekan"
+else
+  puts "Bukan nama hari"
+end
+\`\`\``,
+          'Ruby mencocokkan `when` dari atas ke bawah dan hanya menjalankan `when` pertama yang cocok. Tidak ada `break`, dan tidak ada "jatuh" ke cabang berikutnya seperti `switch` di C atau JavaScript. `case` juga mengembalikan nilai dari cabang yang dijalankan, jadi hasilnya bisa langsung disimpan di variabel.',
+          '## Range di dalam when',
+          'Range menyatakan rentang nilai: `1..5` berisi 1 sampai 5 (dua titik: batas akhir ikut), sedangkan `1...5` berisi 1 sampai 4 (tiga titik: batas akhir tidak ikut). Di dalam `when`, Range cocok dengan angka yang berada di dalam rentangnya, jadi cocok untuk menggantikan rangkaian `elsif nilai >= 60 && nilai < 75`.',
+          `\`\`\`ruby
+nilai = 82
+
+grade = case nilai
+when 90..100
+  "A"
+when 75...90
+  "B"
+when 60...75
+  "C"
+else
+  "Tidak lulus"
+end
+
+puts "Grade: #{grade}"   # Grade: B
+\`\`\``,
+          'Pakai tiga titik di antara rentang yang berurutan supaya tidak ada celah. `75..89` tidak memuat 89.5 (`(75..89).include?(89.5)` bernilai `false`), jadi nilai itu lolos dari kedua cabang; `75...90` memuatnya (`include?` bernilai `true`). `include?` mengecek apakah sebuah nilai ada di dalam Range.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `# case/when dengan beberapa nilai per cabang
+hari = "sabtu"
+
+case hari
+when "senin", "selasa", "rabu", "kamis", "jumat"
+  puts "#{hari}: hari kerja"
+when "sabtu", "minggu"
+  puts "#{hari}: akhir pekan"
+else
+  puts "#{hari}: bukan nama hari"
+end
+
+# case dengan Range; hasilnya disimpan ke variabel
+nilai = 82
+
+grade = case nilai
+when 90..100
+  "A"
+when 75...90
+  "B"
+when 60...75
+  "C"
+else
+  "Tidak lulus"
+end
+
+puts "Nilai #{nilai} => grade #{grade}"
+
+# Cabang pertama yang cocok menang, tidak ada "jatuh" ke cabang berikutnya
+angka = 75
+
+case angka
+when 60..75
+  puts "Cabang pertama jalan"
+when 75..100
+  puts "Cabang kedua tidak pernah jalan untuk 75"
+end
+
+# Dua titik vs tiga titik: 89.5 lolos dari celah 75..89
+puts "89.5 ada di 75..89?  #{(75..89).include?(89.5)}"
+puts "89.5 ada di 75...90? #{(75...90).include?(89.5)}"
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa arti when "sabtu", "minggu" pada sebuah case?', [
+            ['Cabang dijalankan kalau nilainya "sabtu" atau "minggu"', true],
+            ['Cabang dijalankan hanya kalau nilainya "sabtu" dan "minggu" sekaligus', false],
+            ['Cabang dijalankan untuk "sabtu", lalu lanjut juga ke cabang when berikutnya', false],
+            ['Ruby error, karena satu when hanya boleh berisi satu nilai', false],
+          ]),
+          q('Pada case dengan when 60..75 (hasil "C") lalu when 75..100 (hasil "B"), apa hasilnya untuk nilai 75?', [
+            ['"C", karena hanya when pertama yang cocok yang dijalankan', true],
+            ['"B", karena cabang terakhir yang cocok menimpa hasil sebelumnya', false],
+            ['"C" lalu "B", karena kedua Range memuat 75 sehingga keduanya dijalankan', false],
+            ['Ruby error, karena dua Range tidak boleh memuat angka yang sama', false],
+          ]),
+          q('Range mana yang berisi 75, 76, sampai 89, tetapi tidak berisi 90?', [
+            ['75...90 (tiga titik)', true],
+            ['75..90 (dua titik)', false],
+            ['Keduanya sama saja: jumlah titik hanya soal gaya penulisan', false],
+          ]),
+        ],
+      },
+      {
         title: 'Perulangan (each, for, while)',
         slug: 'rubyfz-perulangan-each-for-while',
         content: [
           'Perulangan menjalankan kode yang sama berulang kali. Di Ruby, yang paling sering diulang adalah isi sebuah collection atau rentang angka, dan rentang angka ditulis dengan Range.',
           '## Range',
-          'Range menyatakan rentang nilai. `1..5` berisi 1, 2, 3, 4, 5 (dua titik: batas akhir ikut), sedangkan `1...5` berisi 1, 2, 3, 4 (tiga titik: batas akhir tidak ikut). Range ditulis dalam kurung kalau dipanggil method-nya, dan `.to_a` mengubahnya jadi array supaya isinya kelihatan.',
+          'Range sudah dikenal dari lesson sebelumnya: `1..5` berisi 1, 2, 3, 4, 5 (dua titik: batas akhir ikut), sedangkan `1...5` berisi 1, 2, 3, 4 (tiga titik: batas akhir tidak ikut). Di perulangan, Range dipakai sebagai rentang yang diulang. Range ditulis dalam kurung kalau dipanggil method-nya, dan `.to_a` mengubahnya jadi array supaya isinya kelihatan.',
           `\`\`\`ruby
 puts "1..5  => #{(1..5).to_a}"    # [1, 2, 3, 4, 5]
 puts "1...5 => #{(1...5).to_a}"   # [1, 2, 3, 4]
@@ -885,7 +987,7 @@ puts "Global variable terlihat di mana saja: #{$hitungan}"
     ],
   },
   {
-    title: 'OOP Dasar & Ringkasan',
+    title: 'OOP, Error Handling & Ringkasan',
     lessons: [
       {
         title: 'Class & Object',
@@ -893,7 +995,7 @@ puts "Global variable terlihat di mana saja: #{$hitungan}"
         content: [
           'Ruby adalah bahasa "pure object-oriented" — class dibuat dengan kata kunci `class`, ditutup dengan `end`, dan object dibuat dengan memanggil `NamaClass.new(...)`.',
           '`initialize` adalah constructor — method khusus yang otomatis dijalankan saat `.new` dipanggil, biasanya dipakai mengisi instance variable (`@atribut`) dengan nilai awal.',
-          'Method didefinisikan di dalam class dengan `def`, dan dipanggil pada object lewat titik: `object.method_nya`. Instance variable (`@nama`) hanya bisa diakses dari dalam method milik object yang sama, tidak langsung dari luar class kecuali lewat method.',
+          'Method didefinisikan di dalam class dengan `def`, dan dipanggil pada object lewat titik: `object.method_nya`. Instance variable (`@nama`) hanya bisa diakses dari dalam method milik object yang sama, tidak langsung dari luar class kecuali lewat method. Bagaimana satu class mewarisi isi class lain dibahas di lesson berikutnya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `class Siswa
@@ -936,6 +1038,155 @@ siswa2.perkenalan
         ],
       },
       {
+        title: 'Inheritance, Module & Mixin',
+        slug: 'rubyfz-inheritance-module-mixin',
+        content: [
+          'Inheritance (pewarisan) membuat sebuah class mewarisi method dari class lain. Class yang mewarisi disebut subclass, class asalnya superclass, dan ditulis dengan `<`: `class Kucing < Hewan`. Subclass otomatis punya semua method superclass, dan boleh menambah method baru atau menimpanya (override). Ruby hanya mengizinkan satu superclass untuk tiap class, dan `object.is_a?(Hewan)` bernilai `true` untuk object dari subclass `Hewan`.',
+          `\`\`\`ruby
+class Hewan
+  def initialize(nama)
+    @nama = nama
+  end
+
+  def perkenalan
+    puts "Saya #{@nama}"
+  end
+
+  def suara
+    puts "..."
+  end
+end
+
+class Kucing < Hewan
+  def suara
+    puts "Meong"
+  end
+end
+
+kucing = Kucing.new("Tom")
+kucing.perkenalan             # Saya Tom (diwarisi dari Hewan)
+kucing.suara                  # Meong (menimpa suara milik Hewan)
+puts kucing.is_a?(Hewan)      # true
+\`\`\``,
+          '`super` memanggil method bernama sama di superclass. Tanpa tanda kurung, `super` meneruskan argumen method saat ini; `super()` mengirim tanpa argumen, dan `super(nama)` mengirim argumen yang kamu pilih sendiri. Dengan `super`, subclass memperluas method induknya tanpa menggantinya sepenuhnya. Contoh berikut melanjutkan class `Hewan` di atas, jadi tidak berdiri sendiri:',
+          `\`\`\`ruby
+class Anjing < Hewan
+  def initialize(nama, ras)
+    super(nama)          # mengisi @nama lewat initialize milik Hewan
+    @ras = ras
+  end
+
+  def perkenalan
+    super                # jalankan perkenalan milik Hewan dulu
+    puts "Ras saya #{@ras}"
+  end
+end
+
+Anjing.new("Rex", "Labrador").perkenalan
+# Saya Rex
+# Ras saya Labrador
+\`\`\``,
+          '## Module dan mixin',
+          'Module adalah kumpulan method yang tidak bisa dibuat object-nya (tidak ada `.new`), tapi bisa dicampurkan ke class lewat `include` (mixin). Karena sebuah class hanya punya satu superclass, module dipakai untuk berbagi perilaku antar class yang tidak berhubungan lewat pewarisan; class boleh meng-include banyak module. Saat sebuah method dipanggil, Ruby mencarinya di class object itu sendiri, lalu di module yang di-include (yang paling akhir di-include dicek lebih dulu), baru di superclass. `Kelas.ancestors` menampilkan urutan pencarian itu. Contoh berikut juga melanjutkan class `Hewan`:',
+          `\`\`\`ruby
+module Berenang
+  def berenang
+    puts "#{@nama} berenang"
+  end
+end
+
+class Bebek < Hewan
+  include Berenang
+end
+
+bebek = Bebek.new("Donal")
+bebek.berenang                   # Donal berenang
+puts Bebek.ancestors.inspect     # [Bebek, Berenang, Hewan, Object, Kernel, BasicObject]
+\`\`\``,
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `class Hewan
+  def initialize(nama)
+    @nama = nama
+  end
+
+  def perkenalan
+    puts "Saya #{@nama}"
+  end
+
+  def suara
+    puts "..."
+  end
+end
+
+class Kucing < Hewan
+  def suara
+    puts "Meong"
+  end
+end
+
+class Anjing < Hewan
+  def initialize(nama, ras)
+    super(nama)
+    @ras = ras
+  end
+
+  def perkenalan
+    super
+    puts "Ras saya #{@ras}"
+  end
+
+  def suara
+    puts "Guk guk"
+  end
+end
+
+module Berenang
+  def berenang
+    puts "#{@nama} berenang"
+  end
+end
+
+class Bebek < Hewan
+  include Berenang
+
+  def suara
+    puts "Kwek"
+  end
+end
+
+hewan_hewan = [Kucing.new("Tom"), Anjing.new("Rex", "Labrador"), Bebek.new("Donal")]
+hewan_hewan.each do |h|
+  h.perkenalan
+  h.suara
+end
+
+bebek = Bebek.new("Donal")
+bebek.berenang
+puts "bebek turunan Hewan? #{bebek.is_a?(Hewan)}"
+puts "Urutan pencarian method: #{Bebek.ancestors}"
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Bagaimana menulis class Kucing yang mewarisi class Hewan di Ruby?', [
+            ['class Kucing < Hewan', true],
+            ['class Kucing extends Hewan', false],
+            ['class Kucing include Hewan', false],
+            ['class Kucing(Hewan)', false],
+          ]),
+          q('Apa yang dilakukan super di dalam sebuah method milik subclass?', [
+            ['Memanggil method bernama sama di superclass', true],
+            ['Menghapus method milik superclass supaya hanya versi subclass yang tersisa', false],
+            ['Membuat object baru dari superclass dan mengembalikannya', false],
+          ]),
+          q('Apa beda utama include module dengan pewarisan memakai <?', [
+            ['Class hanya boleh punya satu superclass, tapi boleh meng-include banyak module', true],
+            ['Module bisa dibuat object-nya dengan .new seperti class, hanya namanya yang beda', false],
+            ['Method dari module selalu menimpa method bernama sama yang ditulis langsung di class', false],
+          ]),
+        ],
+      },
+      {
         title: 'attr_accessor',
         slug: 'rubyfz-attr-accessor',
         content: [
@@ -962,12 +1213,111 @@ puts "Harga setelah diubah lewat setter: #{produk.harga}"
 `,
       },
       {
+        title: 'Error Handling: begin/rescue/ensure',
+        slug: 'rubyfz-begin-rescue-ensure',
+        content: [
+          'Error yang muncul saat program berjalan disebut exception. Kalau tidak ditangani, exception menghentikan program. Dengan `begin`/`rescue`, kode yang berisiko ditaruh di `begin` dan penanganannya di `rescue`, ditutup dengan `end`. Setelah `rescue` kamu menyebut class error yang ingin ditangani, misal `ZeroDivisionError`: hanya error dari class itu (dan turunannya) yang ditangkap, error lain tetap menghentikan program. `=> e` menyimpan object error ke variabel `e`, sehingga `e.message` (pesan) dan `e.class` (jenis error) bisa dibaca.',
+          `\`\`\`ruby
+pembagi = 0
+
+begin
+  puts "100 / #{pembagi} = #{100 / pembagi}"
+rescue ZeroDivisionError => e
+  puts "Error: #{e.message}"
+else
+  puts "Tidak ada error"
+ensure
+  puts "Selesai (selalu dicetak)"
+end
+\`\`\``,
+          '`else` (opsional) dijalankan hanya kalau tidak ada error di `begin`, sedangkan `ensure` (opsional) dijalankan selalu, baik ada error maupun tidak, cocok untuk "bersih-bersih" seperti menutup file. Urutannya selalu `begin`, `rescue`, `else`, `ensure`. Pada contoh di atas `pembagi` bernilai 0, jadi yang tercetak adalah pesan error lalu "Selesai". Kalau `pembagi` diganti 2, yang tercetak adalah hasil bagi, "Tidak ada error", lalu "Selesai".',
+          '## Melempar error dengan raise',
+          'Kamu juga bisa melempar error sendiri dengan `raise`, misal `raise ArgumentError, "umur tidak boleh negatif"`. Ini berguna di dalam method yang memeriksa inputnya, supaya pemanggil bisa menangkapnya dengan `rescue`.',
+          `\`\`\`ruby
+def cek_umur(umur)
+  raise ArgumentError, "umur tidak boleh negatif" if umur < 0
+  "umur #{umur} valid"
+end
+
+begin
+  puts cek_umur(20)    # umur 20 valid
+  puts cek_umur(-5)    # tidak sampai sini: raise melempar error
+rescue ArgumentError => e
+  puts "Error: #{e.message}"   # Error: umur tidak boleh negatif
+end
+\`\`\``,
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `# 1. rescue menangani error supaya program tidak berhenti
+begin
+  hasil = 10 / 0
+  puts "Hasil: #{hasil}"
+rescue ZeroDivisionError => e
+  puts "Error ditangkap: #{e.message} (#{e.class})"
+end
+
+# 2. else jalan kalau tidak ada error, ensure selalu jalan
+[2, 0].each do |pembagi|
+  begin
+    puts "100 / #{pembagi} = #{100 / pembagi}"
+  rescue ZeroDivisionError
+    puts "Pembagi #{pembagi} tidak valid"
+  else
+    puts "Tidak ada error"
+  ensure
+    puts "Selesai memproses pembagi #{pembagi}"
+  end
+end
+
+# 3. raise melempar error sendiri
+def cek_umur(umur)
+  raise ArgumentError, "umur tidak boleh negatif" if umur < 0
+  "umur #{umur} valid"
+end
+
+begin
+  puts cek_umur(20)
+  puts cek_umur(-5)
+rescue ArgumentError => e
+  puts "Error: #{e.message}"
+end
+
+# 4. Integer() melempar ArgumentError kalau teksnya bukan angka
+begin
+  Integer("abc")
+rescue ArgumentError => e
+  puts "Gagal mengubah ke angka: #{e.message}"
+end
+
+puts "Program tetap jalan sampai akhir"
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Kapan blok ensure dijalankan?', [
+            ['Selalu, baik ada error maupun tidak', true],
+            ['Hanya kalau terjadi error dan error itu sudah ditangani oleh rescue', false],
+            ['Hanya kalau tidak ada error sama sekali di dalam begin', false],
+            ['Hanya kalau error-nya tidak tertangkap oleh rescue mana pun', false],
+          ]),
+          q('Apa fungsi => e pada rescue ArgumentError => e?', [
+            ['Menyimpan object error ke variabel e, supaya e.message dan e.class bisa dibaca', true],
+            ['Membuat Ruby menangkap semua jenis error kecuali ArgumentError', false],
+            ['Mengulang kode di begin terus-menerus sampai e bernilai true', false],
+          ]),
+          q('Kode di begin melempar ZeroDivisionError, tapi rescue hanya menyebut ArgumentError. Apa yang terjadi?', [
+            ['Error tidak tertangkap, sehingga program berhenti dengan error tersebut', true],
+            ['rescue ArgumentError tetap menangkapnya karena semua error dianggap sama', false],
+            ['Ruby diam-diam mengabaikan error itu dan melanjutkan kode setelah begin', false],
+          ]),
+        ],
+      },
+      {
         title: 'Studi Kasus Gabungan',
         slug: 'rubyfz-studi-kasus-gabungan',
         content: [
           'Sebagai penutup course ini, kita gabungkan semua konsep yang sudah dipelajari: class & object, `attr_accessor`, block, dan Hash — dalam satu program kecil pengelola daftar belanja sederhana.',
           'Program di bawah membuat class `Barang` dengan `attr_accessor`, menyimpan beberapa object `Barang` dalam array, lalu memakai block (`.each`, `.sum`) untuk menghitung total belanja dan menampilkan ringkasan.',
-          'Sepanjang course ini kita sudah belajar sintaks dasar, tipe data, symbol, operator, kontrol alur, array & hash, method & block (ciri khas Ruby), hingga OOP dasar — fondasi yang cukup untuk mulai membangun program Ruby yang lebih kompleks, termasuk framework seperti Ruby on Rails.',
+          'Sepanjang course ini kita sudah belajar sintaks dasar, tipe data, symbol, operator, kontrol alur (`if`, `case`/`when`, perulangan), array & hash, method & block (ciri khas Ruby), scope variabel, OOP dasar (class, pewarisan, dan module), hingga penanganan error dengan `begin`/`rescue`/`ensure` — fondasi yang cukup untuk mulai membangun program Ruby yang lebih kompleks, termasuk framework seperti Ruby on Rails.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `class Barang
@@ -1035,7 +1385,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'Ruby from Zero adalah course pengantar untuk kamu yang belum pernah menulis Ruby. Ruby dirancang supaya enak ditulis dan dibaca, serta menjadi dasar framework web Ruby on Rails, jadi cocok sebagai bahasa pertama maupun batu loncatan ke web development. Pengalaman di bahasa lain membantu tapi tidak wajib.',
-    'Di sini kamu belajar sintaks dasar dan `puts`, variabel dan konstanta, tipe data, symbol, operator, string interpolation, percabangan `if`/`unless` (termasuk aturan truthy dan falsy), perulangan dengan Range, `each`, `times`, dan `while`, array, hash, method dengan default dan keyword argument, block dan `yield`, scope variabel, serta class, object, dan `attr_accessor`, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahaman.',
+    'Di sini kamu belajar sintaks dasar dan `puts`, variabel dan konstanta, tipe data, symbol, operator, string interpolation, percabangan `if`/`unless` (termasuk aturan truthy dan falsy) dan `case`/`when` dengan Range, perulangan dengan `each`, `times`, dan `while`, array, hash, method dengan default dan keyword argument, block dan `yield`, scope variabel, class, object, pewarisan, module (mixin), dan `attr_accessor`, serta penanganan error dengan `begin`/`rescue`/`ensure`, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahaman.',
     'Sandbox di course ini menjalankan kode dengan Ruby 2.7, tanpa akses jaringan dan tanpa input keyboard, jadi `gets` tidak dipakai. Fitur yang lebih baru dari Ruby 2.7 tidak dipakai di contoh, dan isi Hash tercetak dalam bentuk lama `{:nama=>"Budi"}`, bukan `{nama: "Budi"}` seperti Ruby 3.4+. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
   ].join('\n\n'),
   sandboxLanguage: 'ruby',
