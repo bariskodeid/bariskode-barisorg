@@ -350,7 +350,7 @@ tampilkanId(456)
             ['+ (plus)', false],
             ['/ (garis miring)', false],
           ]),
-          q('Apa arti dari tipe `string | number`?', [
+          q('Apa arti dari tipe string | number?', [
             ['Nilai boleh berupa string ATAU number', true],
             ['Nilai harus berupa string DAN number sekaligus', false],
             ['Nilai berupa array campuran string dan number', false],
@@ -1394,7 +1394,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'TypeScript from Zero adalah course pengantar untuk kamu yang sudah mengenal dasar JavaScript (variabel, fungsi, array, object, dan class) dan ingin menambahkan sistem tipe di atas pengetahuan itu. TypeScript adalah superset JavaScript yang memeriksa kecocokan tipe saat kompilasi, sehingga banyak bug ketahuan sebelum kode dijalankan.',
-    'Di sini kamu belajar cara kerja `tsc` dan type erasure, type annotation dan type inference, `any`/`unknown`/`never` dan literal type, array dan tuple, union type, `null`/`undefined` dengan `strictNullChecks`, narrowing dan type assertion, fungsi bertipe, interface, object type literal, type alias, class dengan access modifier, inheritance dan `implements`, enum, hingga generic dasar. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar cara kerja `tsc` dan type erasure, type annotation dan type inference, `any`/`unknown`/`never` dan literal type, array dan tuple, union type, `null`/`undefined` dengan `strictNullChecks`, narrowing dan type assertion, fungsi bertipe, interface, object type literal, type alias, class dengan access modifier, inheritance dan `implements`, enum, hingga generic dasar. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan setiap lesson dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini mengompilasi kode dengan TypeScript 3.7.4 tanpa flag `--strict`, lalu menjalankannya dengan Node.js 12, tanpa akses jaringan dan tanpa input keyboard. Error tipe tetap menghentikan kode, tapi pemeriksaan ketat seperti `strict` tidak aktif di sandbox, jadi bagian `strictNullChecks` hanya dibahas lewat teks dan quiz, dan fitur TypeScript yang lebih baru dari 3.7 tidak bisa dicoba di sana. Prasyaratnya: pemahaman dasar JavaScript. Tidak perlu menginstal apa pun untuk mencoba kode di sandbox.',
   ].join('\n\n'),
   sandboxLanguage: 'typescript',

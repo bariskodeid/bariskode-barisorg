@@ -335,7 +335,7 @@ func main() {
         content: [
           'Operator aritmatika Go: `+` tambah, `-` kurang, `*` kali, `/` bagi, `%` sisa bagi (modulo) — `%` hanya berlaku untuk tipe integer.',
           '## Pembagian integer',
-          'Kalau kedua operand adalah integer, `/` menghasilkan integer: bagian pecahannya dibuang (truncated toward zero, yaitu dibulatkan ke arah nol, bukan ke bawah). Jadi `10 / 3` adalah `3`, dan `-7 / 2` adalah `-3`, bukan `-4`. Sisa bagi `%` mengikuti tanda bilangan yang dibagi, jadi `-7 % 2` adalah `-1`. Untuk hasil desimal, ubah operandnya jadi `float64` dulu dengan konversi tipe, yaitu menulis nama tipe seperti fungsi: `float64(a) / float64(b)`. Go tidak pernah mengubah tipe angka secara implisit, jadi `int` dan `float64` tidak bisa dicampur langsung dalam satu ekspresi.',
+          'Kalau kedua operand adalah integer, `/` menghasilkan integer: bagian pecahannya dibuang (truncated toward zero, yaitu dibulatkan ke arah nol, bukan ke bawah). Jadi `10 / 3` adalah `3`, dan `-7 / 2` adalah `-3`, bukan `-4`. Sisa bagi `%` mengikuti tanda bilangan yang dibagi, jadi `-7 % 2` adalah `-1`. Untuk hasil desimal, ubah operandnya jadi `float64` dulu dengan konversi tipe, yaitu menulis nama tipe seperti fungsi: `float64(a) / float64(b)`. Go tidak pernah mengubah tipe antar nilai bertipe (misalnya variabel) secara implisit, jadi variabel `int` dan variabel `float64` tidak bisa dicampur langsung dalam satu ekspresi. Pengecualiannya untyped constant dari lesson sebelumnya, termasuk angka yang ditulis langsung seperti `2`: ia otomatis menyesuaikan tipe pasangannya, jadi `a * 2` dan `x * 2` sama-sama sah walau `a` bertipe `int` dan `x` bertipe `float64`.',
           `\`\`\`go
 a, b := 10, 3
 n := -7
@@ -991,7 +991,7 @@ for _, b := range daftar {
 	cetakInfo(b)
 }
 \`\`\``,
-          'Pengecekannya terjadi saat compile: kalau sebuah tipe kekurangan method, memakainya sebagai `Bentuk` adalah compile error yang menyebut `missing method`. Catatan penting: kalau method didefinisikan dengan pointer receiver (`func (p *Persegi) Luas()`), hanya pointer-nya (`&Persegi{...}`), bukan nilai `Persegi{...}`, yang memenuhi interface; pointer dibahas di lesson berikutnya. Interface tanpa method, `interface{}`, dipenuhi oleh semua tipe; itu sebabnya `fmt.Println` bisa menerima nilai apa pun.',
+          'Pengecekannya terjadi saat compile: kalau sebuah tipe kekurangan method, memakainya sebagai `Bentuk` adalah compile error yang menyebut nama method yang kurang, misalnya `Persegi does not implement Bentuk (missing Luas method)`. Catatan penting: kalau method didefinisikan dengan pointer receiver (`func (p *Persegi) Luas()`), hanya pointer-nya (`&Persegi{...}`), bukan nilai `Persegi{...}`, yang memenuhi interface; pointer dibahas di lesson berikutnya. Interface tanpa method, `interface{}`, dipenuhi oleh semua tipe; itu sebabnya `fmt.Println` bisa menerima nilai apa pun.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `package main
@@ -1235,7 +1235,7 @@ wg.Wait() // tunggu semua Done()
 fmt.Println("semua pekerja selesai")
 \`\`\``,
           '`defer wg.Done()` artinya `wg.Done()` dijalankan tepat sebelum fungsi itu selesai, lewat jalur mana pun fungsinya keluar, jadi `Done` tidak terlewat. Nilai `i` dioper sebagai argumen `(i)` supaya tiap goroutine punya salinannya sendiri: di Go 1.13 (versi sandbox) variabel loop dipakai bersama oleh semua iterasi, sehingga goroutine yang membaca `i` langsung bisa melihat nilai yang sudah berubah (Go 1.22 mengubah ini, tapi mengoper argumen aman di semua versi). Satu hal lagi: urutan baris "pekerja ... selesai" bisa berbeda setiap program dijalankan, karena goroutine berjalan bersamaan dan tidak ada jaminan siapa yang selesai lebih dulu. Hanya baris terakhir yang pasti muncul belakangan, karena `Wait` menunggu semuanya.',
-          'Kalau kamu butuh hasil dengan urutan yang pasti, jangan cetak dari dalam goroutine. Biarkan tiap goroutine menulis hasilnya ke index miliknya sendiri di sebuah slice, lalu cetak setelah `Wait()`. Ini aman karena tiap goroutine menyentuh elemen yang berbeda, dan `Wait()` menjamin semua penulisan sudah selesai sebelum slice dibaca. `WaitGroup` dioper ke fungsi sebagai pointer (`*sync.WaitGroup`), seperti pada contoh berikut yang juga ada di sandbox:',
+          'Kalau kamu butuh hasil dengan urutan yang pasti, jangan cetak dari dalam goroutine. Biarkan tiap goroutine menulis hasilnya ke index miliknya sendiri di sebuah slice, lalu cetak setelah `Wait()`. Ini aman karena tiap goroutine menyentuh elemen yang berbeda, dan `Wait()` menjamin semua penulisan sudah selesai sebelum slice dibaca. `WaitGroup` dioper ke fungsi sebagai pointer (`*sync.WaitGroup`), seperti pada contoh berikut, yang polanya sama dengan starter di sandbox:',
           `\`\`\`go
 func kerja(id int, hasil []int, wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -1420,7 +1420,7 @@ func main() {
             ['Channel', false],
             ['Pointer ke int', false],
           ]),
-          q('Pada `for _, s := range daftarSiswa`, apa fungsi range di sini?', [
+          q('Pada baris for _, s := range daftarSiswa, apa fungsi range di sini?', [
             ['Mengiterasi tiap elemen slice daftarSiswa', true],
             ['Membuat slice baru yang kosong', false],
             ['Menghapus seluruh isi slice', false],
@@ -1439,7 +1439,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'Go from Zero adalah course pengantar untuk kamu yang belum pernah menulis Go. Go dikenal sederhana, cepat, dan punya dukungan concurrency bawaan, sehingga banyak dipakai untuk backend, cloud infrastructure, dan CLI tools. Course ini memperkenalkan Go dari nol, jadi pengalaman programming di bahasa lain membantu tapi tidak wajib.',
-    'Di sini kamu belajar struktur program dan perintah `go run`/`go build`, variabel, konstanta, type inference dengan `:=`, operator, mencetak dengan `Printf`, percabangan `if` dan `switch`, perulangan `for`, array, slice (potong, `make`, `append`, `range`), dan map, fungsi dengan multiple return value untuk error handling, struct dengan method, interface, pointer, serta goroutine, `sync.WaitGroup`, dan channel, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar struktur program dan perintah `go run`/`go build`, variabel, konstanta, type inference dengan `:=`, operator, mencetak dengan `Printf`, percabangan `if` dan `switch`, perulangan `for`, array, slice (potong, `make`, `append`, `range`), dan map, fungsi dengan multiple return value untuk error handling, struct dengan method, interface, pointer, serta goroutine, `sync.WaitGroup`, dan channel, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan hampir semua juga dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini menjalankan kode dengan Go 1.13, tanpa akses jaringan dan tanpa input keyboard. Kode dikompilasi sebagai satu file `package main`, jadi package di luar library standar tidak bisa dicoba di sana, dan fitur yang lebih baru dari Go 1.13 (misalnya generics) tidak dipakai. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
   ].join('\n\n'),
   sandboxLanguage: 'go',

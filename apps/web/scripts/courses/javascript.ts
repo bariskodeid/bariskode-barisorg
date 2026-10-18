@@ -255,7 +255,7 @@ console.log("Logika NOT:", !cukupUmur);
         title: 'Template Literal & String Method',
         slug: 'jsfz-template-literal-string-method',
         content: [
-          'Template literal ditulis dengan backtick (`` ` ``), bukan kutip biasa, dan memungkinkan menyisipkan variabel langsung ke dalam string memakai `${...}` — jauh lebih ringkas dibanding penggabungan string manual dengan `+`.',
+          'Template literal ditulis di antara dua tanda backtick (karakter miring yang biasanya ada di kiri tombol angka 1 pada keyboard), bukan kutip biasa, dan memungkinkan menyisipkan variabel langsung ke dalam string memakai `${...}` — jauh lebih ringkas dibanding penggabungan string manual dengan `+`.',
           'Beberapa method string yang sering dipakai: `.toUpperCase()`/`.toLowerCase()` mengubah huruf besar/kecil, `.trim()` menghapus spasi di awal/akhir, `.split()` memecah string jadi array berdasarkan pemisah, dan `.slice()` mengambil sebagian teks berdasarkan index.',
           'Array hasil `.split()` bisa digabung kembali jadi string dengan method `.join()` — kebalikan dari `.split()`, berguna saat perlu menyatukan potongan teks dengan pemisah tertentu.',
         ],
@@ -665,7 +665,7 @@ const tambahBiasa = function (a, b) {
 const tambah = (a, b) => a + b;
 \`\`\``,
           '## Implicit return',
-          'Kalau body fungsi hanya satu ekspresi, kurung kurawal dan `return` bisa dihilangkan (implicit return) — hasil ekspresi otomatis dikembalikan. Kalau body-nya lebih dari satu statement, tetap perlu `{}` dan `return` eksplisit. Arrow function dengan satu parameter boleh menulis parameternya tanpa kurung (`n => n * n`), tapi tanpa parameter atau dengan lebih dari satu parameter, kurung wajib ditulis.',
+          'Kalau body fungsi hanya satu ekspresi, kurung kurawal dan `return` bisa dihilangkan (implicit return) — hasil ekspresi otomatis dikembalikan. Kalau body-nya lebih dari satu statement, tetap perlu `{}` dan `return` eksplisit. Arrow function dengan tepat satu parameter berupa nama biasa boleh menulis parameternya tanpa kurung (`n => n * n`). Tanpa parameter, dengan lebih dari satu parameter, atau kalau parameternya bukan sekadar nama (misalnya diberi nilai default seperti `(n = 2) => n * n`, yang dipakai kalau argumen tidak diberikan), kurung wajib ditulis.',
           `\`\`\`javascript
 const kuadrat = (n) => n * n;   // implicit return
 
@@ -1273,7 +1273,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'JavaScript from Zero adalah course pengantar untuk kamu yang belum pernah menulis kode sama sekali. JavaScript adalah bahasa utama untuk membuat halaman web interaktif, dan lewat Node.js ia juga dipakai di sisi server, sehingga cocok sebagai bahasa pemrograman pertama.',
-    'Di sini kamu belajar dari dasar: menjalankan JavaScript, variabel (`var`, `let`, `const`), tipe data dan operator, type coercion, template literal, percabangan dan perulangan (`for`, `while`, `for...of`, `for...in`), array dan object, fungsi (function expression, arrow function, scope dan closure, callback), destructuring dan spread, penanganan error dengan `try`/`catch`/`throw`, dasar asynchronous dengan Promise dan async/await, hingga class dasar. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar dari dasar: menjalankan JavaScript, variabel (`var`, `let`, `const`), tipe data dan operator, type coercion, template literal, percabangan dan perulangan (`for`, `while`, `for...of`, `for...in`), array dan object, fungsi (function expression, arrow function, scope dan closure, callback), destructuring dan spread, penanganan error dengan `try`/`catch`/`throw`, dasar asynchronous dengan Promise dan async/await, hingga class dasar. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini menjalankan kode dengan Node.js 12, tanpa akses jaringan dan tanpa input keyboard, jadi fitur JavaScript yang lebih baru seperti optional chaining dan operator `??` tidak bisa dicoba di sana. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun dan tidak perlu pengalaman programming sebelumnya.',
   ].join('\n\n'),
   sandboxLanguage: 'javascript',

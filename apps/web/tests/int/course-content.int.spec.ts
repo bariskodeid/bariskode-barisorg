@@ -108,7 +108,7 @@ type RequiredRule = Rule & { pendingUntil?: string }
 /**
  * Fitur bahasa yang lebih baru dari runtime Judge0 (Bash 5.0, GCC 9.2, Go 1.13.5, OpenJDK 13,
  * Node 12, PHP 7.4.1, Python 3.8, Ruby 2.7.0, Rust 1.40.0, SQLite 3.27.2, TS 3.7.4). Dicek atas
- * `sandboxStarterCode` dan blok fence bahasa-sama di `content`. C dan C++ belum punya aturan.
+ * `sandboxStarterCode` dan blok fence bahasa-sama di `content`. C belum punya aturan.
  */
 export const RUNTIME_BANNED: Record<CodeLanguage, Rule[]> = {
   plaintext: [],
@@ -393,6 +393,42 @@ describe('kebersihan konten', () => {
   }
 })
 
+/** Bit format Lexical untuk inline code (sama dengan `FORMAT_CODE` di markdown-lexical.ts). */
+const LEXICAL_FORMAT_CODE = 16
+
+type LexicalNode = { type?: string; text?: string; format?: number | string; children?: LexicalNode[] }
+
+/**
+ * Teks non-kode hasil `markdownToLexical` yang masih memuat backtick atau `**`. Converter sengaja
+ * membiarkan markup yang tidak dikenalinya (code span dobel, backtick atau `**` tanpa pasangan)
+ * sebagai teks biasa, jadi markup itu tampil mentah ke siswa. Inline code dan code block tidak dicek.
+ */
+function literalMarkupLeaks(markdown: string | string[]): string[] {
+  const leaks: string[] = []
+  const walk = (node: LexicalNode) => {
+    const isPlainText =
+      node.type === 'text' && typeof node.format === 'number' && (node.format & LEXICAL_FORMAT_CODE) === 0
+    if (isPlainText && /`|\*\*/.test(node.text ?? '')) leaks.push(node.text ?? '')
+    for (const child of node.children ?? []) walk(child)
+  }
+  walk(markdownToLexical(markdown).root as LexicalNode)
+  return leaks
+}
+
+describe('tidak ada markup mentah (backtick, **) setelah markdownToLexical', () => {
+  for (const course of allCourses) {
+    it(course.slug, () => {
+      const violations = [
+        ...literalMarkupLeaks(course.description).map((text) => `${course.slug} (description): ${JSON.stringify(text)}`),
+        ...lessonsOf(course).flatMap((lesson) =>
+          literalMarkupLeaks(lesson.content).map((text) => `${course.slug}/${lesson.slug}: ${JSON.stringify(text)}`),
+        ),
+      ]
+      expect(violations).toEqual([])
+    })
+  }
+})
+
 /** Potongan kode yang HARUS kena guard (`match`) dan yang TIDAK boleh kena (`clean`). */
 type Samples = { match: string[]; clean: string[] }
 
@@ -649,6 +685,24 @@ const UNDEFINED_SAMPLES: Samples = {
   clean: ['undefined behavior', 'Undefined behaviour', 'undefined\nbehavior', 'undefined   behaviour'],
 }
 
+const LITERAL_MARKUP_SAMPLES: Samples = {
+  match: [
+    'Ditulis dengan backtick (`` ` ``), bukan kutip biasa.', // code span dobel tidak didukung converter
+    'Satu backtick ` tanpa pasangan.',
+    'Tebal **tanpa penutup.',
+    '**tebal berisi `kode` di dalamnya**', // `**...**` menelan backtick di dalamnya
+    '- item dengan ` lepas',
+    '## Judul dengan ** lepas',
+  ],
+  clean: [
+    'Pakai `kode` dan **tebal** biasa.',
+    'Inline code boleh berisi `a ** b` atau `**kwargs`.',
+    '```javascript\nconst s = `Halo ${nama}`;\n```',
+    '- item `x`\n- item **y**',
+    '## Judul `kode`',
+  ],
+}
+
 const syntheticCourse = (
   sandboxLanguage: CourseDef['sandboxLanguage'],
   patch: { description?: string; moduleTitle?: string; lessonTitle?: string; courseTitle?: string } = {},
@@ -693,6 +747,11 @@ describe('guard patterns', () => {
   it('undefined: kena kecuali "undefined behavior"', () => {
     for (const text of UNDEFINED_SAMPLES.match) expect(UNDEFINED_LEAK.test(text), `harus kena: ${text}`).toBe(true)
     for (const text of UNDEFINED_SAMPLES.clean) expect(UNDEFINED_LEAK.test(text), `tidak boleh kena: ${text}`).toBe(false)
+  })
+
+  it('markup mentah: backtick/** di teks non-kode kena, di inline code/fence tidak', () => {
+    for (const md of LITERAL_MARKUP_SAMPLES.match) expect(literalMarkupLeaks(md), `harus kena: ${md}`).not.toEqual([])
+    for (const md of LITERAL_MARKUP_SAMPLES.clean) expect(literalMarkupLeaks(md), `tidak boleh kena: ${md}`).toEqual([])
   })
 
   it('kebersihan: description, judul course/module/lesson ikut dipindai', () => {

@@ -181,7 +181,7 @@ mkdir --help | head -n 4
           q('Kamu ingin tahu cara memakai cd, yang menurut type cd adalah builtin shell. Perintah mana yang menampilkan bantuannya?', [
             ['help cd', true],
             ['type cd', false],
-            ['ls cd', false],
+            ['cd help', false],
           ]),
           q('Apa yang ditampilkan perintah type ls?', [
             ['Jenis perintah itu (builtin, keyword, alias, atau program) dan lokasinya kalau berupa program', true],
@@ -1123,7 +1123,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'Linux from Zero adalah course pengantar untuk kamu yang belum pernah memakai Linux lewat command line: calon developer, mahasiswa, atau siapa saja yang ingin nyaman bekerja di terminal dan server Linux. Tidak perlu pengalaman programming atau sistem operasi tertentu sebelumnya.',
-    'Di sini kamu belajar apa itu Linux dan distro, struktur direktori (FHS), cara memakai terminal dan mencari bantuan (`type`, `help`, `--help`, `man`), navigasi dan manajemen file, wildcard, melihat dan mencari isi file, permission, ownership, user, group, dan `sudo`, process, package manager, environment variable dan `PATH`, penjadwalan dengan cron, lalu shell scripting dengan Bash: variabel, `if` dan perulangan, pipe, redirection, stdout dan stderr, exit code dengan `$?`, operator `&&` dan `||`, serta `grep`, `sed`, dan `awk`. Hampir semua lesson punya contoh yang bisa langsung dijalankan di code sandbox. Pengecualiannya empat lesson yang membahas konsep murni atau butuh hak root dan jaringan (pengenalan Linux, struktur direktori, package manager, dan cron), yang dipelajari lewat penjelasan dan quiz. Hampir semua lesson juga dilengkapi quiz pilihan ganda.',
+    'Di sini kamu belajar apa itu Linux dan distro, struktur direktori (FHS), cara memakai terminal dan mencari bantuan (`type`, `help`, `--help`, `man`), navigasi dan manajemen file, wildcard, melihat dan mencari isi file, permission, ownership, user, group, dan `sudo`, process, package manager, environment variable dan `PATH`, penjadwalan dengan cron, lalu shell scripting dengan Bash: variabel, `if` dan perulangan, pipe, redirection, stdout dan stderr, exit code dengan `$?`, operator `&&` dan `||`, serta `grep`, `sed`, dan `awk`. Sebagian besar lesson punya contoh yang bisa langsung dijalankan di code sandbox. Pengecualiannya empat lesson yang membahas konsep murni atau butuh hak root dan jaringan (pengenalan Linux, struktur direktori, package manager, dan cron), yang dipelajari lewat penjelasan dan quiz. Hampir semua lesson juga dilengkapi quiz pilihan ganda.',
     'Sandbox di course ini menjalankan skrip dengan Bash 5.0 sekali jalan: tanpa input keyboard, tanpa akses jaringan, dan tanpa hak root, jadi `sudo`, `apt`, dan `ssh` tidak bisa dicoba di sana. User di sandbox kemungkinan besar hanya punya nomor UID tanpa nama, sehingga `whoami` bisa gagal dan `ls -l` menampilkan angka; lesson terkait menjelaskan cara menyiasatinya (`id -u` dan `ls -ln`). Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun. Untuk mencoba perintah yang butuh hak root, siapkan Linux milikmu sendiri, misalnya di mesin virtual.',
   ].join('\n\n'),
   sandboxLanguage: 'bash',

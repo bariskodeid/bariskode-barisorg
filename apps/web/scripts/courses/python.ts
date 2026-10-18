@@ -537,7 +537,7 @@ print("Total pertama yang melebihi 10:", total, "setelah menjumlahkan 1 sampai",
         slug: 'pfz-list-tuple-dictionary',
         content: [
           'List adalah kumpulan data terurut yang bisa diubah (mutable), ditulis dengan `[]`, contoh: `buah = ["apel", "jeruk", "mangga"]`. Akses item dengan index dimulai dari 0: `buah[0]`.',
-          'Tuple mirip list tapi tidak bisa diubah setelah dibuat (immutable), cocok untuk data yang memang tidak boleh berubah, misal koordinat `(x, y)`. Yang sebenarnya membuat tuple adalah **koma**, bukan tanda kurung: `t = 10, 20` sama saja dengan `t = (10, 20)`. Kurung hanya wajib untuk tuple kosong `()`. Tuple satu elemen harus memakai koma, yaitu `(5,)`, sedangkan `(5)` hanyalah angka 5 di dalam kurung.',
+          'Tuple mirip list tapi tidak bisa diubah setelah dibuat (immutable), cocok untuk data yang memang tidak boleh berubah, misal koordinat `(x, y)`. Yang sebenarnya membuat tuple adalah **koma**, bukan tanda kurung: `t = 10, 20` sama saja dengan `t = (10, 20)`. Kurung hanya wajib untuk tuple kosong `()`, atau saat dibutuhkan supaya tidak ambigu: `print((1, 2))` mencetak satu tuple `(1, 2)`, sedangkan `print(1, 2)` mengirim dua argumen terpisah dan mencetak `1 2`. Tuple satu elemen harus memakai koma, yaitu `(5,)`, sedangkan `(5)` hanyalah angka 5 di dalam kurung.',
           `\`\`\`python
 a = 10, 20     # tuple tanpa kurung
 b = (10, 20)   # sama saja
@@ -1284,7 +1284,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'Python from Zero adalah course pengantar untuk kamu yang belum pernah menulis kode sama sekali. Python dikenal sintaksnya yang sederhana dan mudah dibaca, sehingga cocok sebagai bahasa pemrograman pertama, dan tetap dipakai luas untuk web, data science, dan automasi.',
-    'Di sini kamu belajar dari dasar: menjalankan Python, sintaks dan komentar, variabel, tipe data, string, operator, percabangan dan perulangan, struktur data (list, tuple, dictionary, set), fungsi dan scope, modul bawaan, exception handling, dasar OOP (class, object, inheritance), membaca dan menulis file dengan `with open`, hingga list comprehension. Setiap lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar dari dasar: menjalankan Python, sintaks dan komentar, variabel, tipe data, string, operator, percabangan dan perulangan, struktur data (list, tuple, dictionary, set), fungsi dan scope, modul bawaan, exception handling, dasar OOP (class, object, inheritance), membaca dan menulis file dengan `with open`, hingga list comprehension. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan hampir semua juga dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini menjalankan kode dengan Python 3.8, tanpa akses jaringan dan tanpa input keyboard (jadi `input()` tidak bisa dicoba di sana). Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun dan tidak perlu pengalaman programming sebelumnya.',
   ].join('\n\n'),
   sandboxLanguage: 'python',

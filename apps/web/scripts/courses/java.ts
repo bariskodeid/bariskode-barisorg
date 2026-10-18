@@ -371,7 +371,7 @@ System.out.println(nama.substring(0, 5));   // Siswa     (index 0 sampai 4)
 System.out.println(nama.substring(6));      // BarisORG  (index 6 sampai akhir)
 \`\`\``,
           '## Membandingkan isi String',
-          'Jangan membandingkan isi `String` dengan `==`: operator itu membandingkan referensi objek (apakah dua variabel menunjuk objek yang sama), bukan isi teksnya. Dua literal yang sama kadang berbagi satu objek sehingga `==` kebetulan `true`, tapi String yang dibuat dengan `new String("Java")` adalah objek terpisah, jadi `==` bernilai `false` padahal isinya sama. Selalu gunakan `.equals()` untuk membandingkan isi dua String.',
+          'Jangan membandingkan isi `String` dengan `==`: operator itu membandingkan referensi objek (apakah dua variabel menunjuk objek yang sama), bukan isi teksnya. Literal String dengan isi yang sama selalu berbagi satu objek (disimpan di string pool), jadi `==` antar dua literal `"Java"` memang `true`, tapi String yang dibuat dengan `new String("Java")` adalah objek terpisah, jadi `==` bernilai `false` padahal isinya sama. Selalu gunakan `.equals()` untuk membandingkan isi dua String.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `public class Main {
@@ -1308,7 +1308,7 @@ public class Main {
           'Program di bawah ini mendefinisikan class `Siswa` dengan field private dan getter, menyimpan beberapa object `Siswa` dalam `ArrayList`, lalu menghitung rata-rata nilai lewat perulangan di method `hitungRataRata`. Method itu melempar `IllegalArgumentException` kalau daftarnya kosong, dan `cetakRataRata` menangkapnya dengan `try`/`catch`. Program memanggil `cetakRataRata` dua kali, sekali untuk kelas berisi tiga siswa dan sekali untuk kelas kosong, supaya jalur berhasil dan jalur error sama-sama terjalankan.',
           'Studi kasus seperti ini menunjukkan bagaimana konsep-konsep OOP dan kontrol alur yang dipelajari terpisah sebenarnya saling melengkapi dalam program Java yang lebih realistis — bukan sekadar dipakai satu-satu secara terisolasi.',
           '## Kenapa daftar kosong ditolak lewat exception?',
-          'Kalau daftar kosong dibiarkan sampai ke pembagian, Java tidak melempar exception: `total` di-cast ke `double`, dan pembagian `double` dengan nol menghasilkan `NaN` (atau `Infinity`) tanpa error. Rata-rata `NaN` itu diam-diam salah, jadi method memeriksa sendiri dan melempar `IllegalArgumentException`, exception standar untuk "argumen yang diberikan tidak layak dipakai". `ArithmeticException` dilempar Java untuk pembagian bilangan bulat dengan nol, seperti `10 / 0` di pelajaran Exception Handling.',
+          'Kalau daftar kosong dibiarkan sampai ke pembagian, Java tidak melempar exception: `total` yang bernilai 0 di-cast ke `double`, dan `0.0` dibagi nol menghasilkan `NaN` tanpa error. Rata-rata `NaN` itu diam-diam salah, jadi method memeriksa sendiri dan melempar `IllegalArgumentException`, exception standar untuk "argumen yang diberikan tidak layak dipakai". `ArithmeticException` dilempar Java untuk pembagian bilangan bulat dengan nol, seperti `10 / 0` di pelajaran Exception Handling.',
           '## Penutup',
           'Selamat, sepanjang course ini kita sudah belajar dasar Java: sintaks & struktur program, tipe data (termasuk wrapper class, autoboxing, dan final) & operator, kontrol alur, array, ArrayList, HashMap & method, OOP (class, constructor, encapsulation, inheritance, interface), hingga exception handling — fondasi yang cukup untuk mulai membangun program Java yang lebih kompleks.',
         ],

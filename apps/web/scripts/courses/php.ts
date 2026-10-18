@@ -240,9 +240,9 @@ echo "echo false: [" . false . "]\\n";
         title: 'Null, isset(), empty() & ??',
         slug: 'phpfz-null-isset-coalesce',
         content: [
-          'Selain `int`, `float`, `string`, `bool`, dan `array`, PHP punya satu tipe khusus bernama `null`, yang artinya "tidak ada nilai". Variabel bernilai `null` kalau kita mengisinya dengan `null` secara eksplisit. Seperti `true` dan `false`, `null` tidak peka huruf besar-kecil. `gettype()` dan `var_dump()` mencetaknya sebagai `NULL`.',
+          'Selain `int`, `float`, `string`, `bool`, dan `array`, PHP punya satu tipe khusus bernama `null`, yang artinya "tidak ada nilai". Variabel bernilai `null` kalau kita mengisinya dengan `null` secara eksplisit, kalau belum pernah diisi sama sekali, atau kalau sudah dihapus dengan `unset()`. Seperti `true` dan `false`, `null` tidak peka huruf besar-kecil. `gettype()` dan `var_dump()` mencetaknya sebagai `NULL`.',
           '## isset()',
-          '`isset($x)` bernilai `true` kalau variabel `$x` ada DAN nilainya bukan `null`. Fungsi ini aman dipanggil untuk variabel yang belum pernah dibuat atau key array yang tidak ada, tanpa pesan error, sehingga cocok untuk memeriksa dulu sebelum membaca. Contohnya `isset($siswa["kota"])`: di sini `$siswa` adalah array associative, yaitu kumpulan pasangan `key => value` yang dibahas lengkap di modul berikutnya, dan `$siswa["kota"]` membaca nilai dari key `"kota"`.',
+          '`isset($x)` bernilai `true` kalau variabel `$x` ada DAN nilainya bukan `null`. `isset()`, juga `empty()` di bawah, sebenarnya bukan fungsi melainkan language construct (bagian dari sintaks PHP, seperti `echo`). `isset()` aman dipakai untuk variabel yang belum pernah dibuat atau key array yang tidak ada, tanpa pesan error, sehingga cocok untuk memeriksa dulu sebelum membaca. Contohnya `isset($siswa["kota"])`: di sini `$siswa` adalah array associative, yaitu kumpulan pasangan `key => value` yang dibahas lengkap di modul berikutnya, dan `$siswa["kota"]` membaca nilai dari key `"kota"`.',
           '## empty()',
           '`empty($x)` bernilai `true` kalau nilai `$x` dianggap "kosong": `null`, `false`, `0`, `0.0`, string kosong `""`, string `"0"`, dan array kosong `[]`. Jebakannya, `0` dan `"0"` ikut dianggap kosong padahal bisa jadi nilai yang sah, misal umur 0 atau skor 0. Sebaliknya `"false"`, string berisi satu spasi, dan array yang punya elemen (walau elemennya `0`) tidak dianggap kosong. Kalau yang ingin dicek hanya ada-tidaknya nilai, pakai `isset()`.',
           '## Operator ??',
@@ -971,7 +971,7 @@ echo "Total: $total\\n";
             ['include hanya warning & lanjut, require fatal error & berhenti', true],
             ['Keduanya identik tanpa perbedaan', false],
             ['include selalu fatal error, require hanya warning', false],
-            ['Keduanya hanya menampilkan warning, tapi require menampilkannya dua kali', false],
+            ['Keduanya menghentikan program dengan fatal error, hanya teks pesannya yang berbeda', false],
           ]),
           q('Pernyataan mana yang mencegah file yang sama dimasukkan lebih dari sekali?', [
             ['require_once atau include_once', true],

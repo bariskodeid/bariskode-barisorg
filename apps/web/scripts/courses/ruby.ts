@@ -433,7 +433,7 @@ end
 
 puts "Grade: #{grade}"   # Grade: B
 \`\`\``,
-          'Pakai tiga titik di antara rentang yang berurutan supaya tidak ada celah. `75..89` tidak memuat 89.5 (`(75..89).include?(89.5)` bernilai `false`), jadi nilai itu lolos dari kedua cabang; `75...90` memuatnya (`include?` bernilai `true`). `include?` mengecek apakah sebuah nilai ada di dalam Range.',
+          'Pakai tiga titik di antara rentang yang berurutan supaya tidak ada celah. Kalau cabang `75...90` di atas ditulis `when 75..89`, nilai 89.5 tidak cocok dengan cabang mana pun, karena `75..89` tidak memuatnya (`(75..89).include?(89.5)` bernilai `false`) dan `90..100` juga tidak, sehingga jatuh ke `else`; `75...90` memuatnya (`include?` bernilai `true`). `include?` mengecek apakah sebuah nilai ada di dalam Range.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `# case/when dengan beberapa nilai per cabang
@@ -1385,7 +1385,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'Ruby from Zero adalah course pengantar untuk kamu yang belum pernah menulis Ruby. Ruby dirancang supaya enak ditulis dan dibaca, serta menjadi dasar framework web Ruby on Rails, jadi cocok sebagai bahasa pertama maupun batu loncatan ke web development. Pengalaman di bahasa lain membantu tapi tidak wajib.',
-    'Di sini kamu belajar sintaks dasar dan `puts`, variabel dan konstanta, tipe data, symbol, operator, string interpolation, percabangan `if`/`unless` (termasuk aturan truthy dan falsy) dan `case`/`when` dengan Range, perulangan dengan `each`, `times`, dan `while`, array, hash, method dengan default dan keyword argument, block dan `yield`, scope variabel, class, object, pewarisan, module (mixin), dan `attr_accessor`, serta penanganan error dengan `begin`/`rescue`/`ensure`, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahaman.',
+    'Di sini kamu belajar sintaks dasar dan `puts`, variabel dan konstanta, tipe data, symbol, operator, string interpolation, percabangan `if`/`unless` (termasuk aturan truthy dan falsy) dan `case`/`when` dengan Range, perulangan dengan `each`, `times`, dan `while`, array, hash, method dengan default dan keyword argument, block dan `yield`, scope variabel, class, object, pewarisan, module (mixin), dan `attr_accessor`, serta penanganan error dengan `begin`/`rescue`/`ensure`, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan hampir semua juga dilengkapi quiz pilihan ganda untuk menguji pemahaman.',
     'Sandbox di course ini menjalankan kode dengan Ruby 2.7, tanpa akses jaringan dan tanpa input keyboard, jadi `gets` tidak dipakai. Fitur yang lebih baru dari Ruby 2.7 tidak dipakai di contoh, dan isi Hash tercetak dalam bentuk lama `{:nama=>"Budi"}`, bukan `{nama: "Budi"}` seperti Ruby 3.4+. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
   ].join('\n\n'),
   sandboxLanguage: 'ruby',
