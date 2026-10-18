@@ -1,0 +1,31 @@
+# Override khusus production di server nekosama (lihat CLAUDE.md, bagian
+# "Deployment Production (nekosama)"): tanpa Caddy/CTFd — trafik publik masuk
+# lewat cloudflared di host ke 127.0.0.1:3040 — dan image di-build di luar
+# server lalu di-`docker load` (nekosama tidak bisa build `next build`).
+#
+# Di server file ini disalin ke ~/srv/prod/bariskode-barisorg/infra/ dan
+# dipakai lewat wrapper `./dcr` (docker compose -p bariskode di daemon rootful).
+services:
+  postgres:
+    ports: !reset []
+  judge0-server:
+    ports: !reset []
+  web:
+    build: !reset null
+    image: bariskode-web:${WEB_TAG}
+    pull_policy: never
+    ports:
+      - '127.0.0.1:3040:3000'
+  web-migrate:
+    build: !reset null
+    image: bariskode-web-builder:${WEB_TAG}
+    pull_policy: never
+    environment:
+      NODE_ENV: production
+  web-script:
+    build: !reset null
+    image: bariskode-web-builder:${WEB_TAG}
+    pull_policy: never
+    mem_limit: 1g
+    environment:
+      NODE_ENV: production

@@ -127,14 +127,14 @@ bagian bawah `docs/17-ROADMAP.md`.
   contoh — sudah diverifikasi jalan bersih dari instance kosong. Kurikulum
   lab lengkap (di luar 3 challenge bukti-konsep ini) tetap keputusan konten
   terpisah, lihat docs/12-FEATURE-CYBERSECURITY-LABS.md.
-- **`deploy.yml` (GitHub Actions) tidak cocok dengan deployment nekosama**:
-  workflow itu ditulis untuk alur VM di docs/14–15 (SSH ke VM lalu `docker
-  compose up --build`) dan butuh GitHub Secrets VM_HOST/VM_USER/VM_SSH_KEY
-  yang tidak pernah diisi, jadi setiap push ke `main` workflow "Deploy" gagal
-  dalam hitungan detik (tidak berdampak apa pun). Production sekarang di-deploy
-  manual dengan image yang di-build di luar server (lihat "Deployment
-  Production (nekosama)"). User perlu memutuskan: matikan `deploy.yml`, atau
-  tulis ulang untuk alur nekosama.
+- **Auto-deploy (`deploy.yml`) sudah ditulis ulang untuk nekosama tapi job
+  `deploy`-nya belum aktif**: job `verify` (lint, typecheck, 4 spec konten)
+  jalan di setiap push ke `main`; job `deploy` baru jalan setelah user
+  menyiapkan Tailscale OAuth client (`tag:ci`), key SSH deploy (forced command
+  `ci-deploy.sh` di `authorized_keys` nekosama), GitHub Secrets/Variables, lalu
+  set variable `DEPLOY_ENABLED=true`. Langkah lengkap di docs/15-CICD.md
+  bagian "Mengaktifkan job `deploy`". Sampai itu, deploy manual (juga di
+  docs/15).
 - **Checklist keamanan (docs/16-SECURITY-CHECKLIST.md) — sisa setelah deploy
   nekosama**: secret production sudah acak (di-generate di server, bukan nilai
   dev), dan host hanya membuka SSH ke publik (semua service bariskode bind ke
@@ -178,10 +178,10 @@ bagian bawah `docs/17-ROADMAP.md`.
       cloudflared. Detail di "Deployment Production (nekosama)".
 - [x] Fase 8 — CI/CD — `ci.yml` ditulis & logic-nya diverifikasi identik
       lewat simulasi lokal (migrate fresh DB lalu build, persis alur CI).
-      `deploy.yml` ditulis sesuai docs/15-CICD.md tapi baru template — perlu
-      GitHub Secrets (VM_HOST/VM_USER/VM_SSH_KEY) yang cuma ada setelah Fase
-      7 benar-benar dieksekusi — dan tidak cocok dengan alur nekosama (lihat
-      "Pending Aksi Manual"). Repo GitHub sendiri sudah ada & sinkron
+      `deploy.yml` ditulis ulang (2026-10-18) untuk nekosama: job `verify`
+      aktif, job `deploy` (build di runner → Tailscale → `ci-deploy.sh`)
+      menunggu setup user (lihat "Pending Aksi Manual" dan docs/15-CICD.md).
+      `ci.yml` (PR) belum diubah. Repo GitHub sendiri sudah ada & sinkron
       (`origin` = `github-bariskode:bariskodeid/bariskode-barisorg.git`).
 - [x] Fase 9 — Security Hardening & Launch Checklist — semua item yang bisa
       dikerjakan tanpa VM/domain asli sudah selesai: rate limit ditambah ke
@@ -251,11 +251,12 @@ Ini berbeda dari skenario VM Oracle + Caddy di docs/14 — hal yang penting:
   `infra/docker-compose.nekosama.yml` (tanpa Caddy/CTFd, web publish ke
   `127.0.0.1:3040`, image `bariskode-web:<tag>` dan
   `bariskode-web-builder:<tag>` dengan `pull_policy: never`, `web-migrate` &
-  `web-script` dipaksa `NODE_ENV=production`). Override ini hanya ada di
-  server, tidak di repo. Secret ada di `infra/.env`,
-  `infra/judge0/judge0.conf`, `apps/web/.env.docker`, dan kredensial admin di
-  `.admin-credentials` (semua mode 600; di-generate `setup.sh` di folder yang
-  sama; jangan pernah dicetak ke log/chat).
+  `web-script` dipaksa `NODE_ENV=production`). Sumber file khusus server ini
+  ada di repo, folder `infra/nekosama/` (override compose, `setup.sh`,
+  `ci-deploy.sh`) — kalau diubah di repo, salin ulang ke server. Secret ada
+  di `infra/.env`, `infra/judge0/judge0.conf`, `apps/web/.env.docker`, dan
+  kredensial admin di `.admin-credentials` (semua mode 600; di-generate
+  `setup.sh`; jangan pernah dicetak ke log/chat).
 - **Docker rootful, bukan default**: context Docker default di nekosama adalah
   **rootless** (dipakai app lain). Image Judge0 tidak bisa diekstrak di
   rootless (ada file milik UID 197609, di luar jatah subuid), jadi seluruh
@@ -274,9 +275,12 @@ Ini berbeda dari skenario VM Oracle + Caddy di docs/14 — hal yang penting:
   di-build di Mac: `docker build --platform linux/amd64 -t bariskode-web:<sha>
   apps/web` dan `... --target builder -t bariskode-web-builder:<sha>
   apps/web`, lalu `docker save ... | gzip | ssh nekosama 'gunzip | docker
-  --context default load'`. Ganti `WEB_TAG` di `infra/.env` ke tag baru,
-  lalu `./dcr up -d web`. Migration dulu kalau ada schema baru: `./dcr
-  --profile migrate run --rm -T web-migrate migrate`.
+  --context default load'`, lalu rilis lewat `ci-deploy.sh` (backup DB,
+  migration dengan image baru, ganti `WEB_TAG`, `./dcr up -d web`, health
+  check, rollback web kalau gagal): `ssh nekosama "cd
+  ~/srv/prod/bariskode-barisorg && SSH_ORIGINAL_COMMAND='release <tag>'
+  ./ci-deploy.sh"`. Alur yang sama dipakai job `deploy` di
+  `.github/workflows/deploy.yml` setelah diaktifkan.
 - **Seed konten**: `./dcr --profile script run --rm -T web-script
   scripts/seed-all-courses.ts` (override sudah set `NODE_ENV=production`).
   Ingat: re-seed menimpa edit admin pada 12 course itu — dump DB dulu.

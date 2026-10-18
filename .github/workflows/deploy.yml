@@ -3,29 +3,103 @@ name: Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
-# Butuh secrets VM_HOST, VM_USER, VM_SSH_KEY (lihat docs/15-CICD.md) dan VM
-# production yang sudah di-provision (docs/14-DEPLOYMENT-ORACLE-VM.md, Fase
-# 7) — workflow ini tidak akan berjalan sampai secret itu diisi & repo
-# di-push ke GitHub.
+# Satu deploy production dalam satu waktu; deploy berikutnya menunggu, tidak
+# membatalkan yang sedang jalan (migration setengah jalan lebih berbahaya).
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  # Selalu jalan. Test konten tidak butuh database.
+  verify:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+      - uses: pnpm/action-setup@v4
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd ~/bariskode
-            git pull origin main
-            docker compose -f infra/docker-compose.yml up -d --build
-            # `exec web pnpm payload migrate` TIDAK bisa dipakai di sini —
-            # image `web` production ramping (Next.js output: standalone)
-            # dan tidak punya pnpm/source lengkap. Lihat komentar service
-            # `web-migrate` di infra/docker-compose.yml.
-            docker compose -f infra/docker-compose.yml run --rm web-migrate migrate
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          # Samakan dengan base image Dockerfile (node:22.17.0-alpine).
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: >-
+          pnpm exec vitest run --config ./vitest.config.mts
+          tests/int/course-content.int.spec.ts
+          tests/int/course-def.int.spec.ts
+          tests/int/markdown-lexical.int.spec.ts
+          tests/int/lesson-richtext.int.spec.tsx
+
+  # Production di nekosama (lihat CLAUDE.md "Deployment Production (nekosama)"
+  # dan docs/15-CICD.md). nekosama hanya bisa dijangkau lewat Tailscale dan
+  # tidak bisa menjalankan `next build`, jadi image di-build di runner ini lalu
+  # dikirim lewat SSH ke script forced-command `ci-deploy.sh`.
+  #
+  # Nonaktif sampai repository variable DEPLOY_ENABLED = 'true'. Butuh:
+  #   secrets: TS_OAUTH_CLIENT_ID, TS_OAUTH_SECRET, DEPLOY_SSH_KEY, DEPLOY_SSH_KNOWN_HOSTS
+  #   vars:    DEPLOY_ENABLED, DEPLOY_HOST (IP Tailscale nekosama), DEPLOY_USER
+  deploy:
+    needs: verify
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tentukan tag image
+        run: echo "TAG=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Build image
+        run: |
+          docker build --platform linux/amd64 -t "bariskode-web:$TAG" apps/web
+          docker build --platform linux/amd64 --target builder -t "bariskode-web-builder:$TAG" apps/web
+
+      - name: Sambung ke Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Siapkan SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Kirim image ke nekosama
+        env:
+          TARGET: ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}
+        run: |
+          docker save "bariskode-web:$TAG" "bariskode-web-builder:$TAG" | gzip -1 \
+            | ssh -i ~/.ssh/deploy_key -o BatchMode=yes "$TARGET" load
+
+      - name: Rilis (migrate, ganti web, health check)
+        env:
+          TARGET: ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}
+        run: ssh -i ~/.ssh/deploy_key -o BatchMode=yes "$TARGET" release "$TAG"
+
+      - name: Cek dari domain publik
+        run: |
+          for _ in $(seq 1 10); do
+            if curl -fsS -o /dev/null https://bariskode.org/; then exit 0; fi
+            sleep 3
+          done
+          echo "https://bariskode.org tidak merespons 2xx setelah rilis" >&2
+          exit 1
