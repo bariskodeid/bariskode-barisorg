@@ -303,19 +303,29 @@ lama & baru Python/SQL/Rust me-render heading, list, inline code, dan block
 `Code` sesuai isi DB; `/courses/<slug>` menampilkan deskripsi; submit quiz
 lewat `POST /api/quiz` sebagai student → skor 100% dengan jawaban benar tidak
 selalu di index 0, resubmit idempotent (`alreadyCompleted`), `isCorrect` tidak
-bocor di HTML lesson untuk student. Starter code sandbox sudah dicek lokal
-di image Docker yang versinya sama dengan runtime Judge0 (Bash 5.0, GCC 9.2,
-Go 1.13, OpenJDK 13, Node 12, PHP 7.4, Python 3.8, Ruby 2.7, Rust 1.40,
-SQLite 3.27, TypeScript 3.7), dan guard di `course-content.int.spec.ts`
-menolak fitur runtime yang lebih baru di starter.
+bocor di HTML lesson untuk student. Starter code sandbox sudah dijalankan
+lokal di Docker dengan versi yang mendekati runtime Judge0 (versi persisnya
+beda tipis di beberapa bahasa): Python di `python:3.8-alpine`; JavaScript di
+`node:12-alpine`; TypeScript pakai `tsc` 3.7.4 asli (lewat `npx`) lalu
+dijalankan di `node:12-alpine` (tanpa image khusus TypeScript); C & C++ di
+`gcc:9.2`; Rust di `rust:1.40` (rustup 1.40.0); Go di `golang:1.13-alpine`
+(Go 1.13.15, sedangkan Judge0 pakai 1.13.5); Java di `eclipse-temurin:17-jdk`
+dengan `javac --release 13` (BUKAN OpenJDK 13 asli); PHP di `php:7.4-cli`;
+Ruby di `ruby:2.7`; SQL lewat CLI SQLite 3.27.2 asli yang di-build dari
+source di dalam `gcc:9.2`; Bash di `bash:5.0` (coreutils busybox) dan bash
+5.0.3 GNU milik `gcc:9.2`, dijalankan sebagai uid tanpa entri passwd. Guard
+di `course-content.int.spec.ts` juga menolak fitur runtime yang lebih baru
+di starter. Ini bukan pengganti runtime Judge0 asli, yang belum pernah
+dipakai (lihat di bawah).
 
 **Belum dites:** eksekusi nyata tombol Run lewat Judge0 live — blocker sama
 dengan catatan Judge0 di "Pending Aksi Manual" di atas (container privileged
-belum bisa dinyalakan di environment development ini), jadi starter baru
-diverifikasi di Docker lokal, bukan di Judge0 sungguhan. Smoke test klik
-quiz/lesson di browser sungguhan juga belum (API & HTML dites lewat curl).
-Topik yang butuh network/root sungguhan (mis. package manager & cron di
-Linux) sengaja quiz-only karena sandbox Judge0 stateless tanpa network/root.
+belum bisa dinyalakan di environment development ini), jadi starter hanya
+diverifikasi di Docker lokal (daftar di atas), dan runtime Judge0 asli belum
+dipakai sama sekali. Smoke test klik quiz/lesson di browser sungguhan juga
+belum (API & HTML dites lewat curl). Topik yang butuh network/root sungguhan
+(mis. package manager & cron di Linux) sengaja quiz-only karena sandbox
+Judge0 stateless tanpa network/root.
 
 Update checklist ini setiap fase selesai supaya sesi Claude Code berikutnya tahu
 harus lanjut dari mana.
