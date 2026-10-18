@@ -95,8 +95,11 @@ describe('konten course "from Zero"', () => {
     }
   })
 
-  // Akan FAIL sampai semua course selesai ditulis ulang (Phase B); jadi `it` di task course terakhir.
-  it.todo('description course non-kosong')
+  it('description course non-kosong', () => {
+    for (const course of allCourses) {
+      expect(course.description.trim(), `${course.slug} description`).not.toBe('')
+    }
+  })
 })
 
 type Rule = { pattern: RegExp; reason: string }
