@@ -10,6 +10,8 @@ services:
     ports: !reset []
   judge0-server:
     ports: !reset []
+    # 200m di compose dasar terlalu mepet: idle sudah ~190 MiB (Puma 2 worker).
+    mem_limit: 400m
   web:
     build: !reset null
     image: bariskode-web:${WEB_TAG}

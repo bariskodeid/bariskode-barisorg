@@ -287,8 +287,12 @@ Ini berbeda dari skenario VM Oracle + Caddy di docs/14 — hal yang penting:
 - **Akun admin**: `admin@bariskode.org`, password acak di `.admin-credentials`.
   SMTP belum diisi, jadi reset password lewat email belum bisa jalan.
 - **Resource**: setelah semua service jalan, sisa RAM host sekitar 2.5 GiB.
-  `judge0-server` memakai sekitar 150 dari 200 MiB `mem_limit`-nya; naikkan
-  kalau sering kena OOM saat banyak Run bersamaan.
+  `mem_limit` `judge0-server` dinaikkan ke 400m di override nekosama (200m
+  di compose dasar terlalu mepet — pemakaiannya sempat ~190 MiB).
+- **Mode `wait=true` Judge0 jangan dipakai**: untuk Java, submission selesai
+  (Accepted) tapi response `wait=true` tidak pernah kembali. Aplikasi
+  (`/api/sandbox`) sudah benar memakai `wait=false` + poll token; tes/skrip
+  lain harus pola yang sama.
 
 ## Konten: 12 Course "from Zero"
 
