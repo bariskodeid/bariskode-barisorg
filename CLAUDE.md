@@ -113,48 +113,37 @@ bagian bawah `docs/17-ROADMAP.md`.
   placeholder. Untuk mengaktifkan: buat repo GitHub publik untuk proyek ini,
   aktifkan Discussions, install app giscus, ikuti langkah lengkap di
   `docs/08-FEATURE-BLOG.md`, lalu isi env var di `apps/web/.env`.
-- **Judge0 (code sandbox) belum pernah benar-benar dites eksekusi kodenya**:
-  `judge0-server`/`judge0-workers` butuh `privileged: true` (sandbox
-  "isolate" milik Judge0 perlu akses kernel low-level) — di lingkungan
-  development Claude Code, container privileged diblokir oleh classifier
-  auto-mode, jadi kedua service ini belum pernah berhasil dinyalakan &
-  end-to-end run kode belum diverifikasi nyata. Yang SUDAH diverifikasi:
-  config compose valid, `judge0-db`/`judge0-redis` (tidak butuh privileged)
-  jalan & auth redis benar, dan seluruh logic proxy `/api/sandbox` (auth
-  gate, validasi input, rate limit, allowlist bahasa, graceful failure saat
-  Judge0 unreachable) via HTTP test langsung. Sebelum anggap Fase 5 selesai
-  total: jalankan `docker compose -f infra/docker-compose.yml up -d
-  judge0-server judge0-workers` di environment yang mengizinkan privileged
-  container, lalu coba tombol Run beneran di lesson dengan `hasSandbox: true`.
+- **Judge0 sudah jalan di production, tapi baru dites dengan contoh kecil**:
+  sejak 2026-10-18 Judge0 hidup di nekosama (lihat "Deployment Production
+  (nekosama)" di bawah). Eksekusi end-to-end lewat `https://bariskode.org`
+  `/api/sandbox` (login → POST kode → poll token) sudah diverifikasi untuk
+  Python, C, SQL (dengan `.headers on`/`.mode column`), dan Java — semua
+  `Accepted` dengan output benar. Yang BELUM: menjalankan ke-229 starter
+  course satu per satu di Judge0 asli (starter baru dites di Docker lokal,
+  lihat bagian "Konten"), dan klik tombol Run lewat browser sungguhan.
 - **CTFd**: setelah `docker compose up -d ctfd ctfd-db ctfd-redis`, jalankan
   `CTFD_ADMIN_PASSWORD=<password> infra/ctfd/seed-ctfd.sh` untuk menyelesaikan
   setup wizard CTFd (nama CTF, akun admin) sekaligus membuat 3 challenge
   contoh — sudah diverifikasi jalan bersih dari instance kosong. Kurikulum
   lab lengkap (di luar 3 challenge bukti-konsep ini) tetap keputusan konten
   terpisah, lihat docs/12-FEATURE-CYBERSECURITY-LABS.md.
-- **Repo GitHub (Fase 8) sudah ada & sinkron** — remote `origin` sudah
-  terpasang (`github-bariskode:bariskodeid/bariskode-barisorg.git`) dan
-  `main` lokal sinkron dengan `origin/main`. Yang **masih** perlu user
-  lakukan sendiri untuk Fase 7 (butuh akun/domain asli, tidak bisa Claude
-  Code lakukan): (1) provisioning VM (Oracle Cloud —
-  docs/14-DEPLOYMENT-ORACLE-VM.md — atau VPS lain, lihat juga bagian 9 di
-  dokumen itu untuk tuning VM RAM kecil mis. 4GB); (2) arahkan domain ke
-  Cloudflare + DNS records ke IP VM (docs/13-DEPLOYMENT-CLOUDFLARE.md); (3)
-  set GitHub Secrets VM_HOST/VM_USER/VM_SSH_KEY (docs/15-CICD.md) baru
-  `deploy.yml` bisa jalan. Semua config/kode sisi bariskode.org sendiri
-  (Dockerfile, docker-compose.yml lengkap dengan service `web`+`caddy`,
-  Caddyfile, ci.yml, deploy.yml) sudah ditulis & DITES SUNGGUHAN secara lokal
-  (bukan cuma ditulis lalu didiamkan) — lihat detail bug yang ketemu &
-  diperbaiki di commit Fase 7.
-- **Checklist keamanan (docs/16-SECURITY-CHECKLIST.md) — sebagian butuh VM
-  asli, belum bisa dikerjakan**: rotate ke secret production yang benar-benar
-  acak (bukan nilai dev di `.env`), set SSL/TLS Cloudflare ke Full (strict),
-  konfigurasi Oracle Security List + `ufw` (cuma 80/443 publik), pasang
-  `infra/backup.sh` sebagai cron (`/etc/cron.d/bariskode-backup`, contoh
-  perintah ada di komentar script-nya) dan **tes restore-nya** — backup yang
-  belum pernah dites restore bukan backup yang bisa diandalkan. Bagian
-  mekanisme dump Postgres di `infra/backup.sh` sendiri sudah dites (bukan
-  cuma ditulis) terhadap Postgres lokal.
+- **`deploy.yml` (GitHub Actions) tidak cocok dengan deployment nekosama**:
+  workflow itu ditulis untuk alur VM di docs/14–15 (SSH ke VM lalu `docker
+  compose up --build`) dan butuh GitHub Secrets VM_HOST/VM_USER/VM_SSH_KEY
+  yang tidak pernah diisi, jadi setiap push ke `main` workflow "Deploy" gagal
+  dalam hitungan detik (tidak berdampak apa pun). Production sekarang di-deploy
+  manual dengan image yang di-build di luar server (lihat "Deployment
+  Production (nekosama)"). User perlu memutuskan: matikan `deploy.yml`, atau
+  tulis ulang untuk alur nekosama.
+- **Checklist keamanan (docs/16-SECURITY-CHECKLIST.md) — sisa setelah deploy
+  nekosama**: secret production sudah acak (di-generate di server, bukan nilai
+  dev), dan host hanya membuka SSH ke publik (semua service bariskode bind ke
+  `127.0.0.1` / network Docker privat; trafik web lewat cloudflared). Yang
+  masih perlu user cek/lakukan: set SSL/TLS Cloudflare ke Full (strict) kalau
+  belum, dan pasang backup terjadwal (`pg_dump` Postgres bariskode di daemon
+  rootful, lihat `infra/backup.sh`) ke storage di luar nekosama. Restore dari
+  dump `pg_dump -Fc` sudah terbukti jalan sekali (dipakai saat pindah dari
+  daemon rootless ke rootful), tapi belum ada backup otomatis.
 - **2 vulnerability (1 moderate, sisanya transitive) belum ada fix upstream**:
   `esbuild` (lewat drizzle-kit, dependency `@payloadcms/db-postgres`, dev-time
   saja) dan DOMPurify (lewat monaco-editor, dependency `@payloadcms/ui`, dipakai
@@ -178,21 +167,22 @@ bagian bawah `docs/17-ROADMAP.md`.
 - [x] Fase 2 — Frontend Publik: Katalog Course
 - [x] Fase 3 — Auth & Progress Tracking
 - [x] Fase 4 — Blog + Giscus (Giscus butuh setup manual GitHub, lihat catatan di bawah)
-- [x] Fase 5 — Code Sandbox (Judge0) — eksekusi kode live belum dites, lihat catatan di atas
+- [x] Fase 5 — Code Sandbox (Judge0) — eksekusi live di production sudah
+      diverifikasi dengan contoh Python/C/SQL/Java (2026-10-18); ke-229
+      starter course belum dijalankan satu per satu di Judge0 asli
 - [x] Fase 6 — Lab Cybersecurity (CTFd) — diverifikasi penuh end-to-end (lihat
       di atas), termasuk 3 challenge contoh & solve lewat akun terpisah
-- [x] Fase 7 — Deployment Production — **konfigurasi & image siap + sudah
-      dites lokal (lihat catatan di atas), TAPI belum benar-benar deploy ke
-      VM asli.** Provisioning VM Oracle & setup DNS Cloudflare adalah aksi
-      manual yang cuma bisa dilakukan user (butuh akun & domain asli) — lihat
-      docs/13/14. Kode/config sisi bariskode.org sudah siap dipakai begitu
-      VM & domain ada.
+- [x] Fase 7 — Deployment Production — **live di https://bariskode.org sejak
+      2026-10-18**, di server nekosama (bukan VM Oracle seperti docs/14):
+      web + Postgres + Meilisearch + Judge0, tanpa Caddy & CTFd, dibuka lewat
+      cloudflared. Detail di "Deployment Production (nekosama)".
 - [x] Fase 8 — CI/CD — `ci.yml` ditulis & logic-nya diverifikasi identik
       lewat simulasi lokal (migrate fresh DB lalu build, persis alur CI).
       `deploy.yml` ditulis sesuai docs/15-CICD.md tapi baru template — perlu
       GitHub Secrets (VM_HOST/VM_USER/VM_SSH_KEY) yang cuma ada setelah Fase
-      7 benar-benar dieksekusi. Repo GitHub sendiri sudah ada & sinkron
-      (`origin` terpasang, `main` lokal = `origin/main`).
+      7 benar-benar dieksekusi — dan tidak cocok dengan alur nekosama (lihat
+      "Pending Aksi Manual"). Repo GitHub sendiri sudah ada & sinkron
+      (`origin` = `github-bariskode:bariskodeid/bariskode-barisorg.git`).
 - [x] Fase 9 — Security Hardening & Launch Checklist — semua item yang bisa
       dikerjakan tanpa VM/domain asli sudah selesai: rate limit ditambah ke
       `/api/progress` (sebelumnya cuma `/api/sandbox`), security header
@@ -243,12 +233,58 @@ bagian bawah `docs/17-ROADMAP.md`.
 - [x] Overhaul konten 12 course "from Zero" — 21 lesson per course (252
       total), soal quiz diacak saat seed, lesson merender block kode, seed
       idempotent lewat `pnpm seed:courses`. Detail & angka di bagian
-      "Konten" di bawah. Eksekusi Judge0 live tetap belum dites.
+      "Konten" di bawah.
 
-Semua 9 fase v1 + Fase 10 di docs/17-ROADMAP.md sudah dikerjakan sejauh yang bisa
-dilakukan tanpa infrastruktur production asli. Sisa pekerjaan proyek ini
-adalah aksi manual user (lihat "Pending Aksi Manual" di atas) + fase lanjutan
-di luar v1 (bagian bawah docs/17-ROADMAP.md) kalau dibutuhkan nanti.
+Semua 9 fase v1 + Fase 10 di docs/17-ROADMAP.md sudah dikerjakan, dan
+production sudah live di nekosama. Sisa pekerjaan proyek ini adalah aksi
+manual user (lihat "Pending Aksi Manual" di atas) + fase lanjutan di luar v1
+(bagian bawah docs/17-ROADMAP.md) kalau dibutuhkan nanti.
+
+## Deployment Production (nekosama)
+
+https://bariskode.org jalan di server **nekosama** (Debian 13, x86_64, 4 vCPU,
+5.5 GiB RAM, dipakai bersama app lain di `~/srv/prod`; akses `ssh nekosama`).
+Ini berbeda dari skenario VM Oracle + Caddy di docs/14 — hal yang penting:
+
+- **Folder deploy**: `~/srv/prod/bariskode-barisorg/` berisi
+  `infra/docker-compose.yml` (salinan dari repo) + override
+  `infra/docker-compose.nekosama.yml` (tanpa Caddy/CTFd, web publish ke
+  `127.0.0.1:3040`, image `bariskode-web:<tag>` dan
+  `bariskode-web-builder:<tag>` dengan `pull_policy: never`, `web-migrate` &
+  `web-script` dipaksa `NODE_ENV=production`). Override ini hanya ada di
+  server, tidak di repo. Secret ada di `infra/.env`,
+  `infra/judge0/judge0.conf`, `apps/web/.env.docker`, dan kredensial admin di
+  `.admin-credentials` (semua mode 600; di-generate `setup.sh` di folder yang
+  sama; jangan pernah dicetak ke log/chat).
+- **Docker rootful, bukan default**: context Docker default di nekosama adalah
+  **rootless** (dipakai app lain). Image Judge0 tidak bisa diekstrak di
+  rootless (ada file milik UID 197609, di luar jatah subuid), jadi seluruh
+  stack bariskode jalan di daemon **rootful** (context `default`,
+  `/var/run/docker.sock`; user `apin` ada di grup `docker`). Selalu pakai
+  wrapper `./dcr` (= `DOCKER_CONTEXT=default docker compose -p bariskode
+  ...`). Wrapper lama `./dc` (rootless) sudah tidak dipakai; container
+  rootless-nya dimatikan, volume `bariskode_postgres_data` di rootless dan
+  `backups/pre-rootful-*.dump` disimpan sebagai cadangan rollback. Judge0
+  (isolate) jalan normal di cgroup v2 host ini.
+- **Akses publik**: cloudflared (system service, tunnel berbasis token) →
+  public hostname `bariskode.org` → `http://localhost:3040`. Hostname diatur
+  user di dashboard Cloudflare Zero Trust, tidak bisa diubah dari server.
+- **Build & rilis**: nekosama tidak punya akses SSH ke GitHub dan RAM-nya
+  terlalu kecil untuk `next build` (`--max-old-space-size=8000`). Image
+  di-build di Mac: `docker build --platform linux/amd64 -t bariskode-web:<sha>
+  apps/web` dan `... --target builder -t bariskode-web-builder:<sha>
+  apps/web`, lalu `docker save ... | gzip | ssh nekosama 'gunzip | docker
+  --context default load'`. Ganti `WEB_TAG` di `infra/.env` ke tag baru,
+  lalu `./dcr up -d web`. Migration dulu kalau ada schema baru: `./dcr
+  --profile migrate run --rm -T web-migrate migrate`.
+- **Seed konten**: `./dcr --profile script run --rm -T web-script
+  scripts/seed-all-courses.ts` (override sudah set `NODE_ENV=production`).
+  Ingat: re-seed menimpa edit admin pada 12 course itu — dump DB dulu.
+- **Akun admin**: `admin@bariskode.org`, password acak di `.admin-credentials`.
+  SMTP belum diisi, jadi reset password lewat email belum bisa jalan.
+- **Resource**: setelah semua service jalan, sisa RAM host sekitar 2.5 GiB.
+  `judge0-server` memakai sekitar 150 dari 200 MiB `mem_limit`-nya; naikkan
+  kalau sering kena OOM saat banyak Run bersamaan.
 
 ## Konten: 12 Course "from Zero"
 
@@ -346,17 +382,16 @@ Ruby di `ruby:2.7`; SQL lewat CLI SQLite 3.27.2 asli yang di-build dari
 source di dalam `gcc:9.2`; Bash di `bash:5.0` (coreutils busybox) dan bash
 5.0.3 GNU milik `gcc:9.2`, dijalankan sebagai uid tanpa entri passwd. Guard
 di `course-content.int.spec.ts` juga menolak fitur runtime yang lebih baru
-di starter. Ini bukan pengganti runtime Judge0 asli, yang belum pernah
-dipakai (lihat di bawah).
+di starter. Ini bukan pengganti runtime Judge0 asli (lihat di bawah).
 
-**Belum dites:** eksekusi nyata tombol Run lewat Judge0 live — blocker sama
-dengan catatan Judge0 di "Pending Aksi Manual" di atas (container privileged
-belum bisa dinyalakan di environment development ini), jadi starter hanya
-diverifikasi di Docker lokal (daftar di atas), dan runtime Judge0 asli belum
-dipakai sama sekali. Smoke test klik quiz/lesson di browser sungguhan juga
-belum (API & HTML dites lewat curl). Topik yang butuh network/root sungguhan
-(mis. package manager & cron di Linux) sengaja quiz-only karena sandbox
-Judge0 stateless tanpa network/root.
+**Belum dites:** ke-229 starter course belum dijalankan satu per satu di
+Judge0 asli. Judge0 production sendiri sudah terbukti mengeksekusi contoh
+Python/C/SQL/Java dengan benar (lihat "Deployment Production (nekosama)"),
+tapi starter course baru diverifikasi di Docker lokal (daftar di atas).
+Smoke test klik quiz/lesson/Run di browser sungguhan juga belum (API & HTML
+dites lewat curl). Topik yang butuh network/root sungguhan (mis. package
+manager & cron di Linux) sengaja quiz-only karena sandbox Judge0 stateless
+tanpa network/root.
 
 Update checklist ini setiap fase selesai supaya sesi Claude Code berikutnya tahu
 harus lanjut dari mana.
