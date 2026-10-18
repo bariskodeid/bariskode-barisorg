@@ -242,18 +242,19 @@ echo "echo false: [" . false . "]\\n";
         content: [
           'Selain `int`, `float`, `string`, `bool`, dan `array`, PHP punya satu tipe khusus bernama `null`, yang artinya "tidak ada nilai". Variabel bernilai `null` kalau kita mengisinya dengan `null` secara eksplisit. Seperti `true` dan `false`, `null` tidak peka huruf besar-kecil. `gettype()` dan `var_dump()` mencetaknya sebagai `NULL`.',
           '## isset()',
-          '`isset($x)` bernilai `true` kalau variabel `$x` ada DAN nilainya bukan `null`. Fungsi ini aman dipanggil untuk variabel yang belum pernah dibuat atau key array yang tidak ada, tanpa pesan error, sehingga cocok untuk memeriksa dulu sebelum membaca, misal `isset($siswa["kota"])`.',
+          '`isset($x)` bernilai `true` kalau variabel `$x` ada DAN nilainya bukan `null`. Fungsi ini aman dipanggil untuk variabel yang belum pernah dibuat atau key array yang tidak ada, tanpa pesan error, sehingga cocok untuk memeriksa dulu sebelum membaca. Contohnya `isset($siswa["kota"])`: di sini `$siswa` adalah array associative, yaitu kumpulan pasangan `key => value` yang dibahas lengkap di modul berikutnya, dan `$siswa["kota"]` membaca nilai dari key `"kota"`.',
           '## empty()',
           '`empty($x)` bernilai `true` kalau nilai `$x` dianggap "kosong": `null`, `false`, `0`, `0.0`, string kosong `""`, string `"0"`, dan array kosong `[]`. Jebakannya, `0` dan `"0"` ikut dianggap kosong padahal bisa jadi nilai yang sah, misal umur 0 atau skor 0. Sebaliknya `"false"`, string berisi satu spasi, dan array yang punya elemen (walau elemennya `0`) tidak dianggap kosong. Kalau yang ingin dicek hanya ada-tidaknya nilai, pakai `isset()`.',
           '## Operator ??',
           'Operator null coalescing `??` mengembalikan nilai di sebelah kirinya kalau ada dan bukan `null`, kalau tidak, nilai di sebelah kanannya. Seperti `isset()`, ia tidak mengeluarkan pesan error kalau variabel atau key di kiri tidak ada, jadi cocok untuk memberi nilai default. Tanpa `??`, membaca key array yang tidak ada menghasilkan `null` disertai pesan Notice (menjadi Warning sejak PHP 8.0). Perhatikan bahwa `??` hanya mengganti `null`, sedangkan `0` dan `""` tetap dipakai apa adanya.',
-          '```php\n<?php\n$siswa = ["nama" => "Budi", "umur" => 0];\n\necho $siswa["kota"] ?? "belum diisi";   // belum diisi\necho $siswa["umur"] ?? 18;              // 0, bukan 18: hanya null yang diganti\n\nif (isset($siswa["nama"])) {\n    echo "Nama sudah diisi";\n}\n```',
+          '```php\n<?php\n$siswa = ["nama" => "Budi", "umur" => 0];\n\necho $siswa["kota"] ?? "belum diisi";   // belum diisi\necho $siswa["umur"] ?? 18;              // 0, bukan 18: hanya null yang diganti\n\nvar_dump(isset($siswa["nama"]));    // bool(true)\nvar_dump(isset($siswa["kota"]));    // bool(false)\n```',
         ],
         hasSandbox: true,
         sandboxStarterCode: `<?php
 $kosong = null;
 $nol = 0;
 $teks_kosong = "";
+// array associative: pasangan key => value; $siswa["kota"] membaca nilai dari key "kota"
 $siswa = ["nama" => "Budi", "umur" => 0];
 
 var_dump($kosong);                // NULL
