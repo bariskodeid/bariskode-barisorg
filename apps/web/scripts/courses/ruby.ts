@@ -11,7 +11,14 @@ const modules: ModuleDef[] = [
           'Ruby adalah bahasa pemrograman tingkat tinggi yang dibuat oleh Yukihiro Matsumoto (biasa dipanggil "Matz") di Jepang, pertama dirilis tahun 1995. Ruby dirancang dengan filosofi "programmer happiness" — mengutamakan kebahagiaan dan produktivitas programmer, bukan sekadar performa mesin.',
           'Ruby bersifat interpreted dan dynamically typed, mirip Python, tapi sintaksnya lebih ekspresif dan fleksibel — banyak cara menulis kode yang sama, sesuai gaya masing-masing programmer.',
           'Ruby menjadi sangat populer lewat framework web Ruby on Rails, yang mempopulerkan konvensi "convention over configuration" dalam pengembangan web modern.',
-          'Semua elemen di Ruby adalah object, bahkan angka dan `nil` sekalipun — ini membuat Ruby dikenal sebagai bahasa "pure object-oriented" yang konsisten.',
+          'Hampir semua nilai di Ruby adalah object, bahkan angka dan `nil` sekalipun — ini membuat Ruby dikenal sebagai bahasa "pure object-oriented" yang konsisten. Yang bukan object, misalnya, adalah bagian sintaks seperti kata kunci (`if`, `def`) dan variabel itu sendiri, karena variabel hanyalah nama yang menunjuk ke sebuah object.',
+          'Karena angka juga object, kamu bisa memanggil method langsung pada angka, string, atau `nil`. `.class` menampilkan jenis object-nya (dibahas lagi di lesson Tipe Data):',
+          `\`\`\`ruby
+puts 5.class          # Integer
+puts nil.class        # NilClass
+puts "halo".upcase    # HALO
+puts 3.7.round        # 4
+\`\`\``,
         ],
         hasQuiz: true,
         quizQuestions: [
@@ -22,10 +29,10 @@ const modules: ModuleDef[] = [
             ['James Gosling', false],
           ]),
           q('Apa filosofi utama di balik desain Ruby?', [
-            ['Programmer happiness', true],
-            ['Kecepatan eksekusi mutlak', false],
-            ['Sesedikit mungkin sintaks', false],
-            ['Hanya untuk sistem embedded', false],
+            ['Programmer happiness: kode yang nyaman ditulis dan membuat programmer produktif', true],
+            ['Performa eksekusi setinggi mungkin, meski kode jadi kurang nyaman ditulis', false],
+            ['Satu cara baku untuk tiap tugas, supaya semua kode terlihat seragam', false],
+            ['Pengecekan tipe yang ketat saat compile, supaya bug ketahuan sebelum program jalan', false],
           ]),
           q('Framework web populer yang dibangun dengan Ruby adalah?', [
             ['Ruby on Rails', true],
@@ -69,8 +76,18 @@ puts "Selesai belajar sintaks dasar"
         content: [
           'Variabel di Ruby dibuat langsung dengan tanda `=`, tanpa kata kunci deklarasi seperti `var`/`let`. Contoh: `nama = "Budi"` langsung membuat variabel `nama`.',
           'Konvensi penamaan variabel dan method di Ruby memakai `snake_case` (huruf kecil dipisah underscore), misal `nama_lengkap`, `tinggi_badan` — berbeda dengan `camelCase` yang umum di JavaScript.',
-          'Variabel lokal harus diawali huruf kecil atau underscore. Ruby juga punya konvensi penamaan konstanta dengan huruf besar semua, misal `PI = 3.14`, yang secara konvensi tidak boleh diubah nilainya.',
+          'Variabel lokal harus diawali huruf kecil atau underscore (`_`), misal `nama` atau `_sementara`.',
           'Ruby mengizinkan multiple assignment dalam satu baris, misal `a, b, c = 1, 2, 3`, memudahkan inisialisasi beberapa variabel sekaligus.',
+          '## Konstanta',
+          'Nama yang diawali huruf kapital otomatis dianggap konstanta oleh Ruby. Ini aturan bahasa, bukan sekadar kebiasaan, jadi `Batas = 10` dan `PI = 3.14` sama-sama konstanta. Konvensinya, konstanta untuk nilai tetap ditulis dengan huruf besar semua dan underscore, misal `MAKS_PERCOBAAN`.',
+          'Berbeda dari `const` di JavaScript, Ruby tidak melarang konstanta diberi nilai baru. Kalau itu dilakukan, Ruby mencetak warning `already initialized constant` (tampil sebagai teks merah di output sandbox), tapi program tetap jalan dan nilainya berubah. Jadi "konstanta" lebih berupa kesepakatan antar programmer: nilai ini tidak seharusnya diubah.',
+          `\`\`\`ruby
+Batas = 10        # konstanta, karena diawali huruf kapital
+puts Batas        # 10
+
+Batas = 20        # warning: already initialized constant Batas
+puts Batas        # 20
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `nama_lengkap = "Siswa BarisORG"
@@ -86,6 +103,13 @@ puts "Multiple assignment: #{a}, #{b}, #{c}"
 
 PI = 3.14
 puts "Konstanta PI: #{PI}"
+
+Batas = 10
+puts "Batas diawali huruf kapital, jadi juga konstanta: #{Batas}"
+
+# Mengubah konstanta tidak dilarang, tapi Ruby mengeluarkan warning (teks merah)
+Batas = 20
+puts "Batas setelah diubah: #{Batas}"
 `,
         hasQuiz: true,
         quizQuestions: [
@@ -101,11 +125,17 @@ puts "Konstanta PI: #{PI}"
             ['Harus pakai kata kunci let', false],
             ['Harus mendeklarasikan tipe data dulu', false],
           ]),
-          q('Ciri penamaan konstanta di Ruby menurut konvensi adalah?', [
-            ['Huruf besar semua, misal PI', true],
-            ['Selalu diawali underscore', false],
-            ['Selalu diakhiri tanda tanya', false],
-            ['Harus satu huruf saja', false],
+          q('Apa yang membuat sebuah nama dikenali Ruby sebagai konstanta?', [
+            ['Diawali huruf kapital, misal PI atau Batas', true],
+            ['Ditulis dengan huruf besar semua, jadi BATAS konstanta tapi Batas bukan', false],
+            ['Ditandai dengan kata kunci const di depan nama', false],
+            ['Diawali tanda dollar, misal $batas', false],
+          ]),
+          q('Apa yang terjadi kalau konstanta, misal PI = 3.14, diberi nilai baru di tengah program?', [
+            ['Ruby mencetak warning "already initialized constant", tapi program lanjut dan nilainya berubah', true],
+            ['Program langsung berhenti dengan error karena konstanta tidak boleh diubah sama sekali', false],
+            ['Ruby mengabaikan assignment kedua tanpa pesan apa pun, nilai lama tetap dipakai', false],
+            ['Ruby membuat konstanta kedua dengan nama sama yang berdiri sendiri di samping yang lama', false],
           ]),
         ],
       },
@@ -169,8 +199,20 @@ puts kosong.class
         slug: 'rubyfz-symbol',
         content: [
           'Symbol adalah tipe data ciri khas Ruby, ditulis dengan titik dua di depan nama, misal `:nama` atau `:status_aktif`. Symbol mirip string tapi immutable (tidak bisa diubah) dan lebih hemat memori.',
-          'Perbedaan utama dengan string: dua string yang isinya sama adalah dua object berbeda di memori, tapi dua symbol dengan nama sama selalu merujuk ke satu object yang sama persis — ini membuat perbandingan symbol jauh lebih cepat.',
-          'Symbol sering dipakai sebagai key di Hash (mirip dictionary) dan sebagai identifier internal, misal nama method atau status, karena nilainya tidak pernah berubah selama program berjalan.',
+          'Perbedaan utama dengan string: dua string yang isinya sama adalah dua object berbeda di memori, tapi dua symbol dengan nama sama selalu merujuk ke satu object yang sama persis — ini membuat perbandingan symbol jauh lebih cepat. Setiap object punya `object_id`; dua object yang sama persis punya `object_id` yang sama. Perhatikan bedanya `==` (isinya sama) dengan `object_id` yang sama (benar-benar satu object):',
+          `\`\`\`ruby
+puts "budi" == "budi"                       # true: isinya sama
+puts "budi".object_id == "budi".object_id   # false: dua object berbeda
+puts :budi.object_id == :budi.object_id     # true: satu object yang sama
+\`\`\``,
+          '`.to_s` mengubah symbol jadi string, dan `.to_sym` mengubah string jadi symbol. Keduanya berguna saat data berupa teks (misal dari input) perlu dicocokkan dengan symbol di kode.',
+          `\`\`\`ruby
+teks = :aktif.to_s
+simbol = "aktif".to_sym
+puts teks.class     # String
+puts simbol.class   # Symbol
+\`\`\``,
+          'Symbol sering dipakai sebagai key di Hash (mirip dictionary, dibahas di lesson Hash) dan sebagai identifier internal, misal nama method atau status, karena nilainya tidak pernah berubah selama program berjalan. Key Hash boleh juga berupa string, tapi symbol lebih umum dipakai.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `status = :aktif
@@ -179,12 +221,38 @@ puts status.class
 
 nama_a = "budi"
 nama_b = "budi"
-puts "String sama isi, object_id beda: #{nama_a.object_id == nama_b.object_id}"
+puts "String: isinya sama? #{nama_a == nama_b}"
+puts "String: object_id sama? #{nama_a.object_id == nama_b.object_id}"
 
 simbol_a = :budi
 simbol_b = :budi
-puts "Symbol sama nama, object_id sama: #{simbol_a.object_id == simbol_b.object_id}"
+puts "Symbol: object_id sama? #{simbol_a.object_id == simbol_b.object_id}"
+
+teks = status.to_s
+simbol = "aktif".to_sym
+puts "Symbol jadi string: #{teks.class}"
+puts "String jadi symbol: #{simbol.class}"
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Bagaimana symbol ditulis di Ruby?', [
+            [':nama, dengan titik dua di depan nama', true],
+            ['"nama", dengan kutip ganda di sekeliling nama', false],
+            ['#nama, dengan tanda pagar di depan nama', false],
+          ]),
+          q('Berapa hasil :budi.object_id == :budi.object_id, lalu "budi".object_id == "budi".object_id (dua string literal)?', [
+            ['true, lalu false', true],
+            ['false, lalu true', false],
+            ['true, lalu true, karena string dengan isi sama selalu satu object', false],
+            ['false, lalu false, karena object_id selalu unik tiap kali dipanggil', false],
+          ]),
+          q('Kenapa symbol cocok dipakai sebagai key Hash atau penanda status?', [
+            ['Nilainya tidak berubah, dan dua symbol bernama sama adalah satu object sehingga perbandingannya cepat', true],
+            ['Symbol bisa menyimpan teks yang jauh lebih panjang daripada string biasa', false],
+            ['Symbol otomatis berubah mengikuti isi variabel yang ada di sekitarnya', false],
+            ['Hash hanya menerima symbol sebagai key, sedangkan string tidak bisa jadi key', false],
+          ]),
+        ],
       },
       {
         title: 'Operator',
@@ -262,9 +330,21 @@ puts "Dibalik: #{nama.reverse}"
         title: 'Percabangan if/unless',
         slug: 'rubyfz-percabangan-if-unless',
         content: [
-          'Percabangan `if` menjalankan blok kode hanya jika kondisi bernilai `true`, ditutup dengan kata kunci `end` (bukan kurung kurawal). `elsif` (perhatikan ejaannya, bukan "elseif") mengecek kondisi tambahan, `else` menjalankan blok kalau semua kondisi di atasnya `false`.',
-          'Ruby juga punya `unless`, kebalikan dari `if` — blok kode dijalankan hanya jika kondisi bernilai `false`. `unless kondisi` setara dengan `if !kondisi`.',
+          'Percabangan `if` menjalankan blok kode kalau kondisinya truthy (dianggap benar, lihat bagian "Truthy dan falsy" di bawah), ditutup dengan kata kunci `end` (bukan kurung kurawal). `elsif` (perhatikan ejaannya, bukan "elseif") mengecek kondisi tambahan, `else` menjalankan blok kalau semua kondisi di atasnya falsy.',
+          'Ruby juga punya `unless`, kebalikan dari `if` — blok kode dijalankan kalau kondisinya falsy (`nil` atau `false`). `unless kondisi` setara dengan `if !kondisi`.',
           'Ruby mendukung modifier form: `puts "lulus" if nilai >= 60` — menaruh `if`/`unless` di akhir baris untuk kondisi satu baris yang ringkas, sangat umum dipakai dalam kode Ruby idiomatis.',
+          '## Truthy dan falsy',
+          'Di Ruby hanya dua nilai yang falsy: `nil` dan `false`. Semua nilai lain truthy, termasuk `0`, string kosong `""`, dan array kosong `[]`. Ini berbeda dari JavaScript atau Python, tempat `0` dan string kosong dianggap falsy.',
+          `\`\`\`ruby
+saldo = 0
+puts "0 itu truthy" if saldo            # tercetak
+
+catatan = ""
+puts "string kosong truthy" if catatan   # tercetak
+
+data = nil
+puts "nil itu falsy" unless data         # tercetak
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `nilai = 75
@@ -281,6 +361,14 @@ end
 
 puts "Lulus!" unless nilai < 60
 puts "Nilai istimewa" if nilai >= 90
+
+# Hanya nil dan false yang falsy; semua nilai lain truthy
+saldo = 0
+puts "0 itu truthy, jadi blok if jalan" if saldo
+catatan = ""
+puts "String kosong juga truthy" if catatan
+data = nil
+puts "nil itu falsy, jadi unless jalan" unless data
 `,
         hasQuiz: true,
         quizQuestions: [
@@ -296,11 +384,16 @@ puts "Nilai istimewa" if nilai >= 90
             ['endif', false],
             ['fi', false],
           ]),
-          q('Blok kode unless dijalankan ketika kondisinya bernilai?', [
-            ['false', true],
-            ['true', false],
-            ['nil selalu', false],
-            ['Tidak pernah dijalankan', false],
+          q('Pada unless data, kapan blok kodenya dijalankan?', [
+            ['Ketika data bernilai nil atau false, karena keduanya falsy', true],
+            ['Ketika data bernilai false saja; nil membuat Ruby error karena bukan boolean', false],
+            ['Ketika data bernilai false, 0, atau string kosong, karena ketiganya dianggap falsy', false],
+          ]),
+          q('Mana pernyataan yang benar tentang truthy dan falsy di Ruby?', [
+            ['if 0 menjalankan bloknya, karena hanya nil dan false yang falsy', true],
+            ['if 0 tidak menjalankan bloknya, karena angka nol sama dengan false', false],
+            ['if "" tidak menjalankan bloknya, karena string kosong dianggap tidak punya isi', false],
+            ['if nil menjalankan bloknya, karena nil juga sebuah object seperti yang lain', false],
           ]),
         ],
       },
@@ -308,12 +401,35 @@ puts "Nilai istimewa" if nilai >= 90
         title: 'Perulangan (each, for, while)',
         slug: 'rubyfz-perulangan-each-for-while',
         content: [
-          '`each` adalah cara paling idiomatis mengulang tiap elemen collection di Ruby, dipanggil pada array/range dengan block, misal `(1..5).each do |i| ... end`. Ini lebih umum dipakai dibanding `for` di kode Ruby modern.',
+          'Perulangan menjalankan kode yang sama berulang kali. Di Ruby, yang paling sering diulang adalah isi sebuah collection atau rentang angka, dan rentang angka ditulis dengan Range.',
+          '## Range',
+          'Range menyatakan rentang nilai. `1..5` berisi 1, 2, 3, 4, 5 (dua titik: batas akhir ikut), sedangkan `1...5` berisi 1, 2, 3, 4 (tiga titik: batas akhir tidak ikut). Range ditulis dalam kurung kalau dipanggil method-nya, dan `.to_a` mengubahnya jadi array supaya isinya kelihatan.',
+          `\`\`\`ruby
+puts "1..5  => #{(1..5).to_a}"    # [1, 2, 3, 4, 5]
+puts "1...5 => #{(1...5).to_a}"   # [1, 2, 3, 4]
+\`\`\``,
+          '## each dan for',
+          '`each` adalah cara paling idiomatis mengulang tiap elemen collection di Ruby, dipanggil pada array atau Range dengan block, misal `(1..5).each do |i| ... end`. Ini lebih umum dipakai dibanding `for` di kode Ruby modern.',
           '`for` juga tersedia dan mirip bahasa lain: `for i in 1..5` — tapi jarang dipakai karena `each` dianggap lebih idiomatis dan konsisten dengan gaya object-oriented Ruby.',
-          '`while` mengulang selama kondisi masih `true`, cocok kalau jumlah pengulangan tidak diketahui di awal. `break` menghentikan loop lebih awal, `next` melompati sisa iterasi saat ini (setara `continue` di bahasa lain).',
+          '## times dan upto',
+          'Kalau yang dibutuhkan hanya mengulang sejumlah kali, pakai `n.times`: `3.times do |i| ... end` menjalankan block 3 kali dengan `i` bernilai 0, 1, 2 (dihitung mulai dari 0). `1.upto(3)` mengulang dari 1 sampai 3 (batas akhir ikut), setara dengan `(1..3).each`.',
+          `\`\`\`ruby
+3.times do |i|
+  puts "times ke-#{i}"     # 0, 1, 2
+end
+
+1.upto(3) do |i|
+  puts "upto ke-#{i}"      # 1, 2, 3
+end
+\`\`\``,
+          '## while, break, dan next',
+          '`while` mengulang selama kondisi masih truthy, cocok kalau jumlah pengulangan tidak diketahui di awal. `break` menghentikan loop lebih awal, `next` melompati sisa iterasi saat ini (setara `continue` di bahasa lain).',
         ],
         hasSandbox: true,
-        sandboxStarterCode: `(1..5).each do |i|
+        sandboxStarterCode: `puts "1..5  => #{(1..5).to_a}"
+puts "1...5 => #{(1...5).to_a}"
+
+(1..5).each do |i|
   next if i == 3
   puts "Iterasi each ke-#{i}"
 end
@@ -322,12 +438,38 @@ for i in 1..3
   puts "Iterasi for ke-#{i}"
 end
 
+3.times do |i|
+  puts "Iterasi times ke-#{i}"
+end
+
+1.upto(3) do |i|
+  puts "Iterasi upto ke-#{i}"
+end
+
 hitung = 0
 while hitung < 3
   puts "Iterasi while ke-#{hitung}"
   hitung += 1
 end
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa isi (1...5).to_a?', [
+            ['[1, 2, 3, 4], karena tiga titik tidak menyertakan batas akhir', true],
+            ['[1, 2, 3, 4, 5], karena dua atau tiga titik sama-sama menyertakan batas akhir', false],
+            ['[2, 3, 4, 5], karena tiga titik tidak menyertakan batas awal', false],
+          ]),
+          q('Berapa nilai i pada putaran pertama 3.times do |i| ... end?', [
+            ['0', true],
+            ['1', false],
+            ['3', false],
+          ]),
+          q('Apa fungsi next di dalam sebuah perulangan?', [
+            ['Melompati sisa iterasi saat ini dan lanjut ke iterasi berikutnya', true],
+            ['Menghentikan seluruh perulangan dan keluar dari loop', false],
+            ['Mengulang iterasi yang sama dari awal sekali lagi', false],
+          ]),
+        ],
       },
       {
         title: 'Array',
@@ -335,7 +477,7 @@ end
         content: [
           'Array adalah kumpulan data terurut yang bisa diubah (mutable), ditulis dengan `[]`, contoh: `buah = ["apel", "jeruk", "mangga"]`. Akses item dengan index dimulai dari 0: `buah[0]`, dan index negatif menghitung dari belakang: `buah[-1]` mengambil elemen terakhir.',
           'Method `.push` (atau operator `<<`) menambah elemen ke akhir array, `.pop` menghapus dan mengembalikan elemen terakhir, `.length`/`.size` menghitung jumlah elemen.',
-          'Array di Ruby punya banyak method fungsional bawaan seperti `.map` (mengubah tiap elemen jadi array baru) dan `.select` (menyaring elemen sesuai kondisi), keduanya menerima block.',
+          'Array di Ruby punya banyak method fungsional bawaan seperti `.map` (mengubah tiap elemen jadi array baru) dan `.select` (menyaring elemen sesuai kondisi), keduanya menerima block. Block satu baris ditulis dengan `{ |x| ... }` (dibahas lengkap di lesson Block & yield), dan `x.even?` bernilai `true` kalau `x` bilangan genap.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `buah = ["apel", "jeruk", "mangga"]
@@ -378,9 +520,29 @@ puts "Hasil select (genap): #{genap}"
         title: 'Hash',
         slug: 'rubyfz-hash',
         content: [
-          'Hash menyimpan data sebagai pasangan key-value, ditulis dengan `{}`. Gaya modern (Ruby 1.9+) memakai symbol sebagai key: `siswa = { nama: "Budi", umur: 20 }`, setara dengan `{ :nama => "Budi", :umur => 20 }`.',
-          'Akses nilai lewat key: `siswa[:nama]`. Kalau key tidak ditemukan, hasilnya `nil` (bukan error), kecuali diatur default value lain saat membuat Hash.',
+          'Hash menyimpan data sebagai pasangan key-value, ditulis dengan `{}`. Gaya modern (Ruby 1.9+) memakai symbol sebagai key: `siswa = { nama: "Budi", umur: 20 }`, setara dengan `{ :nama => "Budi", :umur => 20 }`. Key tidak harus symbol (string atau angka juga boleh), tapi symbol paling umum.',
+          'Saat isi Hash dicetak, Ruby 2.7 (yang dipakai sandbox) menampilkan `{:nama=>"Budi", :umur=>20}`, sedangkan Ruby 3.4+ menampilkan `{nama: "Budi", umur: 20}`. Isinya sama persis, hanya tampilannya yang berbeda.',
+          'Akses nilai lewat key: `siswa[:nama]`. Kalau key tidak ditemukan, hasilnya `nil` (bukan error), kecuali diatur default value lain saat membuat Hash. `.inspect` menampilkan nilai apa adanya, jadi `nil` tampil sebagai kata `nil`, bukan teks kosong.',
           'Method `.each` pada Hash memberikan pasangan key dan value sekaligus dalam block: `hash.each do |key, value| ... end`, memudahkan iterasi seluruh isi Hash.',
+          '## fetch, delete, dan default value',
+          '`fetch` juga mengambil nilai lewat key, tapi lebih ketat: kalau key tidak ada, `fetch` melempar `KeyError`, kecuali kamu memberi nilai cadangan, misal `siswa.fetch(:alamat, "-")` yang mengembalikan `"-"`. Pakai `[]` kalau `nil` boleh, pakai `fetch` kalau key yang hilang berarti ada yang salah.',
+          '`delete(key)` menghapus pasangan itu dari Hash dan mengembalikan value-nya (atau `nil` kalau key tidak ada), sedangkan `key?(key)` mengecek apakah key ada. `Hash.new(0)` membuat Hash dengan default value 0 untuk key yang belum ada, cocok untuk menghitung kemunculan.',
+          `\`\`\`ruby
+siswa = { nama: "Budi", umur: 20 }
+
+puts siswa.fetch(:nama)          # Budi
+puts siswa.fetch(:alamat, "-")   # -
+puts siswa.key?(:umur)           # true
+
+umur = siswa.delete(:umur)
+puts umur                        # 20
+puts siswa.key?(:umur)           # false
+
+hitung = Hash.new(0)
+["apel", "jeruk", "apel"].each { |buah| hitung[buah] += 1 }
+puts hitung["apel"]              # 2
+puts hitung["pisang"]            # 0
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `siswa = { nama: "Budi", umur: 20, kota: "Jakarta" }
@@ -395,7 +557,41 @@ puts "Setelah tambah key baru: #{siswa}"
 siswa.each do |key, value|
   puts "#{key} => #{value}"
 end
+
+# fetch: key tidak ada tapi ada nilai cadangan, jadi tidak error
+alamat = siswa.fetch(:alamat, "-")
+puts "fetch dengan nilai cadangan: #{alamat}"
+puts "Ada key :kota? #{siswa.key?(:kota)}"
+
+# delete mengembalikan value yang dihapus
+kota = siswa.delete(:kota)
+puts "delete mengembalikan: #{kota}"
+puts "Setelah delete: #{siswa}"
+
+# Hash.new(0): key yang belum ada bernilai 0
+hitung = Hash.new(0)
+["apel", "jeruk", "apel"].each { |buah| hitung[buah] += 1 }
+puts "Hasil hitung: #{hitung}"
+puts "Jumlah pisang: #{hitung["pisang"]}"
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang terjadi pada siswa.fetch(:alamat) kalau Hash siswa tidak punya key :alamat dan tidak ada nilai cadangan?', [
+            ['Ruby melempar KeyError', true],
+            ['Hasilnya nil, sama seperti siswa[:alamat]', false],
+            ['Hasilnya string kosong, karena fetch selalu mengembalikan teks', false],
+          ]),
+          q('Berapa hasil hitung["pisang"] kalau hitung = Hash.new(0) dan key "pisang" belum pernah diisi?', [
+            ['0', true],
+            ['nil', false],
+            ['KeyError, karena key-nya tidak ada', false],
+          ]),
+          q('Apa yang dikembalikan siswa.delete(:umur) kalau key :umur ada di Hash?', [
+            ['Value yang dihapus itu', true],
+            ['Hash baru tanpa key :umur, sedangkan siswa tetap utuh', false],
+            ['true, sebagai tanda penghapusan berhasil', false],
+          ]),
+        ],
       },
     ],
   },
@@ -449,23 +645,65 @@ sapa("Siswa BarisORG")
         title: 'Default Argument',
         slug: 'rubyfz-default-argument',
         content: [
-          'Parameter method bisa diberi nilai default, dipakai kalau pemanggil tidak memberikan argumen untuk parameter itu. Contoh: `def sapa(nama = "Tamu")` — kalau dipanggil `sapa` tanpa argumen, `nama` bernilai `"Tamu"`.',
-          'Ruby juga mendukung keyword argument — memanggil method dengan menyebut nama parameternya langsung, misal `sapa(nama: "Budi")`, membuat urutan argumen tidak wajib sama dengan urutan parameter dan kode lebih jelas dibaca.',
+          'Parameter method bisa diberi nilai default, dipakai kalau pemanggil tidak memberikan argumen untuk parameter itu. Contoh: `def salam(nama = "Tamu")` — kalau dipanggil `salam` tanpa argumen, `nama` bernilai `"Tamu"`.',
+          `\`\`\`ruby
+def salam(nama = "Tamu")
+  puts "Halo, #{nama}"
+end
+
+salam            # Halo, Tamu
+salam("Budi")    # Halo, Budi
+\`\`\``,
+          '## Keyword argument',
+          'Keyword argument diisi dengan menyebut nama parameternya saat memanggil method. Parameter keyword harus dideklarasikan dengan titik dua di belakang namanya: `def sapa(nama: "Tamu")` punya nilai default, sedangkan `def perkenalan(nama:, umur:)` tanpa nilai default berarti keyword itu wajib diisi. Urutan argumen saat memanggil bebas dan kode lebih jelas dibaca. Kalau keyword wajib tidak diisi, atau keyword yang tidak dikenal diberikan, Ruby melempar `ArgumentError`.',
+          `\`\`\`ruby
+def sapa(nama: "Tamu")
+  puts "Halo, #{nama}"
+end
+
+sapa                  # Halo, Tamu
+sapa(nama: "Budi")    # Halo, Budi
+
+def perkenalan(nama:, umur:)
+  puts "Nama: #{nama}, Umur: #{umur}"
+end
+
+perkenalan(umur: 22, nama: "Siti")   # urutan bebas
+\`\`\``,
+          'Yang menjadikan sebuah parameter keyword argument adalah deklarasi `nama:` di `def`, bukan cara memanggilnya. Kalau method dideklarasikan dengan parameter biasa seperti `def salam(nama = "Tamu")`, lalu dipanggil `salam(nama: "Budi")`, Ruby membungkus `nama: "Budi"` jadi satu Hash dan mengirimnya sebagai argumen biasa. Akibatnya `nama` berisi Hash itu (tercetak `{:nama=>"Budi"}` di Ruby 2.7, atau `{nama: "Budi"}` di Ruby 3.4+), bukan `"Budi"`:',
+          `\`\`\`ruby
+def salam(nama = "Tamu")
+  puts "Halo, #{nama}"
+end
+
+salam(nama: "Budi")   # Halo, {:nama=>"Budi"} (bukan Halo, Budi)
+\`\`\``,
+          '## Argumen tak terbatas dengan *args',
           '`*args` menampung sejumlah argumen posisional tak terbatas jadi array — berguna untuk method yang jumlah argumennya fleksibel, misal method penjumlahan banyak angka sekaligus.',
         ],
         hasSandbox: true,
-        sandboxStarterCode: `def sapa(nama = "Tamu")
+        sandboxStarterCode: `def salam(nama = "Tamu")
+  puts "Halo, #{nama}"
+end
+
+salam
+salam("Budi")
+# Bukan keyword argument: salam tidak mendeklarasikan "nama:", jadi ini dikirim sebagai Hash
+salam(nama: "Budi")
+
+def sapa(nama: "Tamu")
   puts "Halo, #{nama}"
 end
 
 sapa
-sapa("Budi")
+sapa(nama: "Budi")
 
 def perkenalan(nama:, umur:)
   puts "Nama: #{nama}, Umur: #{umur}"
 end
 
 perkenalan(nama: "Siti", umur: 22)
+perkenalan(umur: 25, nama: "Dewi")
 
 def jumlahkan_semua(*args)
   args.sum
@@ -473,13 +711,42 @@ end
 
 puts "Jumlah semua: #{jumlahkan_semua(1, 2, 3, 4)}"
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Method dideklarasikan def salam(nama = "Tamu"), lalu dipanggil salam(nama: "Budi"). Apa isi nama di dalam method?', [
+            ['Sebuah Hash berisi pasangan nama dan "Budi", karena method tidak mendeklarasikan nama:', true],
+            ['String "Budi", karena Ruby mengenali sintaks nama: saat memanggil method', false],
+            ['String "Tamu", karena argumen berlabel nama: dianggap bukan argumen', false],
+            ['Tidak ada isi: Ruby melempar ArgumentError karena method tidak punya parameter keyword', false],
+          ]),
+          q('Bagaimana mendeklarasikan keyword argument nama yang wajib diisi, tanpa nilai default?', [
+            ['def sapa(nama:)', true],
+            ['def sapa(nama)', false],
+            ['def sapa(:nama)', false],
+            ['def sapa(nama = nil)', false],
+          ]),
+          q('Apa fungsi *args pada def jumlahkan_semua(*args)?', [
+            ['Menampung semua argumen posisional jadi satu array', true],
+            ['Menampung semua keyword argument jadi satu Hash', false],
+            ['Memaksa semua argumen yang dikirim harus berupa angka', false],
+          ]),
+        ],
       },
       {
         title: 'Block & yield',
         slug: 'rubyfz-block-yield',
         content: [
-          'Block adalah potongan kode yang bisa dilewatkan ke sebuah method, ditulis dengan `do...end` (banyak baris) atau `{...}` (satu baris) — ini salah satu ciri khas paling menonjol dari Ruby, dipakai di mana-mana termasuk `each`, `map`, `select`.',
-          'Di dalam method sendiri, kata kunci `yield` memanggil block yang dilewatkan saat method itu dipanggil. Ini memungkinkan kita membuat method kustom yang menerima block sendiri, mirip cara kerja `each` bawaan.',
+          'Block adalah potongan kode yang bisa dilewatkan ke sebuah method, ditulis dengan `do...end` (banyak baris) atau `{...}` (satu baris) — ini salah satu ciri khas paling menonjol dari Ruby, dipakai di mana-mana termasuk `each`, `times`, `map`, `select`.',
+          'Di dalam method sendiri, kata kunci `yield` memanggil block yang dilewatkan saat method itu dipanggil. `yield` juga bisa mengirim nilai ke block: `yield i` mengisi parameter block `|i|`. Ini memungkinkan kita membuat method kustom yang menerima block sendiri, mirip cara kerja `each` bawaan. Contoh di bawah memakai `n.times`, yang mengulang block sebanyak `n` kali dengan `i` mulai dari 0 (lihat lesson Perulangan).',
+          `\`\`\`ruby
+def ulangi(n)
+  n.times do |i|
+    yield i
+  end
+end
+
+ulangi(3) { |i| puts "Putaran ke-#{i}" }   # putaran 0, 1, 2
+\`\`\``,
           '`block_given?` mengecek apakah sebuah block memang dilewatkan saat method dipanggil, supaya `yield` tidak error kalau ternyata tidak ada block yang diberikan.',
         ],
         hasSandbox: true,
@@ -532,11 +799,57 @@ sapa_dengan_block
         title: 'Scope Variabel',
         slug: 'rubyfz-scope-variabel',
         content: [
-          'Scope menentukan di bagian kode mana sebuah variabel bisa diakses. Ruby membedakan scope lewat penamaan awalan variabel: variabel biasa (`nama`) adalah local variable, hanya bisa diakses di scope tempat ia dibuat.',
-          'Instance variable diawali satu tanda `@`, misal `@nama`, dan menempel pada satu object tertentu — dipakai untuk menyimpan data milik object dalam konteks class, bisa diakses dari semua method di dalam object yang sama.',
-          'Global variable diawali `$`, misal `$konfigurasi`, bisa diakses dari mana saja di seluruh program — tapi penggunaannya sangat tidak disarankan karena membuat kode sulit dilacak dan rawan bug.',
-          'Catatan: topik ini abstrak dan lebih jelas dijelaskan lewat konsep dibanding satu potongan skrip sandbox singkat, jadi dipelajari lewat penjelasan dan quiz konsep terlebih dulu sebelum dipraktikkan di materi Class & Object.',
+          'Scope menentukan di bagian kode mana sebuah variabel bisa diakses. Awalan nama variabel menentukan jenisnya: variabel biasa (`nama`) adalah local variable, hanya bisa diakses di scope tempat ia dibuat.',
+          '## Local variable dan def',
+          'Aturan kuncinya: `def` membuka scope baru. Local variable yang dibuat di luar `def` tidak terlihat di dalam method, dan local variable yang dibuat di dalam method hilang begitu method selesai. Mengakses nama yang tidak dikenal menimbulkan `NameError`. Kalau method butuh data dari luar, kirim lewat parameter.',
+          'Kode berikut sengaja error: saat dijalankan, Ruby melempar `NameError` karena `total` tidak dikenal di dalam `def`.',
+          `\`\`\`ruby
+total = 10
+
+def tampilkan
+  puts total   # NameError: total tidak dikenal di sini
+end
+
+tampilkan
+\`\`\``,
+          'Block (`do...end` atau `{...}`) berbeda dari `def`: block bisa melihat local variable dari scope di sekelilingnya, tapi variabel yang baru dibuat di dalam block tidak terlihat di luar block.',
+          'Di contoh sandbox, `defined?(x)` dipakai untuk mengecek apakah `x` dikenal di scope itu: hasilnya kata `local-variable` kalau dikenal, dan `nil` kalau tidak. `.inspect` dipakai supaya `nil` tampil sebagai kata `nil`.',
+          '## Instance variable dan global variable',
+          'Instance variable diawali satu tanda `@`, misal `@nama`, dan menempel pada satu object tertentu — dipakai untuk menyimpan data milik object dalam konteks class, bisa diakses dari semua method di dalam object yang sama. Kamu akan memakainya langsung di lesson Class & Object.',
+          'Global variable diawali `$`, misal `$konfigurasi`, bisa diakses dari mana saja di seluruh program, termasuk di dalam `def` — tapi penggunaannya sangat tidak disarankan karena membuat kode sulit dilacak dan rawan bug: nilainya bisa diubah dari mana saja.',
         ],
+        hasSandbox: true,
+        sandboxStarterCode: `total = 10
+puts "Di luar def, total: #{defined?(total)}"
+
+def tampilkan
+  status = defined?(total)
+  puts "Di dalam def, total: #{status.inspect}"
+end
+tampilkan
+
+def hitung_sendiri
+  total = 99
+  puts "Di dalam def, total milik method: #{total}"
+end
+hitung_sendiri
+puts "total di luar tetap: #{total}"
+
+[1, 2].each do |i|
+  puts "Di dalam block, total terlihat: #{total + i}"
+  dalam_block = i
+end
+status_block = defined?(dalam_block)
+puts "dalam_block di luar block: #{status_block.inspect}"
+
+$hitungan = 0
+def tambah
+  $hitungan += 1
+end
+tambah
+tambah
+puts "Global variable terlihat di mana saja: #{$hitungan}"
+`,
         hasQuiz: true,
         quizQuestions: [
           q('Awalan apa yang menandai instance variable di Ruby?', [
@@ -545,17 +858,27 @@ sapa_dengan_block
             ['_ (underscore)', false],
             ['# (pagar)', false],
           ]),
-          q('Awalan apa yang menandai global variable di Ruby?', [
-            ['$ (dollar)', true],
-            ['@ (at)', false],
-            ['& (ampersand)', false],
-            ['% (persen)', false],
+          q('Bagaimana cara menandai global variable di Ruby?', [
+            ['Diawali tanda $, misal $konfigurasi', true],
+            ['Diawali tanda @, karena instance variable bisa diakses dari semua method', false],
+            ['Tanpa awalan khusus: variabel yang dibuat di luar method otomatis jadi global', false],
+            ['Diawali huruf kapital, misal Konfigurasi, karena nama itu terlihat di mana-mana', false],
           ]),
           q('Kenapa penggunaan global variable sebaiknya dihindari?', [
-            ['Membuat kode sulit dilacak dan rawan bug', true],
-            ['Ruby tidak mendukung global variable', false],
-            ['Global variable selalu menyebabkan error', false],
-            ['Global variable lebih lambat dieksekusi', false],
+            ['Membuat kode sulit dilacak dan rawan bug, karena nilainya bisa diubah dari mana saja', true],
+            ['Global variable tidak bisa diubah nilainya setelah dibuat, jadi kurang berguna', false],
+            ['Global variable otomatis hilang begitu method pertama selesai dijalankan', false],
+            ['Global variable hanya bisa dipakai di dalam class, bukan di program biasa', false],
+          ]),
+          q('Variabel total = 10 dibuat di baris paling atas file. Apa yang terjadi kalau total dipakai di dalam sebuah def?', [
+            ['NameError, karena def membuka scope baru yang tidak melihat local variable di luarnya', true],
+            ['Mencetak 10, karena local variable terlihat di seluruh file sejak dibuat', false],
+            ['Mencetak kosong (nil), karena variabel dari luar otomatis dianggap belum diisi', false],
+          ]),
+          q('Variabel hasil dibuat di dalam block [1, 2].each do |i| hasil = i end. Bisakah hasil dipakai setelah block selesai?', [
+            ['Tidak, variabel yang dibuat di dalam block hanya dikenal di dalam block itu', true],
+            ['Bisa, karena block tidak punya scope sendiri seperti def', false],
+            ['Bisa, tapi nilainya selalu nil karena block sudah selesai', false],
           ]),
         ],
       },
@@ -710,7 +1033,11 @@ const course: CourseDef = {
   slug: 'ruby-from-zero',
   category: { name: 'Programming', slug: 'programming' },
   level: 'pemula',
-  description: '',
+  description: [
+    'Ruby from Zero adalah course pengantar untuk kamu yang belum pernah menulis Ruby. Ruby dirancang supaya enak ditulis dan dibaca, serta menjadi dasar framework web Ruby on Rails, jadi cocok sebagai bahasa pertama maupun batu loncatan ke web development. Pengalaman di bahasa lain membantu tapi tidak wajib.',
+    'Di sini kamu belajar sintaks dasar dan `puts`, variabel dan konstanta, tipe data, symbol, operator, string interpolation, percabangan `if`/`unless` (termasuk aturan truthy dan falsy), perulangan dengan Range, `each`, `times`, dan `while`, array, hash, method dengan default dan keyword argument, block dan `yield`, scope variabel, serta class, object, dan `attr_accessor`, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahaman.',
+    'Sandbox di course ini menjalankan kode dengan Ruby 2.7, tanpa akses jaringan dan tanpa input keyboard, jadi `gets` tidak dipakai. Fitur yang lebih baru dari Ruby 2.7 tidak dipakai di contoh, dan isi Hash tercetak dalam bentuk lama `{:nama=>"Budi"}`, bukan `{nama: "Budi"}` seperti Ruby 3.4+. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
+  ].join('\n\n'),
   sandboxLanguage: 'ruby',
   modules,
 }
