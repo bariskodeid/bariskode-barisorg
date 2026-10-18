@@ -8,7 +8,7 @@ const modules: ModuleDef[] = [
         title: 'Apa itu Go?',
         slug: 'gofz-apa-itu-go',
         content: [
-          'Go (sering disebut Golang) adalah bahasa pemrograman yang dibuat oleh Google, dirancang oleh Robert Griesemer, Rob Pike, dan Ken Thompson, lalu dirilis ke publik pada tahun 2009.',
+          'Go (sering disebut Golang) adalah bahasa pemrograman yang dibuat oleh Google, dirancang oleh Robert Griesemer, Rob Pike, dan Ken Thompson, lalu dirilis ke publik pada tahun 2009 (versi stabil pertamanya, Go 1.0, menyusul pada 2012).',
           'Go bersifat statically typed (tipe data dicek saat compile) dan compiled (kode diubah jadi binary native sebelum dijalankan) — kombinasi ini membuat program Go berjalan sangat cepat, mendekati performa C/C++.',
           'Go terkenal karena sintaksnya yang sengaja dibuat sederhana dan minimalis — sedikit kata kunci, tidak ada fitur rumit seperti inheritance class bertingkat, sehingga mudah dipelajari dan dibaca tim besar.',
           'Ciri khas lain Go adalah dukungan concurrency (proses paralel) bawaan lewat goroutine dan channel, garbage collector otomatis, serta kompilasi super cepat — alasan Go banyak dipakai untuk backend, cloud infrastructure (Docker, Kubernetes ditulis dengan Go), dan CLI tools.',
@@ -23,15 +23,15 @@ const modules: ModuleDef[] = [
           ]),
           q('Tahun berapa Go pertama kali dirilis ke publik?', [
             ['2009', true],
-            ['1991', false],
-            ['1995', false],
+            ['2012', false],
             ['2015', false],
+            ['1995', false],
           ]),
           q('Apa yang membuat program Go berjalan cepat?', [
-            ['Dikompilasi langsung ke binary native', true],
-            ['Selalu dijalankan lewat interpreter', false],
-            ['Butuh virtual machine yang berat', false],
-            ['Hanya bisa jalan di browser', false],
+            ['Dikompilasi langsung menjadi binary native sebelum dijalankan', true],
+            ['Dikompilasi ke bytecode yang dijalankan oleh virtual machine, seperti Java', false],
+            ['Tidak memakai garbage collector, jadi memori dikelola manual seperti C', false],
+            ['Kodenya dibaca baris demi baris oleh interpreter yang sudah dioptimasi', false],
           ]),
           q('Dua konsep yang jadi ciri khas dukungan concurrency Go adalah?', [
             ['Goroutine dan channel', true],
@@ -46,9 +46,19 @@ const modules: ModuleDef[] = [
         slug: 'gofz-struktur-program',
         content: [
           'Setiap program Go dimulai dengan deklarasi `package`. Program yang bisa dieksekusi langsung (bukan library) wajib memakai `package main`, menandakan ini adalah entry point aplikasi.',
-          'Statement `import` dipakai untuk memuat package lain yang dibutuhkan, misalnya `import "fmt"` untuk package bawaan `fmt` yang berisi fungsi cetak ke layar seperti `fmt.Println`.',
+          'Statement `import` dipakai untuk memuat package lain yang dibutuhkan, misalnya `import "fmt"` untuk package bawaan `fmt` yang berisi fungsi cetak ke layar seperti `fmt.Println`. Go ketat soal ini: package yang di-import tapi tidak dipakai di kode adalah compile error (`imported and not used`), bukan sekadar peringatan, jadi hapus import yang tidak dibutuhkan.',
           'Fungsi `func main()` adalah titik masuk (entry point) program — saat program Go dijalankan, Go runtime otomatis memanggil fungsi `main` di dalam `package main`, mirip peran `main()` di C atau Java.',
-          'Blok kode di Go selalu dibungkus kurung kurawal `{}`, dan kurung kurawal pembuka wajib ada di baris yang sama dengan pernyataannya (gaya ini dipaksa oleh `gofmt`, formatter resmi Go).',
+          '## Kurung kurawal dan titik koma',
+          'Blok kode di Go selalu dibungkus kurung kurawal `{}`, dan kurung kurawal pembuka wajib ada di baris yang sama dengan pernyataannya, misalnya `func main() {`. Ini aturan bahasa, bukan sekadar gaya penulisan. Compiler Go memakai titik koma (`;`) untuk mengakhiri statement, tapi lexer menyisipkannya otomatis di akhir setiap baris yang token terakhirnya adalah identifier, literal (angka atau string), kata kunci seperti `return`, `break`, dan `continue`, operator `++` atau `--`, atau salah satu dari `)`, `]`, `}`. Itu sebabnya kamu hampir tidak pernah menulis `;` sendiri.',
+          'Akibatnya, kalau `{` ditaruh di baris baru, titik koma sudah terlanjur disisipkan setelah `func main()` dan compiler menolak kodenya. Contoh berikut sengaja salah dan tidak jalan di sandbox:',
+          `\`\`\`go
+func main()
+{
+	fmt.Println("Halo")
+}
+// syntax error: unexpected semicolon or newline before {
+\`\`\``,
+          '`gofmt`, formatter resmi Go, merapikan format kode yang sudah benar (misalnya indentasi dengan tab), tapi ia bukan penyebab aturan kurung kurawal ini.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `package main
@@ -59,6 +69,27 @@ func main() {
 	fmt.Println("Halo, Go!")
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Kenapa kurung kurawal pembuka { wajib satu baris dengan func main() di Go?', [
+            ['Lexer menyisipkan titik koma otomatis di akhir baris func main(), sehingga { di baris berikutnya jadi syntax error', true],
+            ['gofmt menolak mengompilasi kode yang kurung kurawal pembukanya ada di baris baru', false],
+            ['Fungsi main harus ditulis dalam satu baris supaya dikenali sebagai entry point', false],
+            ['Go memakai indentasi seperti Python sehingga baris baru dianggap blok kode baru', false],
+          ]),
+          q('Apa yang terjadi kalau sebuah package di-import tapi tidak dipakai di kode?', [
+            ['Compile error: imported and not used', true],
+            ['Hanya muncul peringatan, program tetap bisa dijalankan', false],
+            ['Package itu diam-diam diabaikan oleh compiler tanpa pesan apa pun', false],
+            ['Program berjalan, tapi package itu tetap dimuat dan memperlambat startup', false],
+          ]),
+          q('Apakah setiap statement di Go wajib diakhiri titik koma (;) yang ditulis sendiri?', [
+            ['Tidak, lexer menyisipkan titik koma otomatis di akhir baris dalam kondisi tertentu', true],
+            ['Ya, sama seperti C dan Java, tanpa titik koma kodenya tidak bisa dikompilasi', false],
+            ['Hanya wajib pada statement import dan package', false],
+            ['Hanya wajib pada baris terakhir di dalam sebuah fungsi', false],
+          ]),
+        ],
       },
       {
         title: 'Menjalankan Program Go',
@@ -66,7 +97,7 @@ func main() {
         content: [
           'Perintah `go run nama_file.go` langsung mengompilasi lalu menjalankan program dalam satu langkah — paling praktis dipakai saat development karena hasilnya langsung terlihat tanpa file binary tersisa.',
           'Perintah `go build nama_file.go` hanya mengompilasi kode jadi file binary executable (mis. `nama_file` atau `nama_file.exe` di Windows) tanpa langsung menjalankannya — binary ini bisa didistribusikan dan dijalankan di komputer lain tanpa perlu Go terinstal.',
-          'Karena Go adalah compiled language, error sintaks atau tipe data akan terdeteksi saat proses compile, sebelum program sempat dijalankan — berbeda dengan bahasa interpreted seperti Python yang baru mendeteksi error saat baris itu dieksekusi.',
+          'Karena Go adalah compiled language, error sintaks atau tipe data akan terdeteksi saat proses compile, sebelum program sempat dijalankan — berbeda dengan bahasa seperti Python, yang tidak memeriksa tipe data sebelum program jalan sehingga salah tipe baru ketahuan saat baris itu dieksekusi.',
           'Package bawaan `runtime` menyediakan fungsi seperti `runtime.Version()` untuk mengecek versi Go yang sedang dipakai — berguna untuk memastikan kompatibilitas kode dengan versi Go tertentu.',
         ],
         hasSandbox: true,
@@ -116,7 +147,23 @@ func main() {
           'Variabel di Go dideklarasikan dengan kata kunci `var`, diikuti nama variabel dan tipe datanya, contoh: `var umur int`. Go bersifat statically typed — tipe data harus jelas dan tidak berubah selama program berjalan.',
           'Tipe data dasar yang paling sering dipakai: `int` (bilangan bulat), `float64` (bilangan desimal presisi ganda), `string` (teks), dan `bool` (nilai benar/salah, `true`/`false`).',
           'Variabel yang dideklarasikan dengan `var` tapi belum diberi nilai otomatis mendapat zero value sesuai tipenya — `int` menjadi `0`, `float64` menjadi `0`, `string` menjadi string kosong `""`, dan `bool` menjadi `false`.',
-          'Deklarasi variabel juga bisa langsung diisi nilai dalam satu baris: `var nama string = "Budi"` — Go bahkan bisa menebak tipe datanya otomatis dari nilai yang diberikan.',
+          'Deklarasi variabel juga bisa langsung diisi nilai dalam satu baris: `var nama string = "Budi"` — Go bahkan bisa menebak tipe datanya otomatis dari nilai yang diberikan (dibahas di lesson berikutnya).',
+          '## Variabel yang tidak dipakai',
+          'Go menolak mengompilasi program yang punya variabel lokal (dideklarasikan di dalam fungsi) tapi tidak pernah dipakai. Pesannya `declared and not used`, dan ini compile error, bukan peringatan. Solusinya: pakai variabelnya atau hapus deklarasinya. Contoh berikut sengaja salah dan tidak jalan di sandbox:',
+          `\`\`\`go
+func main() {
+	var umur int = 20
+	// compile error: umur declared and not used
+}
+\`\`\``,
+          '## Mencetak dengan Printf',
+          '`fmt.Println` mencetak nilai apa adanya, dipisah spasi, lalu pindah baris. Untuk format yang lebih terkontrol, pakai `fmt.Printf`: string pertamanya berisi format verb yang diganti oleh argumen berikutnya sesuai urutan. `Printf` tidak menambah baris baru sendiri, jadi tulis `\\n` di akhir string. Format verb yang paling sering dipakai:',
+          '- `%v` nilai dengan format default (cocok untuk tipe apa pun)\n- `%d` bilangan bulat\n- `%s` string\n- `%f` bilangan desimal; `%.2f` membatasi jadi 2 angka di belakang koma\n- `%t` bool (`true`/`false`)\n- `%T` tipe data dari nilainya',
+          `\`\`\`go
+var umur int = 20
+fmt.Printf("%s berumur %d tahun\\n", "Budi", umur)
+fmt.Printf("Tipe umur: %T\\n", umur)
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `package main
@@ -130,6 +177,16 @@ func main() {
 	var sudahLulus bool = true
 
 	fmt.Println(nama, umur, tinggiBadan, sudahLulus)
+
+	// Printf: format verb diganti argumen sesuai urutan, \\n = baris baru
+	fmt.Printf("%s berumur %d tahun\\n", nama, umur)
+	fmt.Printf("Tinggi: %.1f cm, lulus: %t\\n", tinggiBadan, sudahLulus)
+	fmt.Printf("Tipe umur: %T, tipe tinggiBadan: %T\\n", umur, tinggiBadan)
+
+	// Zero value: variabel var tanpa nilai awal
+	var kosongInt int
+	var kosongString string
+	fmt.Printf("Zero value int: %d, string: '%s'\\n", kosongInt, kosongString)
 }
 `,
         hasQuiz: true,
@@ -152,20 +209,70 @@ func main() {
             ['nil', false],
             ['0', false],
           ]),
+          q('Apa yang terjadi kalau variabel lokal dideklarasikan di dalam fungsi tapi tidak pernah dipakai?', [
+            ['Compile error: declared and not used', true],
+            ['Hanya muncul peringatan, program tetap bisa dijalankan', false],
+            ['Variabel itu diam-diam dihapus compiler tanpa pesan apa pun', false],
+            ['Variabel diisi zero value dan program berjalan seperti biasa', false],
+          ]),
+          q('Apa yang tercetak oleh dua baris: fmt.Printf("Halo") lalu fmt.Printf("Dunia")?', [
+            ['HaloDunia dalam satu baris, karena Printf tidak menambah baris baru sendiri', true],
+            ['Halo dan Dunia di dua baris terpisah, seperti Println', false],
+            ['Compile error, karena Printf wajib punya minimal satu format verb', false],
+            ['Hanya Dunia, karena Printf kedua menimpa hasil yang pertama', false],
+          ]),
+          q('Format verb mana yang mencetak float64 dengan tepat 2 angka di belakang koma?', [
+            ['%.2f', true],
+            ['%2f', false],
+            ['%d.2', false],
+            ['%.2d', false],
+          ]),
         ],
       },
       {
         title: 'Konstanta & Type Inference',
         slug: 'gofz-konstanta-type-inference',
         content: [
-          'Konstanta dideklarasikan dengan kata kunci `const`, nilainya tidak bisa diubah setelah didefinisikan — cocok untuk nilai tetap seperti nama aplikasi atau nilai matematis yang tidak boleh berubah selama program berjalan.',
-          'Operator `:=` (short variable declaration) memungkinkan deklarasi sekaligus inisialisasi variabel tanpa menulis kata kunci `var` dan tanpa menyebut tipe data secara eksplisit — Go akan menebak (infer) tipe data dari nilai di sisi kanan.',
-          'Type inference dengan `:=` hanya bisa dipakai di dalam fungsi, bukan di level package — dan hanya untuk deklarasi variabel baru, bukan untuk mengubah nilai variabel yang sudah ada (pakai `=` biasa untuk itu).',
+          'Konstanta dideklarasikan dengan kata kunci `const`, nilainya tidak bisa diubah setelah didefinisikan (mencoba mengubahnya adalah compile error) — cocok untuk nilai tetap seperti nama aplikasi atau nilai matematis yang tidak boleh berubah selama program berjalan.',
+          'Operator `:=` (short variable declaration) memungkinkan deklarasi sekaligus inisialisasi variabel tanpa menulis kata kunci `var` dan tanpa menyebut tipe data secara eksplisit — Go akan menebak (infer) tipe data dari nilai di sisi kanan. Tipe hasil tebakan itu bisa dilihat dengan format verb `%T`, misalnya `fmt.Printf("%T", 30.5)` mencetak `float64`.',
+          'Type inference dengan `:=` hanya bisa dipakai di dalam fungsi, bukan di level package (di sana pakai `var` atau `const`).',
+          '## := dan variabel yang sudah ada',
+          '`:=` tidak harus mendeklarasikan semua variabel di sisi kirinya sebagai variabel baru. Aturannya: minimal satu variabel di kiri harus baru (bukan `_`). Variabel lain yang sudah dideklarasikan di blok yang sama tidak dibuat ulang, hanya diberi nilai baru dengan tipe yang tetap. Inilah yang membuat pola `hasil, err := ...` bisa dipakai berulang kali dengan variabel `err` yang sama. Kalau semua variabel di kiri sudah ada, `:=` adalah compile error (`no new variables on left side of :=`) dan kamu harus memakai `=` biasa.',
+          `\`\`\`go
+x, y := 1, 2
+y, z := 3, 4 // y sudah ada: hanya diberi nilai baru; z variabel baru
+fmt.Println(x, y, z) // 1 3 4
+\`\`\``,
+          '## Konstanta typed dan untyped',
+          'Konstanta tanpa tipe eksplisit (`const bebas = 10`) adalah untyped constant: ia hanya "angka 10" yang menyesuaikan diri dengan tempat pemakaiannya, sehingga bisa dipakai sebagai `int` maupun `float64`. Konstanta yang tipenya ditulis (`const kaku int = 10`) adalah typed constant dan perilakunya kaku seperti variabel bertipe `int`: tidak bisa langsung dipakai sebagai `float64`. Kalau untyped constant dipakai di `:=` tanpa konteks lain, ia memakai default type: `int` untuk bilangan bulat, `float64` untuk bilangan desimal.',
+          `\`\`\`go
+const bebas = 10
+const kaku int = 10
+
+var desimal float64 = bebas // boleh: bebas menyesuaikan diri jadi float64
+// var salah float64 = kaku // compile error: kaku bertipe int
+fmt.Println(desimal, kaku)
+\`\`\``,
+          '## iota',
+          'Di dalam blok `const ( ... )`, `iota` adalah penghitung yang dimulai dari 0 dan naik 1 untuk setiap baris konstanta di blok itu. Baris tanpa ekspresi mengulang ekspresi baris sebelumnya, jadi `iota` cocok untuk membuat deretan konstanta bernomor (mirip enum di bahasa lain). Di setiap blok `const` baru, `iota` mulai lagi dari 0.',
+          `\`\`\`go
+const (
+	Senin  = iota // 0
+	Selasa        // 1
+	Rabu          // 2
+)
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `package main
 
 import "fmt"
+
+const (
+	Senin = iota
+	Selasa
+	Rabu
+)
 
 func main() {
 	const namaAplikasi = "BarisORG"
@@ -176,16 +283,72 @@ func main() {
 
 	fmt.Println(namaAplikasi, versi)
 	fmt.Println(kota, suhu)
+
+	// %T menampilkan tipe hasil type inference
+	fmt.Printf("kota: %T, suhu: %T, versi: %T\\n", kota, suhu, versi)
+
+	// := dengan satu variabel baru: y hanya diberi nilai baru, z variabel baru
+	x, y := 1, 2
+	y, z := 3, 4
+	fmt.Println(x, y, z)
+
+	// Konstanta tanpa tipe (untyped) menyesuaikan diri dengan konteks pemakaiannya
+	const bebas = 10
+	var desimal float64 = bebas
+	fmt.Println(desimal)
+
+	// iota: penghitung otomatis untuk deretan konstanta
+	fmt.Println(Senin, Selasa, Rabu)
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang terjadi pada y, z := 3, 4 kalau y sudah dideklarasikan sebelumnya di blok yang sama dan z belum?', [
+            ['Valid: z dibuat baru, sedangkan y hanya diberi nilai baru', true],
+            ['Compile error, karena := tidak boleh menyentuh variabel yang sudah ada', false],
+            ['Valid, tapi y dibuat ulang sebagai variabel baru yang menutupi y yang lama', false],
+            ['Compile error, karena semua variabel di kiri := harus belum pernah dideklarasikan', false],
+          ]),
+          q('Berapa nilai Rabu pada const ( Senin = iota; Selasa; Rabu )?', [
+            ['2', true],
+            ['3', false],
+            ['0', false],
+            ['Compile error, karena Selasa dan Rabu tidak punya ekspresi sendiri', false],
+          ]),
+          q('Apa beda const x = 10 dengan const y int = 10?', [
+            ['x tanpa tipe sehingga bisa dipakai sebagai int atau float64, y bertipe int dan tidak bisa langsung dipakai sebagai float64', true],
+            ['x nilainya boleh diubah nanti, sedangkan y tidak boleh diubah', false],
+            ['x otomatis bertipe float64 karena tidak ada tipe yang ditulis', false],
+            ['Keduanya identik, menulis tipe pada y hanya berfungsi sebagai komentar', false],
+          ]),
+          q('Di mana operator := boleh dipakai?', [
+            ['Hanya di dalam fungsi', true],
+            ['Di mana saja, termasuk di level package', false],
+            ['Hanya di dalam fungsi main', false],
+            ['Hanya untuk mendeklarasikan konstanta', false],
+          ]),
+        ],
       },
       {
         title: 'Operator',
         slug: 'gofz-operator',
         content: [
-          'Operator aritmatika Go: `+` tambah, `-` kurang, `*` kali, `/` bagi (hasil integer dibulatkan ke bawah kalau kedua operand integer), `%` sisa bagi (modulo) — hanya berlaku untuk tipe integer.',
+          'Operator aritmatika Go: `+` tambah, `-` kurang, `*` kali, `/` bagi, `%` sisa bagi (modulo) — `%` hanya berlaku untuk tipe integer.',
+          '## Pembagian integer',
+          'Kalau kedua operand adalah integer, `/` menghasilkan integer: bagian pecahannya dibuang (truncated toward zero, yaitu dibulatkan ke arah nol, bukan ke bawah). Jadi `10 / 3` adalah `3`, dan `-7 / 2` adalah `-3`, bukan `-4`. Sisa bagi `%` mengikuti tanda bilangan yang dibagi, jadi `-7 % 2` adalah `-1`. Untuk hasil desimal, ubah operandnya jadi `float64` dulu dengan konversi tipe, yaitu menulis nama tipe seperti fungsi: `float64(a) / float64(b)`. Go tidak pernah mengubah tipe angka secara implisit, jadi `int` dan `float64` tidak bisa dicampur langsung dalam satu ekspresi.',
+          `\`\`\`go
+a, b := 10, 3
+n := -7
+fmt.Println(a / b)                   // 3
+fmt.Println(n / 2)                   // -3 (bukan -4)
+fmt.Println(n % 2)                   // -1
+fmt.Println(float64(a) / float64(b)) // 3.3333333333333335
+\`\`\``,
+          '## Perbandingan dan logika',
           'Operator perbandingan: `==` sama dengan, `!=` tidak sama, `>`, `<`, `>=`, `<=` — semuanya menghasilkan nilai bertipe `bool`.',
           'Operator logika di Go ditulis dengan simbol, bukan kata: `&&` (dan), `||` (atau), `!` (negasi) — mirip C/JavaScript, berbeda dari Python yang memakai kata `and`/`or`/`not`.',
+          '## Assignment dan increment',
+          '`x += 5` setara dengan `x = x + 5` (begitu juga `-=`, `*=`, `/=`, `%=`). `x++` dan `x--` menambah atau mengurangi `x` dengan 1, tapi di Go keduanya adalah statement, bukan ekspresi: tidak bisa ditulis `y = x++`, dan tidak ada bentuk `++x`.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `package main
@@ -200,68 +363,47 @@ func main() {
 	fmt.Println("Pembagian:", a/b)
 	fmt.Println("Sisa bagi:", a%b)
 
+	// Pembagian integer membuang pecahan ke arah nol (truncate toward zero)
+	n := -7
+	fmt.Println("-7 / 2 =", n/2)
+	fmt.Println("-7 % 2 =", n%2)
+
+	// Untuk hasil desimal, ubah operand jadi float64 dulu
+	fmt.Println("10 / 3 desimal:", float64(a)/float64(b))
+
 	fmt.Println("Perbandingan a > b:", a > b)
 	fmt.Println("Logika a > b && b > 0:", a > b && b > 0)
-}
-`,
-      },
-      {
-        title: 'Multiple Return Value',
-        slug: 'gofz-multiple-return-value',
-        content: [
-          'Salah satu ciri khas Go yang jarang ditemukan di bahasa lain: sebuah fungsi bisa mengembalikan lebih dari satu nilai sekaligus, ditulis dengan tipe return dalam kurung, contoh: `func bagi(a, b int) (int, error)`.',
-          'Pola ini paling sering dipakai untuk penanganan error — fungsi mengembalikan `(hasil, error)`, pemanggil wajib mengecek apakah `error` bernilai `nil` (tidak ada error) sebelum memakai hasilnya. Ini menggantikan mekanisme exception try/catch di bahasa lain.',
-          'Tipe bawaan `error` merepresentasikan kondisi gagal; nilai error baru bisa dibuat dengan `errors.New("pesan error")` dari package `errors`.',
-          'Kalau salah satu nilai return tidak dibutuhkan, Go menyediakan blank identifier `_` untuk mengabaikannya, misal `_, err := bagi(10, 0)`.',
-        ],
-        hasSandbox: true,
-        sandboxStarterCode: `package main
 
-import (
-	"errors"
-	"fmt"
-)
-
-func bagi(a, b int) (int, error) {
-	if b == 0 {
-		return 0, errors.New("tidak bisa membagi dengan nol")
-	}
-	return a / b, nil
-}
-
-func main() {
-	hasil, err := bagi(10, 2)
-	if err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		fmt.Println("Hasil bagi:", hasil)
-	}
-
-	_, err = bagi(10, 0)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	// Operator assignment dan increment
+	a += 5
+	a++
+	fmt.Println("Setelah += 5 dan ++:", a)
 }
 `,
         hasQuiz: true,
         quizQuestions: [
-          q('Pola idiomatik Go untuk fungsi yang mungkin gagal adalah mengembalikan?', [
-            ['(value, error)', true],
-            ['Melempar exception seperti Java', false],
-            ['try/catch block', false],
-            ['null saja tanpa keterangan', false],
+          q('Berapa hasil -7 / 2 di Go kalau kedua operand adalah integer?', [
+            ['-3, pecahan dibuang ke arah nol', true],
+            ['-4, dibulatkan ke bawah', false],
+            ['-3.5, hasilnya otomatis desimal', false],
+            ['Compile error, integer tidak boleh dibagi bilangan negatif', false],
           ]),
-          q('Berapa banyak nilai yang bisa dikembalikan oleh satu fungsi Go?', [
-            ['Bisa lebih dari satu', true],
-            ['Hanya satu', false],
-            ['Maksimal dua, tidak lebih', false],
-            ['Tidak bisa mengembalikan nilai sama sekali', false],
+          q('Berapa hasil -7 % 2 di Go?', [
+            ['-1, tanda sisa bagi mengikuti bilangan yang dibagi', true],
+            ['1, tanda sisa bagi mengikuti pembagi seperti di Python', false],
+            ['0, karena -7 tidak habis dibagi 2 sehingga sisanya dibuang', false],
+            ['-3, sisa bagi sama dengan hasil pembagian', false],
           ]),
-          q('Tipe bawaan Go untuk merepresentasikan kondisi error adalah?', [
-            ['error', true],
-            ['exception', false],
-            ['Err', false],
-            ['Error (class)', false],
+          q('Bagaimana mendapat hasil desimal dari a / b kalau a dan b bertipe int?', [
+            ['float64(a) / float64(b)', true],
+            ['Cukup tulis a / b, hasilnya otomatis desimal kalau tidak habis dibagi', false],
+            ['a / float64(b), cukup satu operand yang diubah dan sisanya otomatis menyesuaikan', false],
+          ]),
+          q('Apa yang benar tentang x++ di Go?', [
+            ['Statement yang menambah x dengan 1; tidak bisa dipakai di dalam ekspresi seperti y = x++', true],
+            ['Ekspresi yang mengembalikan nilai x sebelum ditambah, seperti di C', false],
+            ['Tidak ada di Go, penambahan harus selalu ditulis x = x + 1', false],
+            ['Boleh ditulis ++x untuk menambah x sebelum nilainya dipakai', false],
           ]),
         ],
       },
@@ -276,7 +418,23 @@ func main() {
         content: [
           'Percabangan `if` di Go tidak memerlukan tanda kurung `()` di sekitar kondisinya (berbeda dari C/Java), tapi kurung kurawal `{}` untuk blok kode tetap wajib. Contoh: `if nilai >= 60 { ... }`.',
           '`else if` dan `else` bekerja seperti bahasa lain — mengecek kondisi tambahan atau menjalankan blok default kalau semua kondisi di atasnya `false`.',
-          '`switch` di Go tanpa argumen (`switch { ... }`) berfungsi seperti rangkaian `if/else if` yang lebih rapi, tiap `case` dievaluasi sebagai kondisi boolean. Berbeda dari C, `case` di Go otomatis berhenti setelah satu case cocok (tidak butuh `break` manual, tidak fallthrough secara default).',
+          '## switch dengan tag',
+          '`switch` dengan tag (`switch nilaiTag { ... }`) membandingkan nilai tag dengan tiap `case` dari atas ke bawah dan menjalankan `case` pertama yang sama. Satu `case` boleh memuat beberapa nilai yang dipisah koma; artinya "salah satu dari nilai ini".',
+          `\`\`\`go
+hari := "sabtu"
+switch hari {
+case "sabtu", "minggu":
+	fmt.Println("Akhir pekan")
+case "senin":
+	fmt.Println("Awal minggu")
+default:
+	fmt.Println("Hari kerja")
+}
+\`\`\``,
+          '## switch tanpa tag',
+          '`switch` tanpa argumen (`switch { ... }`) berfungsi seperti rangkaian `if/else if` yang lebih rapi, tiap `case` dievaluasi sebagai kondisi boolean.',
+          '## Perilaku case dan default',
+          'Berbeda dari C, `case` di Go otomatis berhenti setelah satu case cocok dan selesai dijalankan: tidak butuh `break` manual, dan tidak lanjut ke case berikutnya secara default. Kalau memang ingin lanjut, tulis `fallthrough` sebagai statement terakhir di sebuah `case` — kontrol pindah ke case berikutnya tanpa mengecek kondisinya, dan ini jarang dipakai.',
           '`default` dipakai sebagai blok yang dijalankan kalau tidak ada `case` yang cocok, mirip `else` pada `if`.',
         ],
         hasSandbox: true,
@@ -295,6 +453,7 @@ func main() {
 		fmt.Println("Grade C atau lebih rendah")
 	}
 
+	// switch tanpa tag: tiap case adalah kondisi boolean
 	switch {
 	case nilai >= 90:
 		fmt.Println("Switch: A")
@@ -302,6 +461,17 @@ func main() {
 		fmt.Println("Switch: B")
 	default:
 		fmt.Println("Switch: C atau lebih rendah")
+	}
+
+	// switch dengan tag: satu case boleh memuat beberapa nilai
+	hari := "sabtu"
+	switch hari {
+	case "sabtu", "minggu":
+		fmt.Println("Akhir pekan")
+	case "senin":
+		fmt.Println("Awal minggu")
+	default:
+		fmt.Println("Hari kerja")
 	}
 }
 `,
@@ -313,17 +483,22 @@ func main() {
             ['Hanya wajib untuk switch', false],
             ['Hanya wajib untuk for', false],
           ]),
-          q('Perilaku default case pada switch Go dibanding C adalah?', [
-            ['Otomatis berhenti setelah satu case cocok, tidak fallthrough', true],
-            ['Selalu fallthrough ke case berikutnya', false],
-            ['Harus pakai break manual di tiap case', false],
-            ['Error kalau tidak menulis fallthrough', false],
+          q('Pada switch di Go, apa yang terjadi setelah blok sebuah case yang cocok selesai dijalankan?', [
+            ['Program langsung keluar dari switch tanpa perlu break', true],
+            ['Program lanjut menjalankan case berikutnya sampai bertemu break', false],
+            ['Compile error kalau case tidak diakhiri break atau fallthrough', false],
+            ['Program lanjut mengecek case berikutnya dan menjalankannya juga kalau cocok', false],
           ]),
           q('Kata kunci untuk blok default pada switch di Go adalah?', [
             ['default', true],
             ['else', false],
             ['otherwise', false],
             ['fallback', false],
+          ]),
+          q('Apa arti case "sabtu", "minggu": pada switch hari { ... }?', [
+            ['Blok dijalankan kalau hari sama dengan "sabtu" atau "minggu"', true],
+            ['Blok dijalankan hanya kalau hari sama dengan "sabtu" dan "minggu" sekaligus', false],
+            ['Compile error, satu case hanya boleh memuat satu nilai', false],
           ]),
         ],
       },
@@ -451,6 +626,7 @@ func main() {
           'Fungsi di Go didefinisikan dengan kata kunci `func`, diikuti nama fungsi, daftar parameter dalam kurung (nama lalu tipe, contoh `a int`), dan tipe nilai balik (kalau ada) sebelum blok kode.',
           'Kalau beberapa parameter berturut-turut punya tipe yang sama, tipenya cukup ditulis sekali di akhir, contoh `func tambah(a, b int) int` — sama saja dengan `func tambah(a int, b int) int`.',
           'Fungsi tanpa nilai balik tidak menuliskan tipe return sama sekali setelah kurung parameter, contoh `func sapa(nama string) { ... }`, dan tidak memerlukan statement `return` untuk keluar dari fungsi (kecuali ingin berhenti lebih awal).',
+          'Fungsi di Go juga bisa mengembalikan lebih dari satu nilai sekaligus — dibahas di lesson berikutnya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `package main
@@ -490,6 +666,67 @@ func main() {
             ['Nama fungsi', false],
             ['Daftar parameter', false],
             ['Kurung kurawal pembuka', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Multiple Return Value',
+        slug: 'gofz-multiple-return-value',
+        content: [
+          'Salah satu ciri khas Go yang jarang ditemukan di bahasa lain: sebuah fungsi bisa mengembalikan lebih dari satu nilai sekaligus, ditulis dengan tipe return dalam kurung, contoh: `func bagi(a, b int) (int, error)`.',
+          'Pola ini paling sering dipakai untuk penanganan error — fungsi mengembalikan `(hasil, error)` dengan `error` sebagai nilai return terakhir (ini konvensi Go), pemanggil wajib mengecek apakah `error` bernilai `nil` (tidak ada error) sebelum memakai hasilnya. Error yang memang diharapkan terjadi (input salah, pembagian dengan nol) dikembalikan sebagai nilai biasa seperti ini, bukan dilempar sebagai exception dan ditangkap dengan try/catch.',
+          'Tipe bawaan `error` merepresentasikan kondisi gagal; nilai error baru bisa dibuat dengan `errors.New("pesan error")` dari package `errors`.',
+          '## Menampung dan mengabaikan nilai return',
+          'Semua nilai return harus ditampung: `hasil := bagi(10, 2)` adalah compile error (`assignment mismatch: 1 variable but bagi returns 2 values`). Kalau salah satu nilai return tidak dibutuhkan, Go menyediakan blank identifier `_` untuk mengabaikannya, misal `_, err := bagi(10, 0)`. Kalau `err` sudah dideklarasikan sebelumnya, tulis `_, err = bagi(10, 0)` dengan `=` biasa, karena `:=` butuh minimal satu variabel baru di kirinya.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+func bagi(a, b int) (int, error) {
+	if b == 0 {
+		return 0, errors.New("tidak bisa membagi dengan nol")
+	}
+	return a / b, nil
+}
+
+func main() {
+	hasil, err := bagi(10, 2)
+	if err != nil {
+		fmt.Println("Error:", err)
+	} else {
+		fmt.Println("Hasil bagi:", hasil)
+	}
+
+	_, err = bagi(10, 0)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Pola idiomatik Go untuk fungsi yang mungkin gagal adalah mengembalikan?', [
+            ['(value, error), dengan error sebagai nilai terakhir', true],
+            ['Satu nilai saja, dengan -1 atau nil sebagai penanda gagal', false],
+            ['(error, value), dengan error ditulis lebih dulu sebagai nilai pertama', false],
+            ['Hasil biasa, lalu panggil panic kalau gagal dan tangkap dengan try/catch', false],
+          ]),
+          q('Apa yang terjadi pada hasil := bagi(10, 2) kalau bagi mengembalikan (int, error)?', [
+            ['Compile error: assignment mismatch, 1 variable tapi fungsi mengembalikan 2 nilai', true],
+            ['Valid: hasil menampung nilai pertama dan nilai error dibuang otomatis', false],
+            ['Valid: hasil menjadi tuple yang berisi kedua nilai sekaligus', false],
+            ['Valid saat compile, tapi program panic saat runtime kalau error tidak nil', false],
+          ]),
+          q('Tipe bawaan Go untuk merepresentasikan kondisi error adalah?', [
+            ['error', true],
+            ['exception', false],
+            ['Err', false],
+            ['Error (class)', false],
           ]),
         ],
       },
@@ -549,6 +786,12 @@ func main() {
           'Go tidak punya class, tapi bisa "melekatkan" fungsi ke sebuah struct lewat receiver — fungsi seperti ini disebut method. Contoh: `func (s Siswa) Perkenalan() { ... }`, `s` di sini adalah receiver bertipe `Siswa`.',
           'Receiver ditulis dalam kurung khusus di antara kata kunci `func` dan nama method, berbeda dari parameter fungsi biasa. Di dalam method, receiver (`s`) dipakai untuk mengakses field milik struct tersebut, contoh `s.Nama`.',
           'Method dipanggil dengan notasi titik pada instance struct, contoh `siswa1.Perkenalan()` — sama seperti memanggil method object di bahasa OOP lain, walau di balik layar mekanismenya berbeda (bukan class).',
+          '## Value receiver dan pointer receiver',
+          'Receiver bisa berupa nilai (`func (s Siswa) ...`) atau pointer (`func (s *Siswa) ...`; tanda `*` berarti "pointer ke `Siswa`", dibahas lengkap di lesson Pointer). Value receiver bekerja pada salinan struct, jadi mengubah field di dalam method tidak mengubah struct aslinya. Pointer receiver bekerja pada struct aslinya, jadi method itu bisa mengubah field. Pakai pointer receiver kalau method perlu mengubah struct. Cara memanggilnya tetap sama (`siswa1.UlangTahun()`): Go otomatis memakai alamat `siswa1` kalau method-nya butuh pointer.',
+          `\`\`\`go
+func (s Siswa) UlangTahunSalah() { s.Umur++ } // mengubah salinan, struct asli tetap
+func (s *Siswa) UlangTahun()     { s.Umur++ } // mengubah struct asli
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `package main
@@ -560,15 +803,53 @@ type Siswa struct {
 	Umur int
 }
 
+// Value receiver: s adalah salinan dari struct pemanggil
 func (s Siswa) Perkenalan() {
 	fmt.Println("Halo, saya", s.Nama, "umur", s.Umur, "tahun")
+}
+
+// Value receiver yang mengubah field: hanya salinan yang berubah
+func (s Siswa) UlangTahunSalah() {
+	s.Umur++
+}
+
+// Pointer receiver: s menunjuk ke struct asli
+func (s *Siswa) UlangTahun() {
+	s.Umur++
 }
 
 func main() {
 	siswa1 := Siswa{Nama: "Siti", Umur: 22}
 	siswa1.Perkenalan()
+
+	siswa1.UlangTahunSalah()
+	fmt.Println("Setelah UlangTahunSalah:", siswa1.Umur)
+
+	siswa1.UlangTahun()
+	fmt.Println("Setelah UlangTahun:", siswa1.Umur)
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa perbedaan value receiver (s Siswa) dengan pointer receiver (s *Siswa)?', [
+            ['Value receiver mengubah salinan struct, pointer receiver mengubah struct aslinya', true],
+            ['Pointer receiver hanya boleh membaca field, value receiver boleh mengubah aslinya', false],
+            ['Method dengan pointer receiver tidak bisa dipanggil lewat notasi titik', false],
+            ['Keduanya sama persis, bedanya hanya gaya penulisan', false],
+          ]),
+          q('Umur siswa1 awalnya 22. Berapa siswa1.Umur setelah siswa1.UlangTahunSalah() dengan value receiver dan isi s.Umur++?', [
+            ['22, karena yang berubah hanya salinan', true],
+            ['23, karena ++ selalu mengubah struct asli', false],
+            ['0, karena salinan dibuat dengan nilai awal kosong', false],
+            ['Compile error, field tidak boleh diubah di value receiver', false],
+          ]),
+          q('Di mana receiver ditulis pada deklarasi method?', [
+            ['Dalam kurung di antara kata kunci func dan nama method', true],
+            ['Dalam kurung setelah nama method bersama parameter lainnya', false],
+            ['Di dalam blok type struct, bersama field-nya', false],
+            ['Setelah tipe return, sebelum kurung kurawal pembuka', false],
+          ]),
+        ],
       },
       {
         title: 'Pointer di Go',
@@ -578,6 +859,14 @@ func main() {
           'Tipe pointer ditulis dengan awalan bintang, contoh `*Siswa` berarti "pointer ke Siswa". Operator `*` di depan variabel pointer dipakai untuk dereference — mengakses nilai asli yang ditunjuk pointer tersebut.',
           'Kegunaan utama pointer: mengizinkan fungsi memodifikasi nilai asli variabel milik pemanggil, bukan cuma salinannya. Tanpa pointer, Go selalu mengoper nilai secara copy (pass by value) ke dalam fungsi.',
           'Pada method dan fungsi, receiver/parameter bertipe pointer (`*Siswa`) membuat perubahan field di dalam fungsi ikut mengubah struct aslinya di luar fungsi.',
+          '## Akses field lewat pointer',
+          'Kalau `s` bertipe `*Siswa`, kamu tidak perlu menulis `(*s).Umur`: untuk akses field, Go otomatis men-dereference pointer, jadi `s.Umur` sama dengan `(*s).Umur`. Itu sebabnya `s.Umur++` di dalam fungsi `tambahUmur(s *Siswa)` mengubah `Umur` milik struct asli. Pointer yang belum menunjuk ke apa pun bernilai `nil`, dan mengakses field lewat pointer `nil` membuat program panic.',
+          `\`\`\`go
+siswa1 := Siswa{Nama: "Budi", Umur: 20}
+p := &siswa1                        // p bertipe *Siswa
+p.Umur = 21                         // sama dengan (*p).Umur = 21
+fmt.Println((*p).Umur, siswa1.Umur) // 21 21
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `package main
@@ -589,18 +878,50 @@ type Siswa struct {
 	Umur int
 }
 
+func tambahUmurSalinan(s Siswa) {
+	s.Umur++ // mengubah salinan
+}
+
 func tambahUmur(s *Siswa) {
-	s.Umur++
+	s.Umur++ // otomatis sama dengan (*s).Umur++
 }
 
 func main() {
 	siswa1 := Siswa{Nama: "Budi", Umur: 20}
 	fmt.Println("Sebelum:", siswa1.Umur)
 
+	tambahUmurSalinan(siswa1)
+	fmt.Println("Setelah tambahUmurSalinan:", siswa1.Umur)
+
 	tambahUmur(&siswa1)
-	fmt.Println("Sesudah:", siswa1.Umur)
+	fmt.Println("Setelah tambahUmur:", siswa1.Umur)
+
+	p := &siswa1
+	p.Umur = 30
+	fmt.Println("Lewat pointer:", (*p).Umur, siswa1.Umur)
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa fungsi operator & pada &siswa1?', [
+            ['Mengambil alamat memori siswa1 sehingga menghasilkan pointer *Siswa', true],
+            ['Membuat salinan baru dari siswa1', false],
+            ['Mengakses nilai asli yang ditunjuk pointer (dereference)', false],
+            ['Menggabungkan siswa1 dengan struct lain seperti operator dan (AND)', false],
+          ]),
+          q('Kenapa s.Umur++ di fungsi tambahUmur(s *Siswa) bisa mengubah struct asli tanpa menulis (*s).Umur++?', [
+            ['Go otomatis men-dereference pointer pada akses field, jadi s.Umur sama dengan (*s).Umur', true],
+            ['Semua parameter fungsi di Go dioper by reference secara default', false],
+            ['Operator ++ selalu bekerja pada variabel asli di luar fungsi', false],
+            ['Field yang namanya diawali huruf kapital selalu diakses lewat pointer', false],
+          ]),
+          q('Apa yang terjadi kalau struct dioper ke fungsi tanpa pointer, lalu fungsi mengubah field-nya?', [
+            ['Hanya salinan yang berubah, struct asli milik pemanggil tetap sama', true],
+            ['Struct asli ikut berubah, karena struct selalu dioper by reference', false],
+            ['Compile error, field struct tidak boleh diubah di dalam fungsi', false],
+            ['Struct asli berubah, tapi hanya kalau fungsi juga mengembalikan nilainya', false],
+          ]),
+        ],
       },
     ],
   },
@@ -613,9 +934,53 @@ func main() {
         content: [
           'Goroutine adalah unit eksekusi ringan di Go yang berjalan secara konkuren (concurrent) — dijalankan cukup dengan menambahkan kata kunci `go` sebelum pemanggilan fungsi, contoh `go sapa()`.',
           'Berbeda dari thread OS biasa yang berat (butuh memori awal cukup besar, dikelola langsung oleh sistem operasi), goroutine dikelola oleh Go runtime sendiri (scheduler-nya Go) dan memori awalnya sangat kecil — sebuah program Go bisa menjalankan ribuan bahkan jutaan goroutine sekaligus tanpa membebani sistem.',
-          'Karena goroutine berjalan konkuren, program utama (`main`) tidak otomatis menunggu goroutine selesai — kalau `main` selesai duluan, semua goroutine yang masih berjalan langsung dihentikan paksa. Sinkronisasi (menunggu goroutine selesai) biasanya dilakukan lewat channel atau `sync.WaitGroup`, dibahas di pelajaran berikutnya.',
+          'Karena goroutine berjalan konkuren, program utama (`main`) tidak otomatis menunggu goroutine selesai — kalau `main` selesai duluan, semua goroutine yang masih berjalan langsung dihentikan paksa. Cara yang benar untuk menunggu goroutine selesai adalah sinkronisasi lewat channel, yang dibahas di lesson Channel Dasar.',
+          '## Contoh yang bisa dijalankan',
+          'Contoh berikut menjalankan `hitung` sebagai goroutine. Karena belum punya cara sinkronisasi yang benar, `main` ditunda dengan `time.Sleep(100 * time.Millisecond)` (menjeda selama 100 milidetik) supaya goroutine sempat selesai. Ini trik kasar hanya untuk demo: menebak lama waktu tunggu tidak aman di program sungguhan. Coba hapus baris `Sleep` lalu jalankan lagi; goroutine kemungkinan besar tidak sempat mencetak apa-apa karena `main` keburu selesai, tapi hasilnya tidak dijamin.',
+          `\`\`\`go
+func hitung(label string) {
+	for i := 1; i <= 3; i++ {
+		fmt.Println(label, i)
+	}
+}
+
+func main() {
+	go hitung("goroutine")
+	time.Sleep(100 * time.Millisecond) // beri waktu supaya goroutine selesai
+	fmt.Println("main selesai")
+}
+\`\`\``,
+          'Fungsi anonim juga bisa dijalankan sebagai goroutine: `go func() { ... }()` — tanda kurung `()` di akhir langsung memanggil fungsi itu.',
           'Konsep ini yang membuat Go sangat cocok untuk membangun server yang melayani ribuan koneksi sekaligus, seperti web server atau microservice, tanpa kompleksitas thread management manual.',
         ],
+        hasSandbox: true,
+        sandboxStarterCode: `package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func hitung(label string) {
+	for i := 1; i <= 3; i++ {
+		fmt.Println(label, i)
+	}
+}
+
+func main() {
+	go hitung("goroutine")
+	time.Sleep(100 * time.Millisecond) // trik kasar: beri waktu supaya goroutine selesai
+	fmt.Println("Goroutine pertama selesai")
+
+	// Fungsi anonim juga bisa jadi goroutine: tanda () di akhir memanggilnya
+	go func() {
+		fmt.Println("Halo dari fungsi anonim")
+	}()
+	time.Sleep(100 * time.Millisecond)
+
+	fmt.Println("main selesai")
+}
+`,
         hasQuiz: true,
         quizQuestions: [
           q('Kata kunci apa untuk menjalankan sebuah fungsi sebagai goroutine baru?', [
@@ -624,17 +989,23 @@ func main() {
             ['thread', false],
             ['spawn', false],
           ]),
-          q('Goroutine dikelola langsung oleh apa, bukan oleh OS?', [
-            ['Go runtime (scheduler bawaan Go)', true],
-            ['Kernel Linux secara langsung', false],
-            ['Browser', false],
-            ['Database', false],
+          q('Siapa yang menjadwalkan goroutine untuk berjalan?', [
+            ['Scheduler milik Go runtime, yang membagi banyak goroutine ke sejumlah thread OS', true],
+            ['Sistem operasi, yang membuat satu thread OS baru untuk setiap goroutine', false],
+            ['Garbage collector, yang menjalankan goroutine saat memori hampir penuh', false],
+            ['Compiler, yang menentukan urutan eksekusi goroutine saat program dikompilasi', false],
           ]),
           q('Kenapa goroutine disebut jauh lebih ringan dibanding thread OS biasa?', [
-            ['Memori awalnya sangat kecil dan dikelola efisien oleh runtime Go', true],
-            ['Goroutine sebenarnya identik dengan thread OS', false],
-            ['Goroutine hanya berjalan di GPU', false],
-            ['Goroutine tidak benar-benar berjalan konkuren', false],
+            ['Memori awalnya sangat kecil dan penjadwalannya diurus runtime Go, bukan OS', true],
+            ['Setiap goroutine otomatis berjalan di inti CPU-nya sendiri sehingga tidak ada beban', false],
+            ['Goroutine tidak punya stack sendiri dan memakai stack milik fungsi main', false],
+            ['Goroutine dijalankan satu per satu secara berurutan, bukan secara konkuren', false],
+          ]),
+          q('Apa yang terjadi kalau main selesai sementara sebuah goroutine masih berjalan?', [
+            ['Program berakhir dan goroutine itu ikut dihentikan paksa', true],
+            ['Program menunggu semua goroutine selesai dulu sebelum keluar', false],
+            ['Goroutine tetap berjalan di background setelah program keluar', false],
+            ['Go runtime melempar error karena masih ada goroutine yang belum selesai', false],
           ]),
         ],
       },
@@ -764,7 +1135,11 @@ const course: CourseDef = {
   slug: 'go-from-zero',
   category: { name: 'Programming', slug: 'programming' },
   level: 'pemula',
-  description: '',
+  description: [
+    'Go from Zero adalah course pengantar untuk kamu yang belum pernah menulis Go. Go dikenal sederhana, cepat, dan punya dukungan concurrency bawaan, sehingga banyak dipakai untuk backend, cloud infrastructure, dan CLI tools. Course ini memperkenalkan Go dari nol, jadi pengalaman programming di bahasa lain membantu tapi tidak wajib.',
+    'Di sini kamu belajar struktur program dan perintah `go run`/`go build`, variabel, konstanta, type inference dengan `:=`, operator, mencetak dengan `Printf`, percabangan `if` dan `switch`, perulangan `for`, slice, array, dan map, fungsi dengan multiple return value untuk error handling, struct dengan method, pointer, serta goroutine dan channel, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Sandbox di course ini menjalankan kode dengan Go 1.13, tanpa akses jaringan dan tanpa input keyboard. Kode dikompilasi sebagai satu file `package main`, jadi package di luar library standar tidak bisa dicoba di sana, dan fitur yang lebih baru dari Go 1.13 (misalnya generics) tidak dipakai. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
+  ].join('\n\n'),
   sandboxLanguage: 'go',
   modules,
 }
