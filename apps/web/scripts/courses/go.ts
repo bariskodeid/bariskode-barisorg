@@ -539,7 +539,7 @@ func main() {
           'Array di Go punya ukuran tetap yang ditentukan sejak dideklarasikan, contoh: `var arr [3]string` selalu berukuran 3 elemen, tidak bisa bertambah atau berkurang.',
           'Slice adalah struktur data yang lebih fleksibel dan jauh lebih sering dipakai di Go dibanding array — slice dibangun di atas array tapi ukurannya dinamis, ditulis dengan `[]tipe{...}` tanpa angka ukuran, contoh: `buah := []string{"apel", "jeruk"}`.',
           'Fungsi bawaan `append()` menambah elemen baru ke slice, mengembalikan slice baru (kadang dengan array pendasar yang berbeda kalau kapasitas lama sudah penuh). Fungsi bawaan `len()` mengembalikan jumlah elemen, berlaku untuk array maupun slice.',
-          'Akses elemen array maupun slice memakai index berbasis 0 seperti kebanyakan bahasa lain, contoh `buah[0]` mengambil elemen pertama.',
+          'Akses elemen array maupun slice memakai index berbasis 0 seperti kebanyakan bahasa lain, contoh `buah[0]` mengambil elemen pertama. Cara memotong slice, membuatnya dengan `make`, dan mengulang isinya dengan `range` dibahas di lesson berikutnya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `package main
@@ -582,6 +582,114 @@ func main() {
         ],
       },
       {
+        title: 'Slice: Potong, make, dan range',
+        slug: 'gofz-slice-make-range',
+        content: [
+          'Selain mengambil satu elemen, kamu bisa mengambil sebagian slice dengan `s[a:b]`: hasilnya slice baru berisi elemen dari index `a` sampai sebelum `b` (batas bawah ikut, batas atas tidak). `a` boleh dihilangkan (artinya 0) dan `b` boleh dihilangkan (artinya `len(s)`), jadi `s[:2]` dan `s[3:]` sah. Hati-hati: potongan itu bukan salinan. Ia berbagi array pendasar dengan slice asalnya, jadi mengubah elemen lewat potongan juga mengubah slice asal.',
+          `\`\`\`go
+angka := []int{10, 20, 30, 40, 50}
+tengah := angka[1:4]
+awal := angka[:2]
+akhir := angka[3:]
+fmt.Println(tengah, awal, akhir) // [20 30 40] [10 20] [40 50]
+
+tengah[0] = 99
+fmt.Println(angka, awal) // [10 99 30 40 50] [10 99]
+\`\`\``,
+          'Slice juga bisa dibuat dengan `make([]tipe, panjang)`, yang mengisi `panjang` elemen dengan zero value, atau `make([]tipe, panjang, kapasitas)`. `len(s)` adalah jumlah elemen yang ada sekarang, sedangkan `cap(s)` (kapasitas) adalah jumlah elemen yang muat di array pendasar sebelum Go harus mengalokasikan array yang lebih besar. Index hanya boleh sampai `len(s)-1`, bukan `cap(s)-1`: mengakses di luar `len` membuat program panic `index out of range`. `append` tidak mengubah slice di tempat, jadi hasilnya harus ditampung dengan `s = append(s, x)`. Menulis `append(s, x)` saja tanpa menampung hasilnya adalah compile error (`evaluated but not used`).',
+          `\`\`\`go
+kosong := make([]int, 3)  // [0 0 0], len 3, cap 3
+siap := make([]int, 0, 5) // [], len 0, cap 5
+siap = append(siap, 1, 2) // [1 2], len 2, cap 5
+fmt.Println(kosong, len(kosong), cap(kosong)) // [0 0 0] 3 3
+fmt.Println(siap, len(siap), cap(siap))       // [1 2] 2 5
+\`\`\``,
+          'Untuk mengulang seluruh isi slice, pakai `for i, v := range s`: `i` adalah index dan `v` adalah salinan nilai elemen pada index itu, jadi mengubah `v` tidak mengubah slice. Untuk mengubah elemen, tulis lewat index (`s[i] = ...`). Kalau salah satunya tidak dibutuhkan, ganti dengan blank identifier `_` (variabel yang tidak dipakai adalah compile error): `for _, v := range s` kalau hanya butuh nilai, `for i := range s` kalau hanya butuh index. `range` juga bisa dipakai pada map, dibahas di lesson Map berikutnya.',
+          `\`\`\`go
+harga := []int{1000, 2500, 4000}
+
+for i, h := range harga {
+	harga[i] = h + 500 // ubah lewat index
+}
+
+total := 0
+for _, h := range harga {
+	total += h
+}
+fmt.Println(harga, total) // [1500 3000 4500] 9000
+\`\`\``,
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `package main
+
+import "fmt"
+
+func main() {
+	angka := []int{10, 20, 30, 40, 50}
+
+	// s[a:b]: dari index a sampai sebelum b (batas atas tidak ikut)
+	tengah := angka[1:4]
+	awal := angka[:2]
+	akhir := angka[3:]
+	fmt.Println("tengah:", tengah, "awal:", awal, "akhir:", akhir)
+
+	// Potongan berbagi array pendasar dengan slice asal
+	tengah[0] = 99
+	fmt.Println("Setelah tengah[0] = 99:", angka, awal)
+
+	// make: panjang dan kapasitas
+	kosong := make([]int, 3)
+	siap := make([]int, 0, 5)
+	siap = append(siap, 1, 2)
+	fmt.Println("kosong:", kosong, "len", len(kosong), "cap", cap(kosong))
+	fmt.Println("siap:", siap, "len", len(siap), "cap", cap(siap))
+
+	// range: index dan salinan nilai
+	for i, v := range akhir {
+		fmt.Println("akhir index", i, "nilai", v)
+	}
+
+	// v hanya salinan, jadi v = v * 2 tidak mengubah angka
+	for _, v := range angka {
+		v = v * 2
+	}
+	fmt.Println("Setelah v = v * 2:", angka)
+
+	// Untuk mengubah elemen, tulis lewat index
+	for i := range angka {
+		angka[i] = angka[i] * 2
+	}
+	fmt.Println("Setelah angka[i] = angka[i] * 2:", angka)
+
+	total := 0
+	for _, v := range angka {
+		total += v
+	}
+	fmt.Println("Total:", total)
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Setelah s := []int{10, 20, 30, 40}, t := s[1:3], dan t[0] = 99, apa isi s?', [
+            ['[10 99 30 40], karena t berbagi array pendasar dengan s', true],
+            ['[10 20 30 40], karena s[1:3] membuat salinan baru', false],
+            ['[99 20 30 40], karena t[0] selalu menunjuk elemen pertama s', false],
+            ['Compile error, karena potongan slice bersifat read-only', false],
+          ]),
+          q('Berapa len dan cap dari make([]int, 0, 5)?', [
+            ['len 0 dan cap 5', true],
+            ['len 5 dan cap 5, karena slice langsung diisi lima angka nol', false],
+            ['len 0 dan cap 0, kapasitas baru ada setelah append pertama', false],
+          ]),
+          q('Pada for i, v := range s, apa isi v?', [
+            ['Salinan nilai elemen pada index i, sehingga mengubah v tidak mengubah s', true],
+            ['Referensi ke elemen asli, sehingga v = v * 2 ikut mengubah s', false],
+            ['Index elemen berikutnya, sedangkan i berisi nilai elemennya', false],
+            ['Jumlah elemen s (len(s)), nilainya sama di setiap iterasi', false],
+          ]),
+        ],
+      },
+      {
         title: 'Map',
         slug: 'gofz-map',
         content: [
@@ -617,7 +725,7 @@ func main() {
     ],
   },
   {
-    title: 'Fungsi & Struct',
+    title: 'Fungsi, Struct & Interface',
     lessons: [
       {
         title: 'Fungsi & Parameter',
@@ -852,6 +960,106 @@ func main() {
         ],
       },
       {
+        title: 'Interface',
+        slug: 'gofz-interface',
+        content: [
+          'Interface adalah tipe yang mendefinisikan sekumpulan method. Sebuah tipe memenuhi (implement) interface secara otomatis kalau ia punya semua method yang disebut interface itu: tidak ada kata kunci `implements`, cukup definisikan method-nya. Contoh interface `Bentuk` yang meminta dua method, beserta satu tipe yang memenuhinya:',
+          `\`\`\`go
+type Bentuk interface {
+	Luas() float64
+	Nama() string
+}
+
+type Persegi struct {
+	Sisi float64
+}
+
+func (p Persegi) Luas() float64 { return p.Sisi * p.Sisi }
+func (p Persegi) Nama() string  { return "Persegi" }
+\`\`\``,
+          'Karena `Persegi` punya `Luas()` dan `Nama()`, ia otomatis memenuhi `Bentuk`. Begitu juga tipe lain mana pun yang punya dua method itu, dan semuanya bisa dipakai di tempat yang meminta `Bentuk`: sebagai parameter fungsi atau sebagai elemen `[]Bentuk`. Fungsi yang menerima `Bentuk` tidak perlu tahu tipe konkretnya, cukup tahu method yang tersedia. Potongan berikut melanjutkan contoh di atas dan memakai `PersegiPanjang`, tipe lain dengan method `Luas()` dan `Nama()` yang sama (kode lengkapnya ada di sandbox):',
+          `\`\`\`go
+func cetakInfo(b Bentuk) {
+	fmt.Printf("%s dengan luas %.2f\\n", b.Nama(), b.Luas())
+}
+
+daftar := []Bentuk{
+	Persegi{Sisi: 4},
+	PersegiPanjang{Panjang: 5, Lebar: 3},
+}
+for _, b := range daftar {
+	cetakInfo(b)
+}
+\`\`\``,
+          'Pengecekannya terjadi saat compile: kalau sebuah tipe kekurangan method, memakainya sebagai `Bentuk` adalah compile error yang menyebut `missing method`. Catatan penting: kalau method didefinisikan dengan pointer receiver (`func (p *Persegi) Luas()`), hanya pointer-nya (`&Persegi{...}`), bukan nilai `Persegi{...}`, yang memenuhi interface; pointer dibahas di lesson berikutnya. Interface tanpa method, `interface{}`, dipenuhi oleh semua tipe; itu sebabnya `fmt.Println` bisa menerima nilai apa pun.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `package main
+
+import "fmt"
+
+// Interface: kumpulan method yang harus dimiliki sebuah tipe
+type Bentuk interface {
+	Luas() float64
+	Nama() string
+}
+
+type Persegi struct {
+	Sisi float64
+}
+
+func (p Persegi) Luas() float64 { return p.Sisi * p.Sisi }
+func (p Persegi) Nama() string  { return "Persegi" }
+
+type PersegiPanjang struct {
+	Panjang float64
+	Lebar   float64
+}
+
+func (pp PersegiPanjang) Luas() float64 { return pp.Panjang * pp.Lebar }
+func (pp PersegiPanjang) Nama() string  { return "Persegi panjang" }
+
+// Menerima tipe apa pun yang punya method Luas dan Nama
+func cetakInfo(b Bentuk) {
+	fmt.Printf("%s dengan luas %.2f\\n", b.Nama(), b.Luas())
+}
+
+func main() {
+	daftar := []Bentuk{
+		Persegi{Sisi: 4},
+		PersegiPanjang{Panjang: 5, Lebar: 3},
+	}
+
+	total := 0.0
+	for _, b := range daftar {
+		cetakInfo(b)
+		total += b.Luas()
+	}
+	fmt.Printf("Total luas: %.2f\\n", total)
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Bagaimana sebuah tipe di Go menyatakan bahwa ia memenuhi sebuah interface?', [
+            ['Cukup memiliki semua method yang diminta interface itu, tanpa kata kunci khusus', true],
+            ['Dengan menulis type Persegi implements Bentuk saat mendeklarasikan tipenya', false],
+            ['Dengan menaruh nama interface sebagai field pertama di dalam struct', false],
+          ]),
+          q('Apa yang terjadi kalau tipe Segitiga hanya punya method Luas(), lalu dipakai sebagai Bentuk yang meminta Luas() dan Nama()?', [
+            ['Compile error: Segitiga tidak memenuhi Bentuk karena method Nama hilang', true],
+            ['Valid, method yang kurang otomatis berisi zero value', false],
+            ['Valid saat compile, tapi program panic ketika Nama() dipanggil', false],
+            ['Valid, karena Go hanya mengecek method pertama di interface', false],
+          ]),
+          q('Kenapa []Bentuk boleh berisi Persegi dan PersegiPanjang sekaligus, padahal keduanya struct berbeda?', [
+            ['Keduanya punya method yang diminta Bentuk, jadi sama-sama bisa dipakai sebagai Bentuk', true],
+            ['Slice di Go boleh berisi campuran tipe apa pun tanpa batasan', false],
+            ['Persegi diwariskan dari PersegiPanjang, jadi keduanya satu keluarga', false],
+            ['Go otomatis menggabungkan kedua struct menjadi satu tipe baru', false],
+          ]),
+        ],
+      },
+      {
         title: 'Pointer di Go',
         slug: 'gofz-pointer-di-go',
         content: [
@@ -934,9 +1142,9 @@ func main() {
         content: [
           'Goroutine adalah unit eksekusi ringan di Go yang berjalan secara konkuren (concurrent) — dijalankan cukup dengan menambahkan kata kunci `go` sebelum pemanggilan fungsi, contoh `go sapa()`.',
           'Berbeda dari thread OS biasa yang berat (butuh memori awal cukup besar, dikelola langsung oleh sistem operasi), goroutine dikelola oleh Go runtime sendiri (scheduler-nya Go) dan memori awalnya sangat kecil — sebuah program Go bisa menjalankan ribuan bahkan jutaan goroutine sekaligus tanpa membebani sistem.',
-          'Karena goroutine berjalan konkuren, program utama (`main`) tidak otomatis menunggu goroutine selesai — kalau `main` selesai duluan, semua goroutine yang masih berjalan langsung dihentikan paksa. Cara yang benar untuk menunggu goroutine selesai adalah sinkronisasi lewat channel, yang dibahas di lesson Channel Dasar.',
+          'Karena goroutine berjalan konkuren, program utama (`main`) tidak otomatis menunggu goroutine selesai — kalau `main` selesai duluan, semua goroutine yang masih berjalan langsung dihentikan paksa. Cara yang benar untuk menunggu goroutine selesai adalah sinkronisasi, lewat `sync.WaitGroup` (lesson berikutnya) atau channel (lesson Channel Dasar).',
           '## Contoh yang bisa dijalankan',
-          'Contoh berikut menjalankan `hitung` sebagai goroutine. Karena belum punya cara sinkronisasi yang benar, `main` ditunda dengan `time.Sleep(100 * time.Millisecond)` (menjeda selama 100 milidetik) supaya goroutine sempat selesai. Ini trik kasar hanya untuk demo: menebak lama waktu tunggu tidak aman di program sungguhan. Coba hapus baris `Sleep` lalu jalankan lagi; goroutine kemungkinan besar tidak sempat mencetak apa-apa karena `main` keburu selesai, tapi hasilnya tidak dijamin.',
+          'Contoh berikut menjalankan `hitung` sebagai goroutine. Karena belum punya cara sinkronisasi yang benar (dibahas di lesson berikutnya), `main` ditunda dengan `time.Sleep(100 * time.Millisecond)` (menjeda selama 100 milidetik) supaya goroutine sempat selesai. Ini trik kasar hanya untuk demo: menebak lama waktu tunggu tidak aman di program sungguhan. Coba hapus baris `Sleep` lalu jalankan lagi; goroutine kemungkinan besar tidak sempat mencetak apa-apa karena `main` keburu selesai, tapi hasilnya tidak dijamin.',
           `\`\`\`go
 func hitung(label string) {
 	for i := 1; i <= 3; i++ {
@@ -1010,6 +1218,100 @@ func main() {
         ],
       },
       {
+        title: 'Menunggu Goroutine dengan WaitGroup',
+        slug: 'gofz-waitgroup',
+        content: [
+          'Di lesson sebelumnya `main` harus menebak lama waktu tunggu dengan `time.Sleep`, dan itu tidak andal. `sync.WaitGroup` dari package `sync` adalah cara yang benar untuk menunggu sekelompok goroutine selesai. Ia bekerja seperti penghitung: `wg.Add(n)` menambah penghitung sebanyak `n` goroutine yang akan ditunggu, `wg.Done()` dipanggil tiap goroutine saat selesai untuk mengurangi penghitung 1, dan `wg.Wait()` memblokir sampai penghitung kembali ke 0.',
+          `\`\`\`go
+var wg sync.WaitGroup
+for i := 1; i <= 3; i++ {
+	wg.Add(1) // sebelum goroutine dijalankan
+	go func(n int) {
+		defer wg.Done() // dijalankan saat fungsi ini selesai
+		fmt.Println("pekerja", n, "selesai")
+	}(i)
+}
+wg.Wait() // tunggu semua Done()
+fmt.Println("semua pekerja selesai")
+\`\`\``,
+          '`defer wg.Done()` artinya `wg.Done()` dijalankan tepat sebelum fungsi itu selesai, lewat jalur mana pun fungsinya keluar, jadi `Done` tidak terlewat. Nilai `i` dioper sebagai argumen `(i)` supaya tiap goroutine punya salinannya sendiri: di Go 1.13 (versi sandbox) variabel loop dipakai bersama oleh semua iterasi, sehingga goroutine yang membaca `i` langsung bisa melihat nilai yang sudah berubah (Go 1.22 mengubah ini, tapi mengoper argumen aman di semua versi). Satu hal lagi: urutan baris "pekerja ... selesai" bisa berbeda setiap program dijalankan, karena goroutine berjalan bersamaan dan tidak ada jaminan siapa yang selesai lebih dulu. Hanya baris terakhir yang pasti muncul belakangan, karena `Wait` menunggu semuanya.',
+          'Kalau kamu butuh hasil dengan urutan yang pasti, jangan cetak dari dalam goroutine. Biarkan tiap goroutine menulis hasilnya ke index miliknya sendiri di sebuah slice, lalu cetak setelah `Wait()`. Ini aman karena tiap goroutine menyentuh elemen yang berbeda, dan `Wait()` menjamin semua penulisan sudah selesai sebelum slice dibaca. `WaitGroup` dioper ke fungsi sebagai pointer (`*sync.WaitGroup`), seperti pada contoh berikut yang juga ada di sandbox:',
+          `\`\`\`go
+func kerja(id int, hasil []int, wg *sync.WaitGroup) {
+	defer wg.Done()
+	hasil[id] = (id + 1) * (id + 1) // tiap goroutine menulis ke index sendiri
+}
+
+func main() {
+	var wg sync.WaitGroup
+	hasil := make([]int, 3)
+	for i := 0; i < 3; i++ {
+		wg.Add(1)
+		go kerja(i, hasil, &wg)
+	}
+	wg.Wait()
+	fmt.Println(hasil) // [1 4 9], urutannya selalu sama
+}
+\`\`\``,
+          'Tiga kesalahan umum: (1) memanggil `wg.Add(1)` di dalam goroutine, padahal `Wait()` bisa jalan lebih dulu dan menganggap tidak ada yang perlu ditunggu, jadi `Add` harus dipanggil sebelum `go`; (2) lupa memanggil `Done()`, yang membuat `Wait()` menunggu selamanya dan Go melaporkan `fatal error: all goroutines are asleep - deadlock!`; (3) mengoper `WaitGroup` ke fungsi sebagai nilai, yang menyalinnya sehingga `Done()` hanya mengurangi penghitung salinan dan `Wait()` di pemanggil tidak pernah selesai. Pakai pointer (`&wg`).',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+// Tiap goroutine menulis hasilnya ke index miliknya sendiri,
+// jadi tidak ada dua goroutine yang menyentuh elemen yang sama.
+func hitungKuadrat(id int, hasil []int, wg *sync.WaitGroup) {
+	defer wg.Done() // kurangi penghitung saat fungsi ini selesai
+	hasil[id] = (id + 1) * (id + 1)
+}
+
+func main() {
+	var wg sync.WaitGroup
+	hasil := make([]int, 5)
+
+	for i := 0; i < 5; i++ {
+		wg.Add(1) // tambah penghitung SEBELUM goroutine dijalankan
+		go hitungKuadrat(i, hasil, &wg)
+	}
+
+	wg.Wait() // blok sampai penghitung kembali ke 0
+
+	// Dicetak setelah Wait, jadi urutannya selalu sama.
+	// (Kalau dicetak dari dalam goroutine, urutannya bisa berbeda tiap run.)
+	for i, h := range hasil {
+		fmt.Println("kuadrat", i+1, "=", h)
+	}
+	fmt.Println("Semua goroutine selesai")
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang dilakukan wg.Wait()?', [
+            ['Memblokir sampai penghitung WaitGroup kembali ke 0', true],
+            ['Menjeda program selama beberapa milidetik, seperti time.Sleep', false],
+            ['Menunggu goroutine pertama yang selesai, lalu program lanjut', false],
+            ['Menghentikan semua goroutine yang masih berjalan', false],
+          ]),
+          q('Apa yang terjadi kalau satu goroutine lupa memanggil wg.Done()?', [
+            ['wg.Wait() tidak pernah selesai, dan program macet (deadlock)', true],
+            ['wg.Wait() tetap selesai setelah batas waktu bawaan beberapa detik', false],
+            ['wg.Wait() langsung selesai, karena ia hanya menghitung goroutine yang sudah dimulai', false],
+            ['Compile error, karena Go mengecek bahwa setiap goroutine memanggil Done()', false],
+          ]),
+          q('Kapan wg.Add(1) sebaiknya dipanggil?', [
+            ['Di kode yang membuat goroutine (mis. di dalam loop), sebelum perintah go dijalankan', true],
+            ['Di baris pertama di dalam goroutine itu sendiri', false],
+            ['Setelah wg.Wait(), supaya penghitungnya sudah siap dipakai', false],
+            ['Tidak perlu, Wait() menghitung goroutine yang berjalan secara otomatis', false],
+          ]),
+        ],
+      },
+      {
         title: 'Channel Dasar',
         slug: 'gofz-channel-dasar',
         content: [
@@ -1060,7 +1362,7 @@ func main() {
         title: 'Ringkasan & Studi Kasus Gabungan',
         slug: 'gofz-ringkasan-studi-kasus',
         content: [
-          'Sepanjang course ini kita sudah belajar struktur dasar program Go, variabel & tipe data, operator, kontrol alur (if/switch/for), struktur data (slice, array, map), fungsi, struct beserta method dan pointer, hingga dasar concurrency lewat goroutine dan channel.',
+          'Sepanjang course ini kita sudah belajar struktur dasar program Go, variabel & tipe data, operator, kontrol alur (if/switch/for), struktur data (slice beserta `make` dan `range`, array, map), fungsi, struct beserta method, interface, dan pointer, hingga dasar concurrency lewat goroutine, `sync.WaitGroup`, dan channel.',
           'Studi kasus berikut menggabungkan beberapa konsep sekaligus: struct untuk merepresentasikan data siswa, slice untuk menampung banyak siswa, method untuk logika terkait satu siswa, dan fungsi biasa untuk menghitung agregat dari seluruh data.',
           'Fondasi yang sudah dipelajari di course ini cukup untuk mulai membangun program Go yang lebih kompleks — misalnya REST API sederhana, CLI tool, atau layanan backend yang memanfaatkan concurrency Go untuk menangani banyak request sekaligus.',
         ],
@@ -1137,7 +1439,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'Go from Zero adalah course pengantar untuk kamu yang belum pernah menulis Go. Go dikenal sederhana, cepat, dan punya dukungan concurrency bawaan, sehingga banyak dipakai untuk backend, cloud infrastructure, dan CLI tools. Course ini memperkenalkan Go dari nol, jadi pengalaman programming di bahasa lain membantu tapi tidak wajib.',
-    'Di sini kamu belajar struktur program dan perintah `go run`/`go build`, variabel, konstanta, type inference dengan `:=`, operator, mencetak dengan `Printf`, percabangan `if` dan `switch`, perulangan `for`, slice, array, dan map, fungsi dengan multiple return value untuk error handling, struct dengan method, pointer, serta goroutine dan channel, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Di sini kamu belajar struktur program dan perintah `go run`/`go build`, variabel, konstanta, type inference dengan `:=`, operator, mencetak dengan `Printf`, percabangan `if` dan `switch`, perulangan `for`, array, slice (potong, `make`, `append`, `range`), dan map, fungsi dengan multiple return value untuk error handling, struct dengan method, interface, pointer, serta goroutine, `sync.WaitGroup`, dan channel, ditutup dengan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
     'Sandbox di course ini menjalankan kode dengan Go 1.13, tanpa akses jaringan dan tanpa input keyboard. Kode dikompilasi sebagai satu file `package main`, jadi package di luar library standar tidak bisa dicoba di sana, dan fitur yang lebih baru dari Go 1.13 (misalnya generics) tidak dipakai. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
   ].join('\n\n'),
   sandboxLanguage: 'go',
