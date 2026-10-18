@@ -10,7 +10,7 @@ const modules: ModuleDef[] = [
         content: [
           'Java adalah bahasa pemrograman tingkat tinggi yang dibuat oleh James Gosling di Sun Microsystems, pertama dirilis tahun 1995. Java dirancang dengan filosofi "write once, run anywhere" (WORA) — kode yang ditulis sekali bisa dijalankan di platform apa pun tanpa perlu ditulis ulang.',
           'Kunci dari WORA adalah Java Virtual Machine (JVM). Kode Java tidak dikompilasi langsung menjadi kode mesin spesifik satu sistem operasi, melainkan menjadi bytecode — format perantara yang bisa dijalankan oleh JVM di Windows, Linux, maupun macOS selama JVM yang sesuai terpasang.',
-          'Java bersifat statically typed (tipe data variabel harus dideklarasikan eksplisit dan dicek saat compile) dan strongly object-oriented — hampir semua kode Java ditulis di dalam class.',
+          'Java bersifat statically typed: setiap variabel punya tipe yang sudah pasti dan dicek compiler sebelum program dijalankan. Tipe itu biasanya ditulis eksplisit di depan nama variabel (`int umur = 20;`), dan sejak Java 10 boleh juga ditulis `var` supaya compiler menyimpulkan tipenya dari nilai awal. Java juga strongly object-oriented — hampir semua kode Java ditulis di dalam class.',
           'Java banyak dipakai untuk aplikasi enterprise, backend server, aplikasi Android, hingga sistem skala besar, ditopang ekosistem library yang matang lewat build tool seperti Maven atau Gradle.',
         ],
         hasQuiz: true,
@@ -27,17 +27,17 @@ const modules: ModuleDef[] = [
             ['Java hanya bisa berjalan di satu sistem operasi', false],
             ['Java tidak butuh proses kompilasi sama sekali', false],
           ]),
-          q('Java bersifat tipe data apa?', [
-            ['Statically typed', true],
-            ['Dynamically typed sepenuhnya seperti Python', false],
-            ['Tidak memiliki tipe data', false],
-            ['Tipe data ditentukan acak oleh JVM', false],
+          q('Apa arti Java bersifat statically typed?', [
+            ['Tipe setiap variabel sudah pasti dan dicek compiler sebelum program dijalankan', true],
+            ['Tipe variabel baru ditentukan saat program berjalan, mengikuti nilai terakhir yang disimpan', false],
+            ['Setiap variabel wajib ditulis tipenya secara manual, compiler tidak pernah menyimpulkan tipe', false],
+            ['Variabel hanya boleh menyimpan tipe primitif seperti int dan boolean, bukan object', false],
           ]),
-          q('Komponen apa yang membuat kode Java bisa jalan di berbagai platform?', [
-            ['JVM (Java Virtual Machine)', true],
-            ['Browser web', false],
-            ['Sistem operasi Windows saja', false],
-            ['Compiler C++', false],
+          q('Komponen apa yang membuat bytecode Java bisa dijalankan di Windows, Linux, maupun macOS tanpa ditulis ulang?', [
+            ['JVM yang terpasang di tiap sistem operasi, yang menjalankan bytecode yang sama', true],
+            ['Compiler javac, yang membuat kode mesin terpisah untuk tiap sistem operasi dari satu file .java', false],
+            ['Bytecode itu sendiri, karena file .class sudah menyertakan salinan JVM untuk tiap sistem operasi', false],
+            ['Sistem operasi, yang membaca file .java langsung tanpa perantara', false],
           ]),
         ],
       },
@@ -45,7 +45,8 @@ const modules: ModuleDef[] = [
         title: 'Struktur Program Java',
         slug: 'javafz-struktur-program',
         content: [
-          'Setiap program Java minimal punya satu class, dan file `.java` biasanya dinamai sama persis dengan nama class publik di dalamnya (huruf besar/kecil termasuk), misal class `Main` disimpan di file `Main.java`.',
+          'Setiap program Java minimal punya satu class. Kalau sebuah class dideklarasikan `public` di level paling luar (top-level), nama file `.java`-nya wajib sama persis dengan nama class itu (huruf besar/kecil termasuk): class `public Main` harus disimpan di `Main.java`, kalau tidak `javac` menolaknya dengan error `class Main is public, should be declared in a file named Main.java`. Class yang tidak `public` boleh ada di file dengan nama berbeda, dan satu file boleh berisi beberapa class selama paling banyak satu yang `public`.',
+          'Di sandbox ini kode disimpan sebagai `Main.java` dan dijalankan lewat class `Main`, jadi class publik yang berisi method `main` harus bernama `Main`.',
           'Titik masuk (entry point) program Java adalah method `public static void main(String[] args)` — JVM mencari method ini persis untuk mulai menjalankan program. Tanda kurung siku `[]` menandakan `args` adalah array of String, menampung argumen command line.',
           'Kata kunci `public` berarti method/class bisa diakses dari luar, `static` berarti method milik class itu sendiri (bukan milik object/instance tertentu), dan `void` berarti method itu tidak mengembalikan nilai apa pun.',
           'Untuk mencetak output ke layar, dipakai `System.out.println(...)` (mencetak lalu pindah baris baru) atau `System.out.print(...)` (mencetak tanpa pindah baris).',
@@ -84,16 +85,16 @@ const modules: ModuleDef[] = [
             ['.obj', false],
           ]),
           q('Kenapa Java memakai bytecode, bukan langsung kode mesin seperti C?', [
-            ['Supaya bytecode bisa dijalankan di berbagai platform lewat JVM', true],
-            ['Supaya kode Java berjalan lebih lambat', false],
-            ['Karena Java tidak bisa dikompilasi', false],
-            ['Karena bytecode hanya berjalan di Windows', false],
+            ['Supaya file .class yang sama bisa dijalankan di platform mana pun yang punya JVM, tanpa dikompilasi ulang', true],
+            ['Supaya hasilnya otomatis lebih cepat dari kode mesin native, karena bytecode sudah teroptimasi untuk semua prosesor', false],
+            ['Supaya kode sumber .java bisa dibaca JVM langsung baris demi baris, jadi javac tidak diperlukan', false],
+            ['Supaya kode sumber tersembunyi, karena bytecode adalah versi terenkripsi dari file .java', false],
           ]),
           q('Apa peran JVM dalam menjalankan program Java?', [
-            ['Menerjemahkan bytecode menjadi instruksi yang dipahami sistem/prosesor', true],
-            ['Menulis kode Java secara otomatis', false],
-            ['Mengganti kebutuhan compiler sepenuhnya', false],
-            ['Hanya dipakai untuk debugging', false],
+            ['Menerjemahkan bytecode menjadi instruksi yang dipahami sistem operasi dan prosesor', true],
+            ['Mengubah file .java menjadi bytecode, sama seperti perintah javac', false],
+            ['Mengubah bytecode menjadi file .exe permanen yang bisa dijalankan tanpa JVM', false],
+            ['Hanya dipakai saat debugging, program biasa berjalan langsung di sistem operasi', false],
           ]),
         ],
       },
@@ -106,9 +107,18 @@ const modules: ModuleDef[] = [
         title: 'Tipe Data Primitif',
         slug: 'javafz-tipe-data-primitif',
         content: [
-          "Java punya delapan tipe data primitif, empat yang paling sering dipakai pemula: `int` (bilangan bulat, mis. `int umur = 20;`), `double` (bilangan desimal presisi ganda, mis. `double tinggi = 165.5;`), `char` (satu karakter tunggal ditulis dengan kutip tunggal, mis. `char inisial = 'B';`), dan `boolean` (hanya bernilai `true` atau `false`).",
-          'Berbeda dari Python/JavaScript, Java mewajibkan deklarasi tipe data secara eksplisit di depan nama variabel — ini bagian dari sifat statically typed Java, tipe data dicek compiler sebelum program dijalankan.',
-          'Setiap tipe primitif punya ukuran memori dan rentang nilai tetap, misal `int` menampung bilangan bulat 32-bit, sedangkan `long` (dengan sufiks `L`) dipakai untuk bilangan bulat yang lebih besar.',
+          "Java punya delapan tipe data primitif: `byte`, `short`, `int`, `long`, `float`, `double`, `char`, dan `boolean`. Empat yang paling sering dipakai pemula: `int` (bilangan bulat, mis. `int umur = 20;`), `double` (bilangan desimal presisi ganda, mis. `double tinggi = 165.5;`), `char` (satu karakter tunggal ditulis dengan kutip tunggal, mis. `char inisial = 'B';`), dan `boolean` (hanya bernilai `true` atau `false`).",
+          'Java bersifat statically typed: setiap variabel punya tipe yang sudah pasti dan dicek compiler sebelum program dijalankan. Berbeda dari Python/JavaScript, tipe itu biasanya ditulis eksplisit di depan nama variabel, seperti `int umur = 20;`. Sejak Java 10 (jadi tersedia di OpenJDK 13 yang dipakai sandbox ini) ada alternatif `var` untuk variabel lokal: compiler menyimpulkan tipenya dari nilai awal.',
+          '## var: tipe disimpulkan, bukan dinamis',
+          'Potongan kode berikut ditaruh di dalam `main`. `var` tidak membuat variabel jadi dinamis: setelah disimpulkan, tipenya tetap `int` atau `String`, sehingga baris terakhir sengaja salah dan menjadi error compile. `var` hanya boleh dipakai untuk variabel lokal yang langsung diberi nilai awal, bukan untuk field, parameter method, atau return type.',
+          `\`\`\`java
+var umur = 20;          // tipenya int
+var nama = "Budi";      // tipenya String
+umur = "dua puluh";     // error compile: String tidak bisa disimpan di variabel int
+\`\`\``,
+          '## Ukuran dan rentang nilai',
+          'Setiap tipe primitif punya ukuran memori dan rentang nilai tetap. `int` menampung bilangan bulat 32-bit (sekitar -2,1 miliar sampai 2,1 miliar), sedangkan `long` (64-bit; literalnya diberi sufiks `L`, misal `8000000000L`) dipakai untuk bilangan bulat yang lebih besar. Untuk desimal, `double` (64-bit) adalah pilihan umum; `float` (32-bit, literalnya diberi sufiks `f`, misal `1.5f`) lebih hemat memori tapi presisinya lebih rendah.',
+          '## Primitif dan reference type',
           'Selain tipe primitif, Java juga punya reference type seperti `String` (teks) yang sebenarnya adalah object, bukan primitif — akan dibahas lebih lanjut di pelajaran String.',
         ],
         hasSandbox: true,
@@ -118,11 +128,15 @@ const modules: ModuleDef[] = [
         double tinggiBadan = 165.5;
         char inisial = 'B';
         boolean sudahLulus = true;
+        long populasi = 8000000000L; // melebihi rentang int, jadi butuh long dan sufiks L
+        var jumlahBuku = 3;          // var: compiler menyimpulkan tipenya, di sini int
 
         System.out.println("Umur: " + umur);
         System.out.println("Tinggi badan: " + tinggiBadan);
         System.out.println("Inisial: " + inisial);
         System.out.println("Sudah lulus: " + sudahLulus);
+        System.out.println("Populasi: " + populasi);
+        System.out.println("Jumlah buku: " + jumlahBuku);
     }
 }
 `,
@@ -146,11 +160,11 @@ const modules: ModuleDef[] = [
             ['Yes dan No', false],
             ['Benar dan Salah (kata Indonesia)', false],
           ]),
-          q('Kenapa Java disebut statically typed terkait deklarasi variabel?', [
-            ['Tipe data harus dideklarasikan eksplisit dan dicek saat compile', true],
-            ['Tipe data ditentukan otomatis saat runtime seperti Python', false],
-            ['Java tidak punya tipe data', false],
-            ['Semua variabel otomatis bertipe String', false],
+          q('Pada var jumlah = 42;, tipe apa yang dimiliki variabel jumlah?', [
+            ['int: compiler menyimpulkannya dari nilai 42, lalu tipenya tetap', true],
+            ['Tipe dinamis, jadi nanti boleh diisi String atau nilai tipe lain', false],
+            ['Object, karena tipenya belum ditulis eksplisit', false],
+            ['Belum punya tipe sampai program berjalan, baru ditentukan saat runtime', false],
           ]),
         ],
       },
@@ -188,22 +202,44 @@ const modules: ModuleDef[] = [
         slug: 'javafz-type-casting',
         content: [
           'Type casting adalah proses mengubah nilai dari satu tipe data ke tipe lain. Java membedakan dua jenis casting: implicit (widening) dan explicit (narrowing).',
-          'Implicit casting terjadi otomatis ketika mengubah tipe data yang lebih kecil ke tipe yang lebih besar (tidak berisiko kehilangan data), misal `int` ke `double` — Java melakukannya otomatis tanpa perlu penulisan khusus.',
-          'Explicit casting harus ditulis manual dengan tanda kurung berisi tipe tujuan, misal `(int) 9.7`, dipakai ketika mengubah tipe data yang lebih besar ke tipe lebih kecil (berisiko kehilangan presisi/data), misal `double` ke `int` akan memotong bagian desimalnya.',
+          '## Implicit casting (widening)',
+          'Implicit casting terjadi otomatis ketika nilai dari tipe yang lebih sempit dimasukkan ke tipe yang lebih lebar, misal `int` ke `long` atau `int` ke `double`. Java melakukannya tanpa penulisan khusus dan tanpa error. Urutan pelebarannya: `byte` ke `short` ke `int` ke `long` ke `float` ke `double` (dan `char` ke `int`).',
+          'Kebanyakan widening menjaga nilainya persis, misal `int` ke `long` atau `int` ke `double`. Tapi tiga pelebaran bisa mengubah nilai karena tipe tujuannya tidak menyimpan semua digit pentingnya: `int` ke `float`, `long` ke `float`, dan `long` ke `double`. Hasilnya dibulatkan ke nilai terdekat yang bisa disimpan, tanpa pesan error apa pun. Contoh potongan kode di dalam `main`:',
+          `\`\`\`java
+int besar = 123456789;
+float hampir = besar;                // widening otomatis, tanpa error
+System.out.println(hampir);          // 1.23456792E8
+System.out.println((int) hampir);    // 123456792, bukan 123456789
+\`\`\``,
+          '## Explicit casting (narrowing)',
+          'Explicit casting harus ditulis manual dengan tanda kurung berisi tipe tujuan, misal `(int) 9.7`, dipakai ketika mengubah tipe yang lebih lebar ke tipe yang lebih sempit. Nilainya bisa kehilangan presisi atau rentang: `double` ke `int` memotong bagian desimalnya (ke arah nol, bukan membulatkan, jadi `(int) -9.7` menjadi `-9`), dan nilai di luar rentang tipe tujuan "berputar", misal `(byte) 200` menjadi `-56`. Tanpa cast, `int x = 9.7;` adalah error compile: `incompatible types: possible lossy conversion from double to int`.',
+          '## Casting dengan char',
           'Casting antara `int` dan `char` juga dimungkinkan karena `char` di Java sebenarnya disimpan sebagai kode numerik (Unicode) di baliknya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `public class Main {
     public static void main(String[] args) {
-        // Implicit casting: int ke double, otomatis, aman
+        // Implicit casting: int ke double, otomatis, nilainya tetap persis
         int angkaBulat = 10;
         double angkaDesimal = angkaBulat;
         System.out.println("Implicit int ke double: " + angkaDesimal);
+
+        // Widening yang bisa kehilangan presisi: int ke float
+        int besar = 123456789;
+        float hampir = besar;
+        System.out.println("int " + besar + " ke float: " + hampir);
+        System.out.println("float tadi kembali ke int: " + (int) hampir);
 
         // Explicit casting: double ke int, harus ditulis manual
         double nilaiAsli = 9.7;
         int hasilCasting = (int) nilaiAsli;
         System.out.println("Explicit double ke int: " + hasilCasting);
+        System.out.println("(int) -9.7 menjadi " + (int) -9.7);
+
+        // Nilai di luar rentang tipe tujuan "berputar"
+        int duaRatus = 200;
+        byte dipaksa = (byte) duaRatus;
+        System.out.println("(byte) 200 menjadi " + dipaksa);
 
         // Casting char ke int (kode Unicode)
         char huruf = 'A';
@@ -232,6 +268,12 @@ const modules: ModuleDef[] = [
             ['Terjadi error compile', false],
             ['Nilainya tidak berubah sama sekali', false],
           ]),
+          q('Konversi mana yang dilakukan Java otomatis (tanpa cast) tapi hasilnya bisa sedikit berbeda dari nilai aslinya?', [
+            ['int ke float, karena float tidak menyimpan semua digit dari int yang besar', true],
+            ['int ke long, karena bilangan bulat besar dipotong saat dimasukkan ke long', false],
+            ['double ke int, karena bagian desimalnya dibuang otomatis tanpa perlu cast', false],
+            ['char ke int, karena kode Unicode huruf ikut berubah', false],
+          ]),
         ],
       },
       {
@@ -240,8 +282,16 @@ const modules: ModuleDef[] = [
         content: [
           'Di Java, `String` adalah reference type (bukan primitif) yang merepresentasikan teks, ditulis dengan kutip ganda, misal `String nama = "Budi";`.',
           'Karakteristik penting `String` di Java adalah immutable — setelah sebuah objek `String` dibuat, isinya tidak bisa diubah. Operasi seperti `.toUpperCase()` atau penggabungan (`+`) sebenarnya membuat objek `String` baru, bukan mengubah objek yang lama.',
-          'Method umum `String`: `.length()` mengembalikan jumlah karakter, `.toUpperCase()`/`.toLowerCase()` mengubah huruf besar/kecil, `.equals()` membandingkan isi dua String (bukan `==`, yang membandingkan referensi objek), `.substring(awal, akhir)` mengambil sebagian teks, `.charAt(index)` mengambil satu karakter di posisi tertentu.',
-          'Penting: jangan membandingkan isi `String` dengan `==` karena bisa membandingkan referensi objek, bukan isi teksnya — selalu gunakan `.equals()` untuk membandingkan isi dua String.',
+          'Method umum `String`: `.length()` mengembalikan jumlah karakter, `.toUpperCase()`/`.toLowerCase()` mengubah huruf besar/kecil, `.charAt(index)` mengambil satu karakter di posisi tertentu (index dimulai dari 0), `.equals()` membandingkan isi dua String, dan `.substring()` mengambil sebagian teks.',
+          '## substring: index akhir tidak ikut',
+          '`.substring(awal, akhir)` mengambil teks mulai dari index `awal` (ikut) sampai sebelum index `akhir` (tidak ikut), jadi panjang hasilnya `akhir - awal`. `.substring(awal)` dengan satu argumen mengambil sampai akhir teks. Index yang melewati panjang teks melempar `StringIndexOutOfBoundsException`. Contoh potongan kode di dalam `main`:',
+          `\`\`\`java
+String nama = "Siswa BarisORG";
+System.out.println(nama.substring(0, 5));   // Siswa     (index 0 sampai 4)
+System.out.println(nama.substring(6));      // BarisORG  (index 6 sampai akhir)
+\`\`\``,
+          '## Membandingkan isi String',
+          'Jangan membandingkan isi `String` dengan `==`: operator itu membandingkan referensi objek (apakah dua variabel menunjuk objek yang sama), bukan isi teksnya. Dua literal yang sama kadang berbagi satu objek sehingga `==` kebetulan `true`, tapi String yang dibuat dengan `new String("Java")` adalah objek terpisah, jadi `==` bernilai `false` padahal isinya sama. Selalu gunakan `.equals()` untuk membandingkan isi dua String.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `public class Main {
@@ -251,14 +301,37 @@ const modules: ModuleDef[] = [
         System.out.println("Panjang string: " + nama.length());
         System.out.println("Huruf besar: " + nama.toUpperCase());
         System.out.println("Karakter ke-0: " + nama.charAt(0));
-        System.out.println("Substring 0-5: " + nama.substring(0, 6));
+        System.out.println("substring(0, 5): " + nama.substring(0, 5));
+        System.out.println("substring(6): " + nama.substring(6));
 
         String a = "Java";
         String b = "Java";
-        System.out.println("Bandingkan isi dengan equals: " + a.equals(b));
+        String c = new String("Java");
+        System.out.println("a.equals(b): " + a.equals(b));
+        System.out.println("a.equals(c): " + a.equals(c));
+        System.out.println("a == c (referensi, objek berbeda): " + (a == c));
     }
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa hasil "BarisORG".substring(2, 5)?', [
+            ['ris', true],
+            ['risO', false],
+            ['risOR', false],
+          ]),
+          q('Kenapa isi dua String sebaiknya dibandingkan dengan .equals(), bukan ==?', [
+            ['== membandingkan referensi objek, bukan isi teksnya', true],
+            ['== hanya bisa dipakai untuk angka, jadi String selalu error compile', false],
+            ['== membandingkan panjang dua String, bukan isinya', false],
+            ['.equals() hanya lebih cepat, hasilnya selalu sama dengan ==', false],
+          ]),
+          q('Apa yang terjadi pada String nama setelah nama.toUpperCase() dipanggil tanpa menyimpan hasilnya?', [
+            ['Tidak berubah, karena method itu mengembalikan String baru', true],
+            ['Isinya berubah menjadi huruf besar di tempat', false],
+            ['Variabel nama otomatis menunjuk ke String huruf besar', false],
+          ]),
+        ],
       },
     ],
   },
@@ -368,7 +441,7 @@ const modules: ModuleDef[] = [
         title: 'Array',
         slug: 'javafz-array',
         content: [
-          'Array di Java menyimpan sekumpulan nilai dengan tipe data yang sama dan ukuran tetap (tidak bisa berubah setelah dibuat). Deklarasi: `int[] angka = {1, 2, 3, 4, 5};` atau `int[] angka = new int[5];` untuk array kosong berukuran 5.',
+          'Array di Java menyimpan sekumpulan nilai dengan tipe data yang sama dan ukuran tetap (tidak bisa berubah setelah dibuat). Deklarasi dengan nilai langsung: `int[] angka = {1, 2, 3, 4, 5};`. Deklarasi dengan ukuran saja: `int[] angka = new int[5];` membuat array berukuran 5 yang semua elemennya langsung berisi nilai default, yaitu `0` untuk `int` (`0.0` untuk `double`, `false` untuk `boolean`, `null` untuk reference type seperti `String`).',
           'Akses elemen array memakai index yang dimulai dari 0, misal `angka[0]` mengambil elemen pertama. Properti `.length` (tanpa kurung, bukan method) mengembalikan jumlah elemen array.',
           'Karena ukuran array tetap, mencoba mengakses index di luar rentang (misal `angka[10]` pada array berukuran 5) akan melempar `ArrayIndexOutOfBoundsException` saat runtime.',
           'Enhanced for loop (for-each) memudahkan iterasi seluruh elemen array tanpa perlu index manual: `for (int nilai : angka) { ... }`.',
@@ -389,6 +462,12 @@ const modules: ModuleDef[] = [
 
         angka[2] = 99;
         System.out.println("Setelah diubah, elemen ke-2: " + angka[2]);
+
+        int[] belumDiisi = new int[3];
+        System.out.println("Isi default new int[3]: " + belumDiisi[0] + ", " + belumDiisi[1] + ", " + belumDiisi[2]);
+
+        String[] namaBelumDiisi = new String[2];
+        System.out.println("Isi default new String[2]: " + namaBelumDiisi[0]);
     }
 }
 `,
@@ -418,6 +497,12 @@ const modules: ModuleDef[] = [
             ['Bisa, tapi hanya mengecil', false],
             ['Tergantung tipe datanya', false],
           ]),
+          q('Apa isi array setelah int[] data = new int[3]; dan belum ada elemen yang diisi?', [
+            ['Tiga elemen, semuanya bernilai 0', true],
+            ['Tiga elemen berisi nilai acak sisa dari memori', false],
+            ['Tiga elemen bernilai null', false],
+            ['Array kosong tanpa elemen sampai nilai pertama ditambahkan', false],
+          ]),
         ],
       },
       {
@@ -426,8 +511,21 @@ const modules: ModuleDef[] = [
         content: [
           '`ArrayList` (dari package `java.util`) adalah struktur data mirip array tapi ukurannya dinamis — bisa bertambah atau berkurang sesuai kebutuhan, berbeda dari array biasa yang ukurannya tetap.',
           'Untuk memakainya, perlu `import java.util.ArrayList;` di bagian atas file. Deklarasi memakai generic type, misal `ArrayList<String> daftar = new ArrayList<>();` untuk ArrayList yang hanya menampung `String`.',
-          'Method umum `ArrayList`: `.add(nilai)` menambah elemen di akhir, `.get(index)` mengambil elemen di posisi tertentu, `.remove(index)` menghapus elemen, `.size()` mengembalikan jumlah elemen (mirip `.length` pada array, tapi ditulis sebagai method dengan kurung).',
-          'ArrayList hanya bisa menampung reference type (object), bukan tipe primitif langsung — untuk `int`, dipakai wrapper class `Integer`, misal `ArrayList<Integer>`.',
+          'Method umum `ArrayList`: `.add(nilai)` menambah elemen di akhir, `.get(index)` mengambil elemen di posisi tertentu, `.size()` mengembalikan jumlah elemen (mirip `.length` pada array, tapi ditulis sebagai method dengan kurung), dan `.remove(...)` menghapus elemen (lihat bagian di bawah).',
+          '## ArrayList<Integer> dan autoboxing',
+          'ArrayList hanya bisa menampung reference type (object), bukan tipe primitif langsung. Untuk `int`, dipakai wrapper class `Integer`, misal `ArrayList<Integer>`; `ArrayList<int>` adalah error compile. Saat menulis `daftar.add(10)`, Java otomatis membungkus `int` 10 menjadi object `Integer` (disebut autoboxing), dan `int x = daftar.get(0);` otomatis membuka bungkusnya lagi (unboxing).',
+          '## remove: berdasarkan index atau berdasarkan nilai',
+          '`ArrayList` punya dua versi `remove`: `remove(int index)` menghapus elemen di posisi tertentu, sedangkan `remove(Object o)` menghapus kemunculan pertama nilai yang sama. Di `ArrayList<String>` tidak ada yang membingungkan: `remove(0)` menghapus elemen pertama dan `remove("Jeruk")` menghapus elemen bernilai "Jeruk". Jebakannya ada di `ArrayList<Integer>`: `daftar.remove(1)` memanggil `remove(int index)`, jadi yang terhapus adalah elemen di index 1, BUKAN nilai 1. Penyebabnya, Java lebih dulu mencari method yang cocok tanpa autoboxing, dan `int` langsung cocok dengan `remove(int)`.',
+          'Untuk menghapus nilai 1, bungkus dulu menjadi object `Integer` lewat `Integer.valueOf(1)`, sehingga yang dipanggil adalah `remove(Object)`. Contoh potongan kode di dalam `main`:',
+          `\`\`\`java
+ArrayList<Integer> daftar = new ArrayList<>();
+daftar.add(10);
+daftar.add(20);
+daftar.add(30);
+
+daftar.remove(1);                     // hapus elemen di index 1 -> [10, 30]
+daftar.remove(Integer.valueOf(30));   // hapus nilai 30 -> [10]
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `import java.util.ArrayList;
@@ -446,13 +544,46 @@ public class Main {
         daftarBuah.remove("Jeruk");
         System.out.println("Setelah remove Jeruk: " + daftarBuah);
 
+        daftarBuah.remove(0);
+        System.out.println("Setelah remove index 0: " + daftarBuah);
+
         ArrayList<Integer> daftarAngka = new ArrayList<>();
-        daftarAngka.add(1);
-        daftarAngka.add(2);
+        daftarAngka.add(10);   // autoboxing: int 10 dibungkus menjadi Integer
+        daftarAngka.add(20);
+        daftarAngka.add(30);
         System.out.println("Daftar angka: " + daftarAngka);
+
+        daftarAngka.remove(1);                     // remove(int index): hapus elemen di index 1
+        System.out.println("Setelah remove(1): " + daftarAngka);
+
+        daftarAngka.remove(Integer.valueOf(30));   // remove(Object): hapus nilai 30
+        System.out.println("Setelah remove nilai 30: " + daftarAngka);
+
+        int pertama = daftarAngka.get(0);          // unboxing: Integer dibuka menjadi int
+        System.out.println("Elemen pertama sebagai int: " + pertama);
     }
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('ArrayList<Integer> berisi [10, 20, 30]. Apa isinya setelah daftar.remove(1); dijalankan?', [
+            ['[10, 30], karena yang dihapus adalah elemen di index 1', true],
+            ['[10, 20, 30], karena tidak ada nilai 1 di dalam list sehingga tidak ada yang dihapus', false],
+            ['[20, 30], karena remove menghitung posisi mulai dari 1', false],
+            ['Error compile, karena remove(1) ambigu antara remove(int) dan remove(Object)', false],
+          ]),
+          q('Bagaimana cara menghapus NILAI 30 (bukan elemen di index 30) dari ArrayList<Integer> bernama daftar?', [
+            ['daftar.remove(Integer.valueOf(30));', true],
+            ['daftar.remove(30);', false],
+            ['daftar.remove((int) 30);', false],
+          ]),
+          q('Kenapa ArrayList<int> tidak valid dan harus ditulis ArrayList<Integer>?', [
+            ['ArrayList hanya menampung reference type (object), jadi int dibungkus sebagai Integer', true],
+            ['int terlalu kecil untuk disimpan di ArrayList, jadi dipakai tipe yang lebih besar', false],
+            ['Integer lebih cepat daripada int saat disimpan di dalam ArrayList', false],
+            ['ArrayList hanya bisa menampung dua tipe: String dan Integer', false],
+          ]),
+        ],
       },
     ],
   },
@@ -618,9 +749,31 @@ public class Main {
         slug: 'javafz-inheritance-polymorphism',
         content: [
           'Inheritance memungkinkan sebuah class (subclass/child class) mewarisi field dan method dari class lain (superclass/parent class), memakai kata kunci `extends`. Ini menghindari duplikasi kode untuk class-class yang punya kesamaan perilaku.',
-          'Subclass bisa menambah field/method baru miliknya sendiri, dan bisa meng-override (menimpa ulang) method milik superclass dengan menuliskan ulang method yang sama persis (nama & parameter), ditandai anotasi `@Override` sebagai konvensi baik (bukan wajib, tapi membantu mencegah typo).',
+          'Subclass bisa menambah field/method baru miliknya sendiri, dan bisa meng-override (menimpa ulang) method milik superclass dengan menuliskan ulang method yang sama persis (nama & parameter). Anotasi `@Override` di atas method itu bukan wajib: tanpanya method tetap menimpa. Tapi dengan `@Override`, compiler memberi error kalau ternyata tidak ada method superclass yang ditimpa (misalnya salah ketik nama), jadi anotasi ini membantu mencegah typo.',
           'Polymorphism ("banyak bentuk") berarti sebuah object subclass bisa diperlakukan sebagai object superclass-nya, dan method yang dipanggil akan menjalankan versi milik subclass sesuai tipe object aslinya saat runtime — ini disebut dynamic method dispatch.',
-          'Kata kunci `super` dipakai untuk memanggil constructor atau method versi superclass dari dalam subclass, misal `super(nama)` di constructor subclass untuk mengisi field yang didefinisikan di superclass.',
+          'Kata kunci `super` dipakai untuk memanggil constructor atau method versi superclass dari dalam subclass. `super(nama)` di constructor subclass mengisi field yang didefinisikan di superclass dan harus menjadi baris pertama constructor; `super.bersuara()` menjalankan versi superclass dari method yang sedang di-override.',
+          '## Contoh: override dengan super dan polymorphism',
+          'Class `Anjing` di bawah memakai class `Hewan` dari sandbox (jadi tidak bisa dijalankan sendirian). Ia meng-override `bersuara()` tapi tetap menjalankan versi `Hewan` lewat `super.bersuara()`:',
+          `\`\`\`java
+class Anjing extends Hewan {
+    Anjing(String nama) {
+        super(nama);          // wajib baris pertama
+    }
+
+    @Override
+    void bersuara() {
+        super.bersuara();     // jalankan dulu versi Hewan
+        System.out.println(nama + " lalu menggonggong: Guk!");
+    }
+}
+\`\`\``,
+          'Karena `Kucing` dan `Anjing` adalah `Hewan`, satu array bertipe `Hewan` bisa menampung ketiganya, dan setiap `bersuara()` menjalankan versi milik object aslinya (potongan di dalam `main`, memakai class di sandbox):',
+          `\`\`\`java
+Hewan[] kandang = { new Hewan("Hewan tak dikenal"), new Kucing("Si Meong"), new Anjing("Si Doggo") };
+for (Hewan h : kandang) {
+    h.bersuara();   // versi yang dijalankan mengikuti tipe object aslinya
+}
+\`\`\``,
         ],
         hasSandbox: true,
         sandboxStarterCode: `class Hewan {
@@ -646,16 +799,181 @@ class Kucing extends Hewan {
     }
 }
 
+class Anjing extends Hewan {
+    Anjing(String nama) {
+        super(nama);
+    }
+
+    @Override
+    void bersuara() {
+        super.bersuara();
+        System.out.println(nama + " lalu menggonggong: Guk!");
+    }
+}
+
 public class Main {
     public static void main(String[] args) {
-        Hewan hewanUmum = new Hewan("Hewan tak dikenal");
-        hewanUmum.bersuara();
+        // Variabel bertipe Hewan boleh memegang object Kucing atau Anjing
+        Hewan[] kandang = {
+            new Hewan("Hewan tak dikenal"),
+            new Kucing("Si Meong"),
+            new Anjing("Si Doggo")
+        };
 
-        Hewan kucingSebagaiHewan = new Kucing("Si Meong");
-        kucingSebagaiHewan.bersuara();
+        for (Hewan h : kandang) {
+            h.bersuara();
+        }
     }
 }
 `,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Kata kunci apa yang dipakai sebuah class untuk mewarisi class lain?', [
+            ['extends', true],
+            ['implements', false],
+            ['inherits', false],
+            ['super', false],
+          ]),
+          q('Pada Hewan h = new Kucing("Si Meong"); h.bersuara(); versi bersuara() milik class mana yang dijalankan?', [
+            ['Milik Kucing, karena yang menentukan adalah tipe object aslinya saat runtime', true],
+            ['Milik Hewan, karena yang menentukan adalah tipe variabel h', false],
+            ['Keduanya dijalankan berurutan: versi Hewan dulu, lalu versi Kucing', false],
+            ['Error compile, karena variabel bertipe Hewan tidak boleh memegang object Kucing', false],
+          ]),
+          q('Apa fungsi super(nama) di dalam constructor Kucing?', [
+            ['Memanggil constructor Hewan untuk mengisi field nama yang didefinisikan di superclass', true],
+            ['Membuat object Hewan baru yang terpisah dari object Kucing', false],
+            ['Menyalin semua method Hewan ke dalam Kucing', false],
+            ['Memanggil method bersuara() milik Hewan', false],
+          ]),
+          q('Apa manfaat menulis @Override di atas method subclass?', [
+            ['Compiler memberi error kalau method itu ternyata tidak menimpa method superclass, misalnya karena salah ketik', true],
+            ['Tanpa @Override, method subclass tidak akan menimpa method superclass', false],
+            ['@Override membuat method superclass tidak bisa dipanggil lagi lewat super', false],
+            ['@Override membuat method berjalan lebih cepat saat dipanggil', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Interface Dasar',
+        slug: 'javafz-interface-dasar',
+        content: [
+          'Interface adalah "kontrak" yang mendefinisikan method apa saja yang harus dimiliki sebuah class, tanpa menentukan bagaimana implementasinya. Interface dideklarasikan dengan kata kunci `interface`, dan method di dalamnya otomatis `public abstract` (hanya tanda tangan method, tanpa body). Sejak Java 8 interface juga bisa punya method `default` yang berisi body, tapi itu tidak dibahas di sini.',
+          'Berikut interface `Bentuk` dan satu class yang mengimplementasikannya (tanpa `main`, program lengkapnya ada di sandbox):',
+          `\`\`\`java
+interface Bentuk {
+    double luas();   // otomatis public abstract: hanya tanda tangan, tanpa body
+}
+
+class Persegi implements Bentuk {
+    private double sisi;
+
+    Persegi(double sisi) {
+        this.sisi = sisi;
+    }
+
+    @Override
+    public double luas() {   // wajib public, karena method interface selalu public
+        return sisi * sisi;
+    }
+}
+\`\`\``,
+          'Sebuah class memakai interface dengan kata kunci `implements`, lalu wajib menyediakan implementasi konkret untuk semua method interface itu, dan method implementasinya harus ditulis `public` (tanpa `public`, compiler menolak dengan `attempting to assign weaker access privileges; was public`). Kalau ada method yang belum diimplementasikan, class itu error compile: `is not abstract and does not override abstract method`.',
+          'Pengecualiannya adalah abstract class, yaitu class yang ditandai `abstract` dan tidak bisa langsung dibuat dengan `new`. Abstract class boleh `implements` interface tanpa mengimplementasikan semua method-nya; sisanya wajib diimplementasikan oleh subclass konkret pertama yang mewarisinya.',
+          'Berbeda dari inheritance class (`extends`, hanya boleh satu superclass), sebuah class boleh `implements` lebih dari satu interface sekaligus, dipisah koma, misal `class Persegi implements Bentuk, Berlabel`. Ini memberi fleksibilitas desain yang tidak dimiliki inheritance tunggal.',
+          'Manfaat interface: beberapa class yang tidak berhubungan secara struktur tetap punya "kontrak" perilaku yang sama, sehingga bisa diperlakukan seragam lewat tipe interface-nya. Misalnya `Bentuk[]` bisa menampung `Persegi` dan `Segitiga` sekaligus. Ini bentuk lain dari polymorphism seperti di pelajaran sebelumnya: method yang dijalankan mengikuti object aslinya.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `interface Bentuk {
+    double luas();
+}
+
+interface Berlabel {
+    String label();
+}
+
+// Satu class boleh implements lebih dari satu interface
+class Persegi implements Bentuk, Berlabel {
+    private double sisi;
+
+    Persegi(double sisi) {
+        this.sisi = sisi;
+    }
+
+    // Method dari interface wajib ditulis public
+    @Override
+    public double luas() {
+        return sisi * sisi;
+    }
+
+    @Override
+    public String label() {
+        return "Persegi dengan sisi " + sisi;
+    }
+}
+
+class Segitiga implements Bentuk {
+    private double alas;
+    private double tinggi;
+
+    Segitiga(double alas, double tinggi) {
+        this.alas = alas;
+        this.tinggi = tinggi;
+    }
+
+    @Override
+    public double luas() {
+        return alas * tinggi / 2;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // Tipe interface bisa menampung object dari class mana pun yang implements-nya
+        Bentuk[] daftar = { new Persegi(4), new Segitiga(6, 3) };
+        for (Bentuk b : daftar) {
+            System.out.println("Luas: " + b.luas());
+        }
+
+        Persegi persegi = new Persegi(5);
+        Berlabel berlabel = persegi;   // object yang sama, dilihat sebagai Berlabel
+        System.out.println(berlabel.label() + ", luas " + persegi.luas());
+    }
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Kata kunci apa yang dipakai class untuk memakai sebuah interface?', [
+            ['implements', true],
+            ['extends', false],
+            ['interface', false],
+            ['inherits', false],
+          ]),
+          q('Apakah sebuah class boleh implements lebih dari satu interface?', [
+            ['Ya, boleh lebih dari satu, dipisah koma', true],
+            ['Tidak, seperti extends, hanya satu interface per class', false],
+            ['Boleh, tapi hanya kalau class itu abstract', false],
+            ['Boleh, tapi hanya kalau class itu juga memakai extends', false],
+          ]),
+          q('Class Segitiga ditulis class Segitiga implements Bentuk tetapi method luas() belum dibuat, dan Segitiga bukan abstract. Apa yang terjadi saat dikompilasi?', [
+            ['Error compile: Segitiga tidak mengimplementasikan luas() dari kontrak Bentuk', true],
+            ['Compile berhasil, error AbstractMethodError baru muncul saat luas() dipanggil', false],
+            ['Compile berhasil, luas() otomatis kosong dan mengembalikan 0.0', false],
+            ['Compile berhasil, karena method interface dianggap opsional bagi class yang implements', false],
+          ]),
+          q('Abstract class BentukDasar implements Bentuk dan tidak menulis method luas(). Apa yang berlaku?', [
+            ['Valid, tapi luas() wajib diimplementasikan oleh subclass konkret pertama dari BentukDasar', true],
+            ['Error compile: semua class yang implements wajib menulis semua method, tanpa kecuali', false],
+            ['Valid, dan luas() otomatis kosong sehingga subclass tidak perlu menulisnya', false],
+            ['Error compile: abstract class tidak boleh implements interface', false],
+          ]),
+          q('Di class Persegi, method luas() dari interface Bentuk ditulis double luas() { ... } tanpa public. Apa hasilnya?', [
+            ['Error compile: method interface otomatis public, implementasinya tidak boleh lebih terbatas aksesnya', true],
+            ['Valid, akses default sudah cukup kalau class-nya ada di file yang sama', false],
+            ['Valid, tapi method itu tidak bisa dipanggil dari luar class Persegi', false],
+            ['Error runtime IllegalAccessException saat luas() dipanggil', false],
+          ]),
+        ],
       },
     ],
   },
@@ -713,44 +1031,16 @@ public class Main {
         ],
       },
       {
-        title: 'Interface Dasar',
-        slug: 'javafz-interface-dasar',
-        content: [
-          'Interface adalah "kontrak" yang mendefinisikan method apa saja yang harus dimiliki sebuah class, tanpa menentukan bagaimana implementasinya — dideklarasikan dengan kata kunci `interface`, semua method di dalamnya default `abstract` (tanpa body) kecuali dinyatakan lain.',
-          'Sebuah class memakai interface dengan kata kunci `implements`, lalu wajib menyediakan implementasi konkret untuk semua method yang dideklarasikan interface tersebut — kalau tidak, akan terjadi error compile.',
-          'Berbeda dari inheritance class (`extends`, hanya boleh satu superclass), sebuah class boleh `implements` lebih dari satu interface sekaligus, memberi fleksibilitas desain yang tidak dimiliki inheritance tunggal.',
-          'Manfaat interface: memungkinkan beberapa class yang tidak berhubungan secara struktur tetap punya "kontrak" perilaku yang sama, sehingga bisa diperlakukan seragam lewat tipe interface-nya — ini juga bentuk lain dari polymorphism.',
-        ],
-        hasQuiz: true,
-        quizQuestions: [
-          q('Kata kunci apa yang dipakai class untuk memakai sebuah interface?', [
-            ['implements', true],
-            ['extends', false],
-            ['interface', false],
-            ['uses', false],
-          ]),
-          q('Apakah sebuah class boleh implements lebih dari satu interface?', [
-            ['Ya, boleh lebih dari satu', true],
-            ['Tidak, maksimal satu seperti extends', false],
-            ['Boleh, tapi maksimal dua', false],
-            ['Tidak pernah diizinkan Java', false],
-          ]),
-          q('Apa yang terjadi kalau sebuah class implements interface tapi tidak mengimplementasikan semua method-nya?', [
-            ['Terjadi error saat compile', false],
-            ['Program tetap jalan normal', false],
-            ['Method yang belum diimplementasikan otomatis kosong', false],
-            ['Terjadi error compile karena kontrak interface tidak terpenuhi', true],
-          ]),
-        ],
-      },
-      {
         title: 'Studi Kasus Gabungan',
         slug: 'javafz-studi-kasus-gabungan',
         content: [
           'Sebagai penutup course ini, mari gabungkan semua konsep yang sudah dipelajari: class & object, constructor, encapsulation, array/ArrayList, perulangan, dan exception handling dalam satu program utuh yang mensimulasikan sistem nilai siswa sederhana.',
-          'Program di bawah ini mendefinisikan class `Siswa` dengan field private dan getter, menyimpan beberapa object `Siswa` dalam `ArrayList`, menghitung rata-rata nilai lewat perulangan, dan menangani kemungkinan exception (misal daftar kosong) dengan `try`/`catch`.',
+          'Program di bawah ini mendefinisikan class `Siswa` dengan field private dan getter, menyimpan beberapa object `Siswa` dalam `ArrayList`, lalu menghitung rata-rata nilai lewat perulangan di method `hitungRataRata`. Method itu melempar `IllegalArgumentException` kalau daftarnya kosong, dan `cetakRataRata` menangkapnya dengan `try`/`catch`. Program memanggil `cetakRataRata` dua kali, sekali untuk kelas berisi tiga siswa dan sekali untuk kelas kosong, supaya jalur berhasil dan jalur error sama-sama terjalankan.',
           'Studi kasus seperti ini menunjukkan bagaimana konsep-konsep OOP dan kontrol alur yang dipelajari terpisah sebenarnya saling melengkapi dalam program Java yang lebih realistis — bukan sekadar dipakai satu-satu secara terisolasi.',
-          'Selamat, sepanjang course ini kita sudah belajar dasar Java: sintaks & struktur program, tipe data & operator, kontrol alur & array, OOP (class, constructor, encapsulation, inheritance), hingga exception handling & interface — fondasi yang cukup untuk mulai membangun program Java yang lebih kompleks.',
+          '## Kenapa daftar kosong ditolak lewat exception?',
+          'Kalau daftar kosong dibiarkan sampai ke pembagian, Java tidak melempar exception: `total` di-cast ke `double`, dan pembagian `double` dengan nol menghasilkan `NaN` (atau `Infinity`) tanpa error. Rata-rata `NaN` itu diam-diam salah, jadi method memeriksa sendiri dan melempar `IllegalArgumentException`, exception standar untuk "argumen yang diberikan tidak layak dipakai". `ArithmeticException` dilempar Java untuk pembagian bilangan bulat dengan nol, seperti `10 / 0` di pelajaran Exception Handling.',
+          '## Penutup',
+          'Selamat, sepanjang course ini kita sudah belajar dasar Java: sintaks & struktur program, tipe data & operator, kontrol alur & array, OOP (class, constructor, encapsulation, inheritance, interface), hingga exception handling — fondasi yang cukup untuk mulai membangun program Java yang lebih kompleks.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `import java.util.ArrayList;
@@ -776,7 +1066,7 @@ class Siswa {
 public class Main {
     static double hitungRataRata(ArrayList<Siswa> daftarSiswa) {
         if (daftarSiswa.size() == 0) {
-            throw new ArithmeticException("Daftar siswa kosong, tidak bisa dihitung rata-rata");
+            throw new IllegalArgumentException("Daftar siswa kosong, tidak bisa dihitung rata-rata");
         }
         int total = 0;
         for (Siswa siswa : daftarSiswa) {
@@ -785,44 +1075,51 @@ public class Main {
         return (double) total / daftarSiswa.size();
     }
 
-    public static void main(String[] args) {
-        ArrayList<Siswa> daftarSiswa = new ArrayList<>();
-        daftarSiswa.add(new Siswa("Budi", 80));
-        daftarSiswa.add(new Siswa("Siti", 90));
-        daftarSiswa.add(new Siswa("Andi", 70));
+    static void cetakRataRata(String namaKelas, ArrayList<Siswa> daftarSiswa) {
+        try {
+            double rataRata = hitungRataRata(daftarSiswa);
+            System.out.println("Rata-rata nilai " + namaKelas + ": " + rataRata);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error di " + namaKelas + ": " + e.getMessage());
+        }
+    }
 
-        for (Siswa siswa : daftarSiswa) {
+    public static void main(String[] args) {
+        ArrayList<Siswa> kelasA = new ArrayList<>();
+        kelasA.add(new Siswa("Budi", 80));
+        kelasA.add(new Siswa("Siti", 90));
+        kelasA.add(new Siswa("Andi", 70));
+
+        for (Siswa siswa : kelasA) {
             System.out.println(siswa.getNama() + ": " + siswa.getNilai());
         }
 
-        try {
-            double rataRata = hitungRataRata(daftarSiswa);
-            System.out.println("Rata-rata nilai kelas: " + rataRata);
-        } catch (ArithmeticException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
+        ArrayList<Siswa> kelasKosong = new ArrayList<>();
+
+        cetakRataRata("kelas A", kelasA);
+        cetakRataRata("kelas kosong", kelasKosong);
     }
 }
 `,
         hasQuiz: true,
         quizQuestions: [
           q('Di studi kasus ini, kenapa field nama dan nilai pada class Siswa dibuat private?', [
-            ['Untuk menerapkan encapsulation, akses lewat getter', true],
-            ['Karena Java mewajibkan semua field private', false],
-            ['Supaya program berjalan lebih cepat', false],
-            ['Tidak ada alasan khusus', false],
+            ['Untuk menerapkan encapsulation: dari luar class, field hanya bisa dibaca lewat getter', true],
+            ['Karena field yang tidak private tidak bisa diisi lewat constructor', false],
+            ['Karena Java mewajibkan semua field di dalam class bersifat private', false],
+            ['Supaya object Siswa bisa disimpan di dalam ArrayList', false],
           ]),
-          q('Struktur data apa yang dipakai untuk menampung banyak object Siswa dengan ukuran dinamis?', [
+          q('Struktur data apa yang dipakai untuk menampung banyak object Siswa dengan ukuran yang bisa bertambah?', [
             ['ArrayList<Siswa>', true],
-            ['int[]', false],
-            ['String', false],
-            ['boolean', false],
+            ['Siswa[], karena array otomatis membesar saat elemen baru ditambahkan', false],
+            ['ArrayList<int>, karena nilai siswa berupa bilangan bulat', false],
+            ['Satu variabel Siswa yang field-nya diisi ulang untuk tiap siswa', false],
           ]),
-          q('Kenapa perhitungan rata-rata dalam contoh dibungkus try/catch?', [
-            ['Untuk menangani kasus daftar siswa kosong yang bisa memicu exception', true],
-            ['Karena ArrayList selalu error saat diakses', false],
-            ['Supaya kode terlihat lebih panjang', false],
-            ['try/catch wajib ada di setiap method Java', false],
+          q('Apa yang terjadi saat hitungRataRata dipanggil dengan daftar siswa kosong?', [
+            ['Method melempar IllegalArgumentException, lalu catch di cetakRataRata mencetak pesan error', true],
+            ['Method mengembalikan 0.0 karena tidak ada nilai yang dijumlahkan', false],
+            ['Program berhenti dengan ArithmeticException karena total dibagi nol', false],
+            ['Pembagian menghasilkan NaN, yang dicetak sebagai rata-rata tanpa error', false],
           ]),
         ],
       },
@@ -835,7 +1132,11 @@ const course: CourseDef = {
   slug: 'java-from-zero',
   category: { name: 'Programming', slug: 'programming' },
   level: 'pemula',
-  description: '',
+  description: [
+    'Java from Zero adalah course pengantar untuk kamu yang belum pernah menulis Java. Java banyak dipakai untuk backend, aplikasi enterprise, dan Android, dan cara kerjanya cukup ketat: semua kode ditulis di dalam class, dan tipe data dicek compiler sebelum program dijalankan. Course ini memperkenalkan Java dari nol, jadi pengalaman programming di bahasa lain membantu tapi tidak wajib.',
+    'Di sini kamu belajar apa itu JVM dan bytecode beserta alur compile-run, struktur program, tipe data primitif (termasuk `var`), operator, type casting, String, percabangan, perulangan, array, `ArrayList`, lalu OOP: class dan object, constructor, encapsulation, inheritance dan polymorphism, serta interface. Course ditutup dengan exception handling dan studi kasus yang menggabungkan semuanya. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox, dan sebagian besar dilengkapi quiz pilihan ganda untuk menguji pemahamanmu.',
+    'Sandbox di course ini menjalankan kode dengan OpenJDK 13, tanpa akses jaringan dan tanpa input keyboard. Kode disimpan sebagai satu file `Main.java`, jadi class publiknya harus bernama `Main`, dan fitur yang lebih baru dari Java 13 (misalnya `record` dan text block) tidak dipakai. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
+  ].join('\n\n'),
   sandboxLanguage: 'java',
   modules,
 }
