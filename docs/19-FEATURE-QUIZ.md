@@ -48,6 +48,32 @@ menyertakan `isCorrect` untuk role student — props ke client component
    bikin collection `QuizAttempts` baru) — field `score` (sudah ada sejak
    awal sebagai placeholder, lihat `04-DATA-MODEL.md`) diisi di sini.
 
+## Urutan Opsi: Diacak Saat Seed, Grading Tetap Berbasis Index
+
+Course "from Zero" (lihat bagian "Konten" di `CLAUDE.md`) di-seed dengan
+urutan opsi yang **diacak saat seed**, lewat helper `q()` /
+`shuffleOptions()` di `apps/web/scripts/lib/course-def.ts`. Tujuannya menutup
+temuan audit konten: sebelumnya 424 dari 427 soal punya jawaban benar di opsi
+pertama, jadi siswa bisa dapat ~100% dengan selalu memilih A.
+
+- **Deterministik**: seed pengacaknya adalah teks soal (di-hash FNV-1a jadi
+  seed PRNG, lalu Fisher-Yates), jadi soal yang sama selalu menghasilkan
+  urutan opsi yang sama di tiap run seed. Re-seed tidak mengubah urutan opsi
+  soal yang teksnya tidak berubah.
+- **Hanya terjadi di seed**, bukan per user dan bukan di frontend. Urutan
+  opsi yang tersimpan di DB adalah urutan yang sama yang dilihat semua siswa.
+- **Grading tidak berubah**: `POST /api/quiz` tetap membandingkan
+  `optionIndex` jawaban dengan index opsi `isCorrect` di DB (lihat "API
+  Route" di atas). Karena yang diacak adalah urutan tersimpan, index di DB,
+  index yang dirender `Quiz.tsx`, dan index yang dikirim client selalu
+  konsisten. Jangan ubah urutan opsi di frontend tanpa mapping di server,
+  atau grading jadi salah.
+- Mengacak per user (supaya tiap siswa lihat urutan berbeda) butuh mapping
+  index sisi server dan sengaja belum dikerjakan.
+- Kalau konten quiz diubah lewat admin panel Payload, urutan opsi yang
+  diketik editor dipakai apa adanya (tidak ada pengacakan otomatis di luar
+  seed); seed ulang akan menimpa soal dengan versi dari definisi.
+
 ## Frontend
 
 `src/components/ui/Quiz.tsx` (client component, pola fetch+loading-state

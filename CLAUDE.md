@@ -234,66 +234,88 @@ bagian bawah `docs/17-ROADMAP.md`.
       /courses & /blog 500) — diganti jadi props `ns`/`k` (string,
       serializable). Belum dites: pengiriman email SUNGGUHAN ke SMTP asli
       (cuma dites sampai titik "siap kirim, SMTP kosong di dev").
+- [x] Overhaul konten 12 course "from Zero" — 21 lesson per course (252
+      total), soal quiz diacak saat seed, lesson merender block kode, seed
+      idempotent lewat `pnpm seed:courses`. Detail & angka di bagian
+      "Konten" di bawah. Eksekusi Judge0 live tetap belum dites.
 
 Semua 9 fase v1 + Fase 10 di docs/17-ROADMAP.md sudah dikerjakan sejauh yang bisa
 dilakukan tanpa infrastruktur production asli. Sisa pekerjaan proyek ini
 adalah aksi manual user (lihat "Pending Aksi Manual" di atas) + fase lanjutan
 di luar v1 (bagian bawah docs/17-ROADMAP.md) kalau dibutuhkan nanti.
 
-## Konten: Course "Linux from Zero"
+## Konten: 12 Course "from Zero"
 
-Course produksi pertama non-dummy sudah di-seed: **Linux from Zero**
-(`apps/web/scripts/seed-linux-from-zero.ts`, jalankan `pnpm seed:linux` dari
-`apps/web`) — 1 course (kategori baru "Sistem & Linux", slug
-`sistem-linux`), 5 module, 18 lesson. 14 lesson pakai code sandbox (bahasa
-`bash`), 11 lesson pakai quiz pilihan ganda — dipilih campuran wajar per
-topik, bukan dipaksa tiap lesson punya keduanya (topik yang butuh
-network/root sungguhan seperti package manager & cron sengaja quiz-only,
-bukan sandbox, karena Judge0 sandbox stateless tanpa akses jaringan/root).
-Diverifikasi lewat query langsung ke DB setelah seed: 5 module + 18 lesson
-tersambung benar, semua 18 slug lesson baru unik terhadap seluruh DB
-(termasuk 2 lesson dummy `seed-dev.ts`), dan tiap quiz question punya tepat
-satu `isCorrect: true` (lolos validasi collection-level `Lessons.ts`).
-Belum dites: eksekusi nyata tombol Run di sandbox (blocker sama dengan
-catatan Judge0 di "Pending Aksi Manual" di atas — container privileged
-belum bisa dinyalakan di environment ini) dan smoke test submit quiz lewat
-UI browser sungguhan untuk lesson baru ini (pola submit-quiz sendiri sudah
-diverifikasi umum bekerja saat Fase 10).
+Konten produksi pertama (non-dummy): **12 course "dari nol", satu per bahasa
+sandbox Judge0** — Linux, Python, C, C++, Go, Java, JavaScript, PHP, Ruby,
+Rust, SQL, TypeScript. Semua level `pemula`, status `published`, 5 module,
+**21 lesson per course**. Total, dihitung dari `allCourses`
+(`apps/web/scripts/courses/index.ts`) dan dicocokkan dengan query DB setelah
+seed: **60 module, 252 lesson, 229 lesson sandbox, 222 lesson quiz (199
+lesson punya keduanya, tidak ada lesson tanpa sandbox maupun quiz), 774 soal
+quiz**. Kategori: Linux pakai "Sistem & Linux" (`sistem-linux`), 11 lainnya
+pakai "Programming" (`programming`) — kategori di-reuse (cek `payload.find`
+dulu sebelum `create`), bukan dibuat duplikat.
 
-Course kedua: **Python from Zero**
-(`apps/web/scripts/seed-python-from-zero.ts`, `pnpm seed:python`) — 1 course
-(pakai kategori existing "Programming"/`programming`, di-reuse bukan
-dibuat duplikat — script cek `payload.find` dulu sebelum `create`), 5
-module, 18 lesson, 16 lesson sandbox (bahasa `python`), 11 lesson quiz.
-Topik abstrak yang sulit didemonstrasikan lewat satu skrip singkat (scope
-variabel local/global) sengaja quiz-only. Diverifikasi sama seperti Linux
-from Zero: query DB — 5 module/18 lesson tersambung benar, `sandboxLanguage`
-konsisten `python` di semua lesson sandbox, tiap quiz question tepat satu
-`isCorrect: true`, 0 slug lesson bentrok di seluruh DB (38 lesson total
-setelah kedua course + fixture dummy). Sandbox real-execution & quiz submit
-lewat UI browser: belum dites, blocker/alasan sama seperti Linux from Zero
-di atas.
+**Sumber konten & cara seed:**
 
-**10 course tambahan, satu per bahasa Judge0 sandbox yang tersisa** (semua
-12 bahasa allowlist Judge0 kini punya course "dari nol"): C, C++, Go, Java,
-JavaScript, PHP, Ruby, Rust, SQL, TypeScript — masing-masing
-`apps/web/scripts/seed-<bahasa>-from-zero.ts` + `pnpm seed:<bahasa>`,
-kategori `programming` di-reuse (bukan duplikat) di semua 10, level
-`pemula`, status `published`. Dibuat lewat 10 subagent paralel (tiap
-subagent 1 file, tidak saling sentuh) mengikuti pola persis
-seed-python-from-zero.ts, lalu diverifikasi ulang gabungan setelah semua
-selesai: `pnpm lint`/`pnpm typecheck` penuh 0 error dengan ke-10 file
-sekaligus ada, dan query DB gabungan konfirmasi ke-12 course "from Zero"
-(termasuk Linux & Python) semua persis 5 module/18 lesson, 0 slug lesson
-bentrok di antara 218 lesson total di DB, 0 quiz question tanpa tepat satu
-`isCorrect`, 0 lesson sandbox tanpa `sandboxLanguage`. Total gabungan
-ke-12 course: 216 lesson, 181 sandbox, 134 quiz. Satu bug transient ketemu
-& diperbaiki sendiri oleh subagent PHP saat proses: unescaped apostrophe
-dalam string literal TS memutus parsing (`tsc`/`eslint` sempat gagal
-project-wide selagi file itu belum selesai ditulis) — sudah diperbaiki,
-dikonfirmasi hilang di verifikasi gabungan akhir. Sandbox real-execution &
-quiz submit UI: sama seperti course lain, belum dites (blocker Judge0
-privileged container).
+- Definisi tiap course ada di `apps/web/scripts/courses/<bahasa>.ts` (tipe
+  `CourseDef` di `scripts/lib/course-def.ts`), diekspor semua lewat
+  `allCourses`. Isi lesson ditulis sebagai Markdown, lalu diubah ke Lexical
+  oleh `scripts/lib/markdown-lexical.ts` (heading, list, bold, inline code,
+  dan fence kode jadi block `Code` yang dirender `LessonRichText`).
+- **`pnpm seed:courses`** (dari `apps/web`) men-seed ke-12 course sekaligus.
+  `pnpm seed:<bahasa>` (`seed:linux`, `seed:python`, dst) men-seed satu course
+  saja lewat fungsi yang sama (`scripts/lib/seed-course.ts`).
+- **Seed ini idempotent (upsert), aman dijalankan ulang di DB yang sudah
+  berisi data.** Course & lesson di-upsert berdasarkan `slug`, module
+  berdasarkan (course, `order`). ID lesson tetap stabil di antara run,
+  sehingga `Progress` dan `Bookmarks` user tidak putus. Seed tidak pernah
+  menghapus apa pun: lesson/module yang ada di DB tapi tidak lagi ada di
+  definisi cuma di-log sebagai orphan (`orphanedLessonSlugs`). Seed juga
+  tidak menyentuh `Courses.status` pada course yang sudah ada (hook
+  `afterChange` di `Courses.ts` mengirim email tiap status berubah jadi
+  `published`) dan menolak (throw) kalau slug lesson ternyata dipakai lesson
+  di course lain.
+- **Slug lesson yang sudah ada TIDAK BOLEH diganti.** Slug dipakai oleh URL,
+  `Progress`, dan `Bookmarks`; kalau slug diganti, seed membuat lesson baru
+  dan lesson lama jadi orphan (tidak terhapus, progress user tetap menempel
+  di lesson lama). Lesson baru memakai prefix slug course-nya (mis. `pfz-`,
+  `sqlfz-`, `rustfz-`) dan harus unik di seluruh DB (dijaga tes slug unik di
+  `tests/int/course-content.int.spec.ts`).
+- **Urutan opsi quiz diacak saat seed** (deterministik — seed-nya teks soal,
+  jadi hasilnya sama tiap run). Sebelumnya 424 dari 427 soal punya jawaban
+  benar di opsi pertama (temuan audit konten), jadi siswa bisa lulus dengan
+  selalu memilih A. Distribusi index jawaban benar sekarang: 220/182/202/170
+  untuk index 0/1/2/3 (dari 774 soal). Grading di `POST /api/quiz` tetap
+  berbasis index opsi, bukan teks — lihat `docs/19-FEATURE-QUIZ.md`.
+
+**Verifikasi akhir overhaul konten (di DB dev yang sudah berisi seed
+lama):** 85 tes unit konten/seed/markdown/render lolos; `pnpm seed:courses`
+di atas data lama →
+12 course di-update, 36 lesson baru dibuat, `orphanedLessonSlugs` kosong di
+semua course; query SQL → 12 course, tiap course persis 5 module/21 lesson
+(252 lesson total), 0 slug lesson duplikat, 0 soal quiz tanpa tepat satu
+`isCorrect`, 0 baris `Progress` yang lesson-nya hilang, ID lesson lama
+(mis. 1-18 untuk Python) dan baris `Progress` yang sudah ada tetap utuh.
+Smoke test lewat `pnpm dev` + curl (bukan browser sungguhan): halaman lesson
+lama & baru Python/SQL/Rust me-render heading, list, inline code, dan block
+`Code` sesuai isi DB; `/courses/<slug>` menampilkan deskripsi; submit quiz
+lewat `POST /api/quiz` sebagai student → skor 100% dengan jawaban benar tidak
+selalu di index 0, resubmit idempotent (`alreadyCompleted`), `isCorrect` tidak
+bocor di HTML lesson untuk student. Starter code sandbox sudah dicek lokal
+di image Docker yang versinya sama dengan runtime Judge0 (Bash 5.0, GCC 9.2,
+Go 1.13, OpenJDK 13, Node 12, PHP 7.4, Python 3.8, Ruby 2.7, Rust 1.40,
+SQLite 3.27, TypeScript 3.7), dan guard di `course-content.int.spec.ts`
+menolak fitur runtime yang lebih baru di starter.
+
+**Belum dites:** eksekusi nyata tombol Run lewat Judge0 live — blocker sama
+dengan catatan Judge0 di "Pending Aksi Manual" di atas (container privileged
+belum bisa dinyalakan di environment development ini), jadi starter baru
+diverifikasi di Docker lokal, bukan di Judge0 sungguhan. Smoke test klik
+quiz/lesson di browser sungguhan juga belum (API & HTML dites lewat curl).
+Topik yang butuh network/root sungguhan (mis. package manager & cron di
+Linux) sengaja quiz-only karena sandbox Judge0 stateless tanpa network/root.
 
 Update checklist ini setiap fase selesai supaya sesi Claude Code berikutnya tahu
 harus lanjut dari mana.
