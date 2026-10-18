@@ -226,9 +226,6 @@ const RUNTIME_REQUIRED: Partial<Record<CodeLanguage, RequiredRule[]>> = {
     {
       pattern: /^\.headers on\n\.mode column/,
       reason: 'baris pertama harus .headers on lalu .mode column',
-      // Semua 15 starter SQL belum punya header; dibekukan sampai Task 15 (SQL). Hapus
-      // `pendingUntil` di sana supaya aturan ini aktif.
-      pendingUntil: 'diaktifkan di Task 15 (SQL)',
     },
   ],
 }
