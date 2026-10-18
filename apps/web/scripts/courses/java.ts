@@ -286,7 +286,7 @@ System.out.println(hampir);          // 1.23456792E8
 System.out.println((int) hampir);    // 123456792, bukan 123456789
 \`\`\``,
           '## Explicit casting (narrowing)',
-          'Explicit casting harus ditulis manual dengan tanda kurung berisi tipe tujuan, misal `(int) 9.7`, dipakai ketika mengubah tipe yang lebih lebar ke tipe yang lebih sempit. Nilainya bisa kehilangan presisi atau rentang: `double` ke `int` memotong bagian desimalnya (ke arah nol, bukan membulatkan, jadi `(int) -9.7` menjadi `-9`), dan nilai di luar rentang tipe tujuan "berputar", misal `(byte) 200` menjadi `-56`. Tanpa cast, `int x = 9.7;` adalah error compile: `incompatible types: possible lossy conversion from double to int`.',
+          'Explicit casting harus ditulis manual dengan tanda kurung berisi tipe tujuan, misal `(int) 9.7`, dipakai ketika mengubah tipe yang lebih lebar ke tipe yang lebih sempit. Nilainya bisa kehilangan presisi atau rentang, dengan dua pola berbeda. Dari desimal ke bilangan bulat, `double` ke `int` memotong bagian desimalnya (ke arah nol, bukan membulatkan, jadi `(int) -9.7` menjadi `-9`), dan nilai yang terlalu besar atau terlalu kecil untuk `int` dijepit ke batasnya: `(int) 1e20` menjadi `2147483647` (`Integer.MAX_VALUE`), sedangkan `NaN` menjadi `0`. Dari bilangan bulat ke bilangan bulat yang lebih sempit, bit paling atas dibuang sehingga nilainya "berputar": `(byte) 200` menjadi `-56` dan `(int) 3000000000L` menjadi `-1294967296`. Tanpa cast, `int x = 9.7;` adalah error compile: `incompatible types: possible lossy conversion from double to int`.',
           '## Casting dengan char',
           'Casting antara `int` dan `char` juga dimungkinkan karena `char` di Java sebenarnya disimpan sebagai kode numerik (Unicode) di baliknya.',
         ],
@@ -310,10 +310,16 @@ System.out.println((int) hampir);    // 123456792, bukan 123456789
         System.out.println("Explicit double ke int: " + hasilCasting);
         System.out.println("(int) -9.7 menjadi " + (int) -9.7);
 
-        // Nilai di luar rentang tipe tujuan "berputar"
+        // Desimal ke int: nilai di luar rentang int dijepit ke batas int
+        double raksasa = 1e20;
+        System.out.println("(int) 1e20 menjadi " + (int) raksasa);
+
+        // Bilangan bulat ke tipe yang lebih sempit: nilai "berputar"
         int duaRatus = 200;
         byte dipaksa = (byte) duaRatus;
         System.out.println("(byte) 200 menjadi " + dipaksa);
+        long tigaMiliar = 3000000000L;
+        System.out.println("(int) 3000000000L menjadi " + (int) tigaMiliar);
 
         // Casting char ke int (kode Unicode)
         char huruf = 'A';
