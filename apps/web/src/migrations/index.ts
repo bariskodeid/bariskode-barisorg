@@ -4,6 +4,7 @@ import * as migration_20260907_113841_add_certificates_collection from './202609
 import * as migration_20260907_114625_add_lesson_quiz_fields from './20260907_114625_add_lesson_quiz_fields';
 import * as migration_20260910_064000_add_settings_global from './20260910_064000_add_settings_global';
 import * as migration_20260914_074316 from './20260914_074316';
+import * as migration_20261018_041529_add_bookmarks from './20261018_041529_add_bookmarks';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20260914_074316.up,
     down: migration_20260914_074316.down,
-    name: '20260914_074316'
+    name: '20260914_074316',
+  },
+  {
+    up: migration_20261018_041529_add_bookmarks.up,
+    down: migration_20261018_041529_add_bookmarks.down,
+    name: '20261018_041529_add_bookmarks'
   },
 ];
