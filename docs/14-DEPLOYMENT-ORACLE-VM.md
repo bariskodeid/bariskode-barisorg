@@ -197,6 +197,37 @@ docker compose -f infra/docker-compose.yml ps   # pastikan semua "healthy"/"runn
 docker compose -f infra/docker-compose.yml exec web pnpm payload migrate
 ```
 
+Migration `20261018_041529_add_bookmarks` mengasumsikan DB yang dibangun lewat
+migration (`payload migrate` dari DB kosong). Di DB yang pernah dibangun lewat
+push dev mode, tabel `bookmarks` sudah ada sehingga migration ini gagal di
+`CREATE TABLE "bookmarks"`; dalam kasus itu jangan dipaksa, tandai saja
+migration itu sudah jalan:
+`INSERT INTO payload_migrations (name, batch) VALUES ('20261018_041529_add_bookmarks', (SELECT COALESCE(MAX(batch), 0) + 1 FROM payload_migrations));`
+
+### Seed konten course (12 course "from Zero")
+
+Setelah migration selesai, seed course lewat service `web-script` (stage
+`builder` Dockerfile, yang tidak men-set `NODE_ENV`), **selalu dengan
+`NODE_ENV=production`**:
+
+```bash
+docker compose -f infra/docker-compose.yml --profile script run --rm -e NODE_ENV=production web-script scripts/seed-all-courses.ts
+```
+
+Jangan pernah menjalankan seed ke DB production tanpa `-e NODE_ENV=production`.
+Tanpa flag itu `payload run` jalan dalam dev mode: adapter Postgres mem-push
+schema langsung ke DB (mengubah schema hasil migration, yang tidak identik
+dengan hasil push) dan menambah baris penanda `dev` (`batch = -1`) di
+`payload_migrations`. `payload migrate` berikutnya lalu berhenti di prompt
+interaktif "you've run Payload in dev mode" (default No), jadi deploy non-TTY
+bisa gagal atau migration diam-diam tidak jalan.
+
+Seed ini idempotent (upsert berdasarkan slug), tapi re-seed **menimpa edit
+admin** pada ke-12 course itu: judul, kategori, level, deskripsi course, judul
+module, dan seluruh isi lesson (konten, sandbox, quiz); hanya `status` course
+yang tidak disentuh. Jalankan backup (`pg_dump`, lihat bagian 8) sebelum
+re-seed.
+
 ## 8. Backup Rutin (cron di VM)
 
 ```bash

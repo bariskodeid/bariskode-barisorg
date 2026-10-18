@@ -164,6 +164,12 @@ bagian bawah `docs/17-ROADMAP.md`.
   ("default account-unlock access", GHSA-jg8r-5jh2-v2xj) yang per saat ini
   belum ada versi patch (`pnpm audit` update berkala untuk cek apakah sudah
   ada rilis baru).
+- **Menyisipkan block `Code` lewat editor Lexical di `/admin` belum pernah
+  dicoba**: yang sudah dicek cuma config server (block `Code` terdaftar,
+  importMap ter-generate) dan output render-nya di frontend (`LessonRichText`).
+  Alur editor sungguhan (insert block Code di lesson/post, isi kode, pilih
+  bahasa, Save, lalu buka halamannya) belum pernah dijalankan di browser.
+  Coba sekali secara manual, terutama sebelum editor mulai menulis post blog.
 
 ## Status Implementasi
 
@@ -268,30 +274,54 @@ dulu sebelum `create`), bukan dibuat duplikat.
   `pnpm seed:<bahasa>` (`seed:linux`, `seed:python`, dst) men-seed satu course
   saja lewat fungsi yang sama (`scripts/lib/seed-course.ts`).
 - **Seed ini idempotent (upsert), aman dijalankan ulang di DB yang sudah
-  berisi data.** Course & lesson di-upsert berdasarkan `slug`, module
+  berisi data** (untuk DB production, WAJIB ikuti bullet "Seed di
+  production" di bawah). Course & lesson di-upsert berdasarkan `slug`, module
   berdasarkan (course, `order`). ID lesson tetap stabil di antara run,
   sehingga `Progress` dan `Bookmarks` user tidak putus. Seed tidak pernah
-  menghapus apa pun: lesson/module yang ada di DB tapi tidak lagi ada di
-  definisi cuma di-log sebagai orphan (`orphanedLessonSlugs`). Seed juga
-  tidak menyentuh `Courses.status` pada course yang sudah ada (hook
-  `afterChange` di `Courses.ts` mengirim email tiap status berubah jadi
-  `published`) dan menolak (throw) kalau slug lesson ternyata dipakai lesson
-  di course lain.
-- **Slug lesson yang sudah ada TIDAK BOLEH diganti.** Slug dipakai oleh URL,
-  `Progress`, dan `Bookmarks`; kalau slug diganti, seed membuat lesson baru
-  dan lesson lama jadi orphan (tidak terhapus, progress user tetap menempel
-  di lesson lama). Lesson baru memakai prefix slug course-nya (mis. `pfz-`,
-  `sqlfz-`, `rustfz-`) dan harus unik di seluruh DB (dijaga tes slug unik di
-  `tests/int/course-content.int.spec.ts`).
+  menghapus apa pun: lesson yang ada di DB tapi tidak lagi ada di definisi
+  dilaporkan sebagai orphan di hasil seed (`orphanedLessonSlugs`), sedangkan
+  module berlebih (order di luar definisi) cuma di-`console.warn`, tidak
+  masuk `orphanedLessonSlugs`. Seed juga tidak menyentuh `Courses.status`
+  pada course yang sudah ada (hook `afterChange` di `Courses.ts` mengirim
+  email tiap status berubah jadi `published`) dan menolak (throw) kalau slug
+  lesson ternyata dipakai lesson di course lain.
+- **Seed di production WAJIB dengan `NODE_ENV=production`.** Perintahnya
+  (service `web-script` memakai stage `builder` Dockerfile, yang tidak
+  men-set `NODE_ENV`):
+  `docker compose -f infra/docker-compose.yml --profile script run --rm -e NODE_ENV=production web-script scripts/seed-all-courses.ts`.
+  Jangan pernah menjalankan seed ke DB production tanpa flag itu. Tanpa
+  `NODE_ENV=production`, `payload run` jalan dalam dev mode: adapter Postgres
+  mem-push schema langsung ke DB (mengubah schema hasil migration; push dan
+  migration tidak identik, mis. default/NOT NULL sepasang kolom
+  `created_at`/`updated_at`) dan menambah baris penanda `dev` (`batch = -1`)
+  di `payload_migrations`. `payload migrate` berikutnya lalu berhenti di
+  prompt interaktif "you've run Payload in dev mode" (default No), jadi
+  deploy non-TTY bisa gagal atau migration diam-diam tidak jalan. Selain
+  itu, re-seed **menimpa edit admin** pada ke-12 course ini: judul,
+  kategori, level, deskripsi course, judul module, dan seluruh isi lesson
+  (konten, sandbox, quiz); hanya `status` course yang tidak disentuh. Dump DB
+  (`pg_dump`) dulu sebelum re-seed. Prosedur yang sama tercatat di
+  docs/14-DEPLOYMENT-ORACLE-VM.md bagian 7.
+- **Slug lesson yang sudah ada TIDAK BOLEH diganti.** Slug adalah URL lesson
+  sekaligus kunci upsert seed; `Progress` dan `Bookmarks` menunjuk ke ID
+  lesson, bukan slug. Kalau slug diganti, seed membuat lesson baru (ID baru)
+  dan lesson lama jadi orphan (tidak terhapus, progress & bookmark user tetap
+  menempel di lesson lama). Lesson baru memakai prefix slug course-nya (mis.
+  `pfz-`, `sqlfz-`, `rustfz-`) dan harus unik di seluruh DB. Tes slug unik di
+  `tests/int/course-content.int.spec.ts` hanya membandingkan lesson di
+  `allCourses`; bentrok dengan lesson lain di DB (mis. fixture `seed-dev.ts`
+  atau lesson buatan admin) baru ketahuan saat seed, yang lalu throw.
 - **Urutan opsi quiz diacak saat seed** (deterministik — seed-nya teks soal,
   jadi hasilnya sama tiap run). Sebelumnya 424 dari 427 soal punya jawaban
   benar di opsi pertama (temuan audit konten), jadi siswa bisa lulus dengan
-  selalu memilih A. Distribusi index jawaban benar sekarang: 220/182/202/170
+  selalu memilih A. Distribusi index jawaban benar sekarang: 221/181/202/170
   untuk index 0/1/2/3 (dari 774 soal). Grading di `POST /api/quiz` tetap
   berbasis index opsi, bukan teks — lihat `docs/19-FEATURE-QUIZ.md`.
 
 **Verifikasi akhir overhaul konten (di DB dev yang sudah berisi seed
-lama):** 85 tes unit konten/seed/markdown/render lolos; `pnpm seed:courses`
+lama):** 98 tes unit konten/seed/markdown/render lolos (termasuk guard
+markup mentah: tidak ada backtick atau `**` tersisa di teks non-kode setelah
+konversi Lexical); `pnpm seed:courses`
 di atas data lama →
 12 course di-update, 36 lesson baru dibuat, `orphanedLessonSlugs` kosong di
 semua course; query SQL → 12 course, tiap course persis 5 module/21 lesson
@@ -306,7 +336,8 @@ selalu di index 0, resubmit idempotent (`alreadyCompleted`), `isCorrect` tidak
 bocor di HTML lesson untuk student. Starter code sandbox sudah dijalankan
 lokal di Docker dengan versi yang mendekati runtime Judge0 (versi persisnya
 beda tipis di beberapa bahasa): Python di `python:3.8-alpine`; JavaScript di
-`node:12-alpine`; TypeScript pakai `tsc` 3.7.4 asli (lewat `npx`) lalu
+`node:12-alpine`; TypeScript di-compile di host (bukan di Docker, bukan lewat
+`npx`) dengan `typescript@3.7.4` yang di-install lokal, lalu JS hasilnya
 dijalankan di `node:12-alpine` (tanpa image khusus TypeScript); C & C++ di
 `gcc:9.2`; Rust di `rust:1.40` (rustup 1.40.0); Go di `golang:1.13-alpine`
 (Go 1.13.15, sedangkan Judge0 pakai 1.13.5); Java di `eclipse-temurin:17-jdk`
