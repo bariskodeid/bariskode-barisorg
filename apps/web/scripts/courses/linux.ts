@@ -131,11 +131,10 @@ echo "Selamat belajar Linux from Zero!"
             ['"halo"', false],
             ['Tanda kutip ganda', false],
           ]),
-          q('Kenapa starter di sandbox memakai id -u, bukan whoami?', [
-            ['User sandbox hanya punya nomor UID tanpa nama, jadi whoami bisa gagal sedangkan id -u selalu berhasil', true],
-            ['whoami hanya boleh dijalankan oleh user root, sedangkan id -u boleh dijalankan siapa saja', false],
-            ['whoami sudah dihapus dari Linux versi baru dan digantikan id -u', false],
-            ['id -u menampilkan nama user, sedangkan whoami hanya menampilkan angka', false],
+          q('Kalau UID user yang menjalankan skrip tidak punya nama terdaftar, perintah mana yang tetap berhasil?', [
+            ['id -u, yang hanya menampilkan nomor UID', true],
+            ['whoami, yang menampilkan nama user efektif', false],
+            ['id -un, yang menampilkan nama user', false],
           ]),
           q('Apa yang ditampilkan perintah pwd?', [
             ['Lokasi direktori tempat shell berada sekarang', true],
