@@ -2,7 +2,7 @@ import { q, type CourseDef, type ModuleDef } from '../lib/course-def'
 
 const modules: ModuleDef[] = [
   {
-    title: 'Pengenalan SQL & Database',
+    title: 'Pengenalan SQL & Struktur Tabel',
     lessons: [
       {
         title: 'Apa itu SQL & Database Relasional?',
@@ -45,7 +45,7 @@ const modules: ModuleDef[] = [
         title: 'Membuat Tabel',
         slug: 'sqlfz-membuat-tabel',
         content: [
-          '`CREATE TABLE` dipakai untuk membuat tabel baru, diikuti nama tabel dan daftar kolom beserta tipe datanya dalam tanda kurung. Perintah ini hanya membuat struktur tabel (kolom-kolomnya); barisnya masih kosong sampai kita mengisinya dengan `INSERT`.',
+          '`CREATE TABLE` dipakai untuk membuat tabel baru, diikuti nama tabel dan daftar kolom beserta tipe datanya dalam tanda kurung. Perintah ini hanya membuat struktur tabel (kolom-kolomnya); barisnya masih kosong sampai kita mengisinya dengan `INSERT`. Aturan tambahan untuk kolom (`NOT NULL`, `UNIQUE`, dan sejenisnya) serta cara mengubah atau membuang tabel dibahas di lesson berikutnya.',
           '## Sintaks dasar',
           'Setiap kolom ditulis sebagai `nama_kolom tipe_data`, dipisahkan koma, dan seluruh daftar kolom diapit tanda kurung. Perintah SQL diakhiri titik koma (`;`).',
           '```sql\nCREATE TABLE siswa (\n  id INTEGER PRIMARY KEY,\n  nama TEXT,\n  umur INTEGER\n);\n```',
@@ -105,6 +105,93 @@ SELECT * FROM siswa;
         ],
       },
       {
+        title: 'Constraint, ALTER & DROP TABLE',
+        slug: 'sqlfz-constraint-alter-drop',
+        content: [
+          'Constraint adalah aturan yang kita tulis di definisi kolom untuk menjaga kualitas data: database menolak `INSERT` atau `UPDATE` yang melanggarnya, sehingga data yang salah tidak sempat masuk ke tabel.',
+          '## NOT NULL, UNIQUE, DEFAULT, dan CHECK',
+          '- `NOT NULL`: kolom wajib diisi, tidak boleh `NULL`\n- `UNIQUE`: tidak boleh ada dua baris dengan nilai yang sama di kolom itu (nilai `NULL` tidak dianggap sama satu sama lain, jadi beberapa baris boleh `NULL`)\n- `DEFAULT nilai`: nilai yang dipakai kalau kolom tidak disebutkan saat `INSERT`\n- `CHECK (kondisi)`: nilai harus memenuhi kondisi, misal `CHECK (umur >= 0)`',
+          "```sql\nCREATE TABLE siswa (\n  id INTEGER PRIMARY KEY,\n  nama TEXT NOT NULL,\n  email TEXT UNIQUE,\n  umur INTEGER CHECK (umur >= 0),\n  status TEXT DEFAULT 'aktif'\n);\n```",
+          'Kalau sebuah `INSERT` melanggar constraint, perintahnya gagal dengan pesan error seperti `NOT NULL constraint failed: siswa.nama`, `UNIQUE constraint failed: siswa.email`, atau `CHECK constraint failed: siswa`, dan barisnya tidak masuk ke tabel. Perintah lain di skrip yang sama tetap dijalankan.',
+          '## ALTER TABLE',
+          '`ALTER TABLE` mengubah struktur tabel yang sudah ada tanpa membuangnya: `RENAME TO` mengganti nama tabel, `RENAME COLUMN ... TO ...` mengganti nama kolom, dan `ADD COLUMN` menambah kolom di posisi paling akhir. Baris yang sudah ada mendapat nilai `DEFAULT` kolom baru itu, atau `NULL` kalau tidak ada.',
+          'Dengan tabel `siswa` dari contoh di atas:',
+          '```sql\nALTER TABLE siswa ADD COLUMN kelas_id INTEGER;\nALTER TABLE siswa RENAME TO murid;\n```',
+          'Kolom baru lewat `ADD COLUMN` tidak boleh `PRIMARY KEY` atau `UNIQUE`, dan kalau diberi `NOT NULL` harus punya `DEFAULT` selain `NULL`. Menghapus kolom dengan `ALTER TABLE ... DROP COLUMN` baru ada di SQLite 3.35+, tidak jalan di sandbox.',
+          '## DROP TABLE',
+          '`DROP TABLE nama_tabel;` membuang tabel beserta seluruh isinya secara permanen. Ini berbeda dari menghapus baris-baris dengan `DELETE` (dibahas di lesson `DELETE` nanti), yang membiarkan tabelnya tetap ada. Tambahkan `IF EXISTS` (`DROP TABLE IF EXISTS siswa;`) supaya tidak error kalau tabelnya memang sudah tidak ada.',
+          '## Perintah shell di starter',
+          'Starter lesson ini memakai dua perintah shell `sqlite3` tambahan (bukan SQL, tanpa titik koma): `.nullvalue NULL` supaya `NULL` tampil sebagai teks `NULL` dan bukan sel kosong, serta `.tables` untuk menampilkan daftar tabel yang ada.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `.headers on
+.mode column
+.nullvalue NULL
+
+CREATE TABLE siswa (
+  id INTEGER PRIMARY KEY,
+  nama TEXT NOT NULL,
+  email TEXT UNIQUE,
+  umur INTEGER CHECK (umur >= 0),
+  status TEXT DEFAULT 'aktif'
+);
+
+-- Kolom status tidak disebutkan di INSERT pertama, jadi terisi DEFAULT 'aktif'.
+INSERT INTO siswa (nama, email, umur) VALUES ('Budi', 'budi@x.id', 16);
+INSERT INTO siswa (nama, email, umur, status) VALUES ('Siti', 'siti@x.id', 17, 'cuti');
+
+SELECT * FROM siswa;
+
+-- Coba hapus tanda -- di depan salah satu baris berikut, lalu Run lagi untuk melihat pesan
+-- error tiap constraint. Baris yang melanggar tidak akan masuk ke tabel.
+-- INSERT INTO siswa (nama, email, umur) VALUES (NULL, 'eko@x.id', 15);     -- melanggar NOT NULL
+-- INSERT INTO siswa (nama, email, umur) VALUES ('Dewi', 'budi@x.id', 15);  -- melanggar UNIQUE
+-- INSERT INTO siswa (nama, email, umur) VALUES ('Citra', 'cit@x.id', -1);  -- melanggar CHECK
+
+-- ALTER TABLE: tambah kolom, lalu ganti nama tabel.
+ALTER TABLE siswa ADD COLUMN kelas_id INTEGER;
+ALTER TABLE siswa RENAME TO murid;
+
+-- Baris lama mendapat NULL di kolom baru.
+SELECT id, nama, kelas_id FROM murid;
+
+-- .tables menampilkan daftar tabel: murid ada sebelum DROP TABLE dan hilang sesudahnya.
+.tables
+DROP TABLE murid;
+.tables
+
+-- IF EXISTS membuat DROP TABLE aman walau tabelnya sudah tidak ada.
+DROP TABLE IF EXISTS murid;
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q(
+            "Kolom email dideklarasikan TEXT UNIQUE dan sudah ada baris dengan email 'budi@x.id'. Apa yang terjadi saat INSERT baris lain dengan email yang sama?",
+            [
+              ['Ditolak dengan error UNIQUE constraint failed dan barisnya tidak masuk', true],
+              ['Baris lama ditimpa oleh baris baru secara otomatis', false],
+              ['Baris baru tetap masuk dan hanya muncul peringatan', false],
+              ['Baris baru masuk tetapi emailnya diubah otomatis supaya berbeda', false],
+            ],
+          ),
+          q(
+            "Kolom status dideklarasikan TEXT DEFAULT 'aktif'. Apa isi kolom status kalau INSERT tidak menyebutkan kolom itu?",
+            [
+              ["'aktif', yaitu nilai DEFAULT-nya", true],
+              ['NULL, karena nilainya tidak disebutkan', false],
+              ['String kosong, karena kolomnya bertipe TEXT', false],
+              ['INSERT gagal karena kolom ber-DEFAULT wajib disebutkan', false],
+            ],
+          ),
+          q('Apa akibat DROP TABLE siswa;?', [
+            ['Tabel siswa beserta seluruh isinya terbuang secara permanen', true],
+            ['Hanya isi baris yang dihapus, struktur kolomnya tetap ada', false],
+            ['Tabel hanya disembunyikan dan bisa dipulihkan dengan perintah RESTORE', false],
+            ['Hanya kolom PRIMARY KEY yang dihapus dari tabel', false],
+          ]),
+        ],
+      },
+      {
         title: 'Tipe Data SQL',
         slug: 'sqlfz-tipe-data-sql',
         content: [
@@ -118,7 +205,7 @@ SELECT * FROM siswa;
           "```sql\nCREATE TABLE contoh (umur INTEGER);\nINSERT INTO contoh VALUES ('17');   -- teks berbentuk angka\nINSERT INTO contoh VALUES ('abc');  -- bukan angka\nSELECT umur, typeof(umur) FROM contoh;\n```",
           'Hasilnya: `17` bertipe `integer` (sudah diubah), sedangkan `abc` tetap bertipe `text`.',
           '## NULL',
-          '`NULL` bukan berarti angka nol atau string kosong — `NULL` berarti benar-benar tidak ada nilai. Ini penting dipahami karena perbandingan dengan `NULL` punya aturan khusus (`IS NULL`, bukan `= NULL`).',
+          '`NULL` bukan berarti angka nol atau string kosong — `NULL` berarti benar-benar tidak ada nilai. Ini penting dipahami karena perbandingan dengan `NULL` punya aturan khusus (`IS NULL`, bukan `= NULL`), yang dibahas lengkap di lesson `NULL, COALESCE & CASE`.',
           '## Dibanding database lain',
           'PostgreSQL dan MySQL umumnya lebih ketat: tipe seperti `VARCHAR(50)`, `DECIMAL`, atau `BOOLEAN` di sana benar-benar membatasi nilai yang diterima (di SQLite, angka dalam kurung seperti `(50)` bahkan diabaikan). Sejak SQLite 3.37 ada tabel `STRICT` yang juga memaksa tipe (butuh versi 3.37+, tidak jalan di sandbox). Konsep dasarnya tetap sama: pilih tipe yang sesuai dengan isi kolom.',
         ],
@@ -414,6 +501,88 @@ SELECT * FROM siswa WHERE nama LIKE 'b%';
             ['Cocok hanya kalau kolomnya dibungkus fungsi UPPER() terlebih dulu', false],
             ['Error karena pola LIKE harus diawali huruf besar seperti isi kolomnya', false],
           ]),
+        ],
+      },
+      {
+        title: 'NULL, COALESCE & CASE',
+        slug: 'sqlfz-null-coalesce-case',
+        content: [
+          'Di lesson Tipe Data kita sudah kenal `NULL`: tanda bahwa sebuah kolom tidak punya nilai. Karena `NULL` berarti "tidak diketahui", perbandingan biasa dengannya tidak pernah bernilai benar: `nilai = NULL` dan `nilai != NULL` sama-sama menghasilkan `NULL` (bukan true atau false), dan `WHERE` membuang baris yang kondisinya `NULL`. Contoh di lesson ini memakai tabel `siswa` yang punya kolom `nilai`, dengan satu siswa yang `nilai`-nya `NULL`. Di sandbox, baris `.nullvalue NULL` di awal starter membuat `NULL` tampil sebagai teks `NULL`, bukan sel kosong.',
+          '## IS NULL dan IS NOT NULL',
+          'Untuk memeriksa `NULL`, pakai `IS NULL` atau `IS NOT NULL`:',
+          '```sql\nSELECT nama FROM siswa WHERE nilai IS NULL;\nSELECT nama FROM siswa WHERE nilai IS NOT NULL;\n```',
+          'Sebaliknya, `WHERE nilai = NULL` tidak pernah cocok dengan baris mana pun, sehingga hasilnya selalu kosong.',
+          '## COALESCE',
+          '`COALESCE(a, b, ...)` mengembalikan argumen pertama yang bukan `NULL`, atau `NULL` kalau semuanya `NULL`. Biasanya dipakai untuk memberi nilai pengganti di hasil query, misal `COALESCE(nilai, 0)`. SQLite juga punya `IFNULL(a, b)`, versi dua argumen yang setara. Penggantian ini hanya terjadi di hasil query; data di tabel tetap `NULL`.',
+          '```sql\nSELECT nama, COALESCE(nilai, 0) AS nilai_aman FROM siswa;\n```',
+          '## CASE',
+          '`CASE` memilih satu hasil berdasarkan kondisi, mirip if/else di bahasa pemrograman. Kondisi `WHEN` dicek dari atas ke bawah dan yang pertama benar langsung dipakai, sisanya tidak dicek lagi. Kalau tidak ada yang benar, hasilnya `ELSE`; tanpa `ELSE`, hasilnya `NULL`. Ekspresi diakhiri dengan `END`.',
+          "```sql\nSELECT nama,\n       CASE\n         WHEN nilai IS NULL THEN 'belum ada'\n         WHEN nilai >= 90 THEN 'A'\n         WHEN nilai >= 80 THEN 'B'\n         ELSE 'C'\n       END AS predikat\nFROM siswa;\n```",
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `.headers on
+.mode column
+.nullvalue NULL
+
+CREATE TABLE siswa (
+  id INTEGER PRIMARY KEY,
+  nama TEXT,
+  kelas_id INTEGER,
+  nilai REAL
+);
+
+INSERT INTO siswa (nama, kelas_id, nilai) VALUES ('Budi', 1, 85.5);
+INSERT INTO siswa (nama, kelas_id, nilai) VALUES ('Siti', 1, 90.0);
+INSERT INTO siswa (nama, kelas_id, nilai) VALUES ('Andi', 2, 78.0);
+INSERT INTO siswa (nama, kelas_id, nilai) VALUES ('Bella', 2, 92.0);
+-- Dito belum punya nilai: kolom nilai-nya NULL.
+INSERT INTO siswa (nama, kelas_id) VALUES ('Dito', 2);
+
+SELECT * FROM siswa;
+
+-- IS NULL / IS NOT NULL memeriksa ada-tidaknya nilai.
+SELECT nama FROM siswa WHERE nilai IS NULL;
+SELECT nama FROM siswa WHERE nilai IS NOT NULL;
+
+-- nilai = NULL tidak pernah benar, jadi hasilnya kosong (tidak ada yang tercetak).
+SELECT nama FROM siswa WHERE nilai = NULL;
+
+-- COALESCE: pakai 0 sebagai pengganti NULL di hasil query; data di tabel tidak berubah.
+SELECT nama, nilai, COALESCE(nilai, 0) AS nilai_aman FROM siswa;
+
+-- CASE: kondisi dicek dari atas ke bawah, yang pertama benar dipakai.
+SELECT nama,
+       CASE
+         WHEN nilai IS NULL THEN 'belum ada'
+         WHEN nilai >= 90 THEN 'A'
+         WHEN nilai >= 80 THEN 'B'
+         ELSE 'C'
+       END AS predikat
+FROM siswa;
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Query SELECT nama FROM siswa WHERE nilai = NULL; menghasilkan apa?', [
+            ['Hasil kosong, karena = dengan NULL tidak pernah bernilai benar', true],
+            ['Semua siswa yang nilainya NULL, karena NULL sama dengan NULL', false],
+            ['Error, karena NULL tidak boleh dipakai bersama operator =', false],
+            ['Semua siswa, karena NULL dianggap cocok dengan nilai apa pun', false],
+          ]),
+          q('Apa yang dihasilkan COALESCE(nilai, 0) pada baris yang nilai-nya NULL?', [
+            ['0 di hasil query, sedangkan data di tabel tetap NULL', true],
+            ['NULL, karena COALESCE tidak mengubah nilai NULL', false],
+            ['0 di hasil query, dan nilai di tabel ikut diubah menjadi 0 secara permanen', false],
+            ['Error, karena COALESCE hanya boleh dipakai pada kolom bertipe TEXT', false],
+          ]),
+          q(
+            "Pada CASE WHEN nilai >= 90 THEN 'A' WHEN nilai >= 80 THEN 'B' ELSE 'C' END, siswa bernilai 92 mendapat predikat apa?",
+            [
+              ["'A', karena kondisi pertama yang benar langsung dipakai", true],
+              ["'B', karena kondisi terakhir yang benar menimpa yang sebelumnya", false],
+              ["'A' dan 'B' sekaligus, karena 92 memenuhi kedua kondisi", false],
+              ["'C', karena ELSE selalu dijalankan paling akhir", false],
+            ],
+          ),
         ],
       },
       {
@@ -1099,7 +1268,7 @@ WHERE nilai > (SELECT AVG(nilai) FROM siswa WHERE kelas_id = s.kelas_id);
     ],
   },
   {
-    title: 'Update, Delete & Ringkasan',
+    title: 'Update, Delete, Transaksi & Ringkasan',
     lessons: [
       {
         title: 'UPDATE',
@@ -1159,7 +1328,7 @@ SELECT * FROM siswa;
           '`DELETE FROM` menghapus baris dari tabel. Sintaks: `DELETE FROM nama_tabel WHERE kondisi;`. Hanya baris yang memenuhi kondisi yang terhapus; tabelnya sendiri beserta kolom-kolomnya tetap ada.',
           "```sql\nDELETE FROM siswa WHERE nama = 'Andi';\n```",
           '## Bahaya DELETE tanpa WHERE',
-          'Sama seperti `UPDATE`, klausa `WHERE` di `DELETE` sangat krusial — `DELETE FROM siswa;` tanpa `WHERE` akan menghapus SEMUA baris di tabel `siswa`, tanpa peringatan tambahan (tabelnya tetap ada, hanya kosong). SQLite tidak punya perintah `UNDO` untuk membatalkan penghapusan yang sudah dijalankan.',
+          'Sama seperti `UPDATE`, klausa `WHERE` di `DELETE` sangat krusial — `DELETE FROM siswa;` tanpa `WHERE` akan menghapus SEMUA baris di tabel `siswa`, tanpa peringatan tambahan (tabelnya tetap ada, hanya kosong). SQLite tidak punya perintah `UNDO` untuk membatalkan penghapusan yang sudah dijalankan; penghapusan hanya bisa dibatalkan kalau `DELETE` dijalankan di dalam transaksi, seperti di lesson `Transaksi` setelah ini.',
           '## Praktik aman',
           'Sebelum menjalankan `DELETE`, coba dulu `SELECT` dengan kondisi `WHERE` yang sama untuk memastikan baris yang akan terhapus memang benar-benar yang dimaksud.',
           '## Id bekas dipakai lagi',
@@ -1221,10 +1390,76 @@ SELECT * FROM siswa;
         ],
       },
       {
+        title: 'Transaksi: BEGIN, COMMIT & ROLLBACK',
+        slug: 'sqlfz-transaction',
+        content: [
+          'Transaksi mengelompokkan beberapa perintah SQL menjadi satu unit kerja yang berlaku semua-atau-tidak-sama-sekali. Contoh klasiknya transfer saldo: memindahkan 100 dari rekening A ke B butuh dua `UPDATE`. Kalau hanya salah satu yang berhasil, uang hilang atau muncul begitu saja. Dengan transaksi, kedua perubahan disimpan bersama atau dibatalkan bersama.',
+          '## BEGIN, COMMIT, dan ROLLBACK',
+          '- `BEGIN;` memulai transaksi: perubahan sesudahnya belum final\n- `COMMIT;` menyimpan semua perubahan sejak `BEGIN` secara permanen\n- `ROLLBACK;` membatalkan semua perubahan sejak `BEGIN`, sehingga data kembali seperti sebelum `BEGIN`',
+          'Contoh transfer saldo memakai tabel `rekening` (kolom `pemilik` dan `saldo`) seperti di starter:',
+          "```sql\nBEGIN;\nUPDATE rekening SET saldo = saldo - 100 WHERE pemilik = 'Budi';\nUPDATE rekening SET saldo = saldo + 100 WHERE pemilik = 'Siti';\nCOMMIT;\n```",
+          '## Tanpa BEGIN: autocommit',
+          'Di luar `BEGIN`, SQLite menjalankan setiap perintah sebagai transaksi sendiri yang langsung disimpan (mode autocommit). Karena itu `DELETE` biasa tidak bisa dibatalkan setelah dijalankan, sedangkan `DELETE` yang berada di antara `BEGIN` dan `ROLLBACK` bisa. Kalau koneksi ditutup sebelum `COMMIT` (misal skrip selesai), transaksi yang belum di-commit dibatalkan otomatis, jadi jangan lupa `COMMIT`.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `.headers on
+.mode column
+
+CREATE TABLE rekening (
+  id INTEGER PRIMARY KEY,
+  pemilik TEXT,
+  saldo INTEGER
+);
+
+INSERT INTO rekening (pemilik, saldo) VALUES ('Budi', 500);
+INSERT INTO rekening (pemilik, saldo) VALUES ('Siti', 300);
+
+-- 1. COMMIT: transfer 100 dari Budi ke Siti, kedua UPDATE disimpan bersama.
+BEGIN;
+UPDATE rekening SET saldo = saldo - 100 WHERE pemilik = 'Budi';
+UPDATE rekening SET saldo = saldo + 100 WHERE pemilik = 'Siti';
+COMMIT;
+
+SELECT * FROM rekening;
+
+-- 2. ROLLBACK: DELETE di dalam transaksi bisa dibatalkan.
+BEGIN;
+DELETE FROM rekening;
+-- Di dalam transaksi, tabel terlihat kosong (0 baris).
+SELECT COUNT(*) AS jumlah_rekening FROM rekening;
+ROLLBACK;
+
+-- Setelah ROLLBACK, kedua rekening kembali (2 baris).
+SELECT COUNT(*) AS jumlah_rekening FROM rekening;
+SELECT * FROM rekening;
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang dilakukan ROLLBACK?', [
+            ['Membatalkan semua perubahan sejak BEGIN sehingga data kembali seperti semula', true],
+            ['Membatalkan hanya perintah terakhir sebelum ROLLBACK ditulis', false],
+            ['Mengulang perintah terakhir sekali lagi dari awal', false],
+            ['Menyimpan semua perubahan lalu langsung memulai transaksi baru', false],
+          ]),
+          q('Apa yang terjadi pada DELETE FROM rekening; yang dijalankan tanpa BEGIN?', [
+            ['Langsung disimpan permanen (autocommit), jadi tidak bisa di-ROLLBACK', true],
+            ['Menunggu COMMIT sebelum baris benar-benar terhapus', false],
+            ['Otomatis masuk ke transaksi yang masih bisa dibatalkan dengan ROLLBACK', false],
+            ['Ditolak karena DELETE wajib berada di dalam transaksi', false],
+          ]),
+          q('Kenapa dua UPDATE pada transfer saldo dibungkus BEGIN ... COMMIT?', [
+            ['Agar kedua perubahan disimpan bersama atau dibatalkan bersama', true],
+            ['Agar kedua UPDATE otomatis diulang sampai salah satunya berhasil', false],
+            ['Agar klausa WHERE tidak perlu ditulis di setiap UPDATE di dalamnya', false],
+            ['Agar saldo rekening tidak mungkin menjadi bernilai negatif', false],
+          ]),
+        ],
+      },
+      {
         title: 'Studi Kasus Gabungan',
         slug: 'sqlfz-studi-kasus-gabungan',
         content: [
-          'Sepanjang course ini kita sudah belajar `CREATE TABLE`, `INSERT`, `SELECT`, `WHERE`, `ORDER BY`, fungsi agregat, `GROUP BY`/`HAVING`, `JOIN`, subquery, `UPDATE`, dan `DELETE` — cukup untuk mulai membangun dan menganalisis database relasional sungguhan.',
+          'Sepanjang course ini kita sudah belajar `CREATE TABLE` (beserta constraint, `ALTER TABLE`, dan `DROP TABLE`), `INSERT`, `SELECT`, `WHERE`, penanganan `NULL` dengan `COALESCE` dan `CASE`, `ORDER BY`, fungsi agregat, `GROUP BY`/`HAVING`, `JOIN`, subquery, `UPDATE`, `DELETE`, dan transaksi — cukup untuk mulai membangun dan menganalisis database relasional sungguhan.',
           'Lesson penutup ini menggabungkan semuanya dalam satu skenario: dua tabel berelasi (`kelas` dan `siswa`), lalu query yang menggabungkan `JOIN`, `GROUP BY`, dan `ORDER BY` sekaligus untuk mendapatkan ringkasan per kelas.',
           'Coba baca skrip di sandbox baris demi baris: perhatikan urutan eksekusinya — tabel dibuat, data dimasukkan, baru kemudian data dibaca & dianalisis. Ini pola yang akan terus dipakai di proyek database nyata.',
         ],
@@ -1294,7 +1529,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'SQL from Zero adalah course pengantar untuk kamu yang belum pernah menulis query database: calon developer, analis data, atau siapa saja yang ingin tahu cara menyimpan dan mengambil data terstruktur. Tidak perlu pengalaman programming sebelumnya.',
-    'Di sini kamu belajar apa itu database relasional, membuat tabel dengan `CREATE TABLE`, dan tipe data SQLite (storage class dan type affinity, termasuk kenapa tipe kolom di SQLite hanya rekomendasi). Lalu `INSERT`, `SELECT`, `WHERE` (dengan `IN`, `BETWEEN`, dan `LIKE`), `ORDER BY`/`LIMIT`/`OFFSET`, fungsi agregat, `GROUP BY`, `HAVING`, dan `DISTINCT`. Setelah itu relasi antar tabel lewat primary key, foreign key (dan kenapa di SQLite harus diaktifkan dulu), `INNER JOIN`, `LEFT JOIN`, serta subquery, ditutup dengan `UPDATE`, `DELETE`, dan studi kasus gabungan. Hampir semua lesson punya contoh yang bisa langsung dijalankan di code sandbox dan dilengkapi quiz pilihan ganda.',
+    'Di sini kamu belajar apa itu database relasional, membuat tabel dengan `CREATE TABLE`, constraint (`NOT NULL`, `UNIQUE`, `DEFAULT`, `CHECK`), `ALTER TABLE`, `DROP TABLE`, dan tipe data SQLite (storage class dan type affinity, termasuk kenapa tipe kolom di SQLite hanya rekomendasi). Lalu `INSERT`, `SELECT`, `WHERE` (dengan `IN`, `BETWEEN`, dan `LIKE`), penanganan `NULL` dengan `IS NULL`, `COALESCE`, dan `CASE`, `ORDER BY`/`LIMIT`/`OFFSET`, fungsi agregat, `GROUP BY`, `HAVING`, dan `DISTINCT`. Setelah itu relasi antar tabel lewat primary key, foreign key (dan kenapa di SQLite harus diaktifkan dulu), `INNER JOIN`, `LEFT JOIN`, serta subquery, ditutup dengan `UPDATE`, `DELETE`, transaksi (`BEGIN`, `COMMIT`, `ROLLBACK`), dan studi kasus gabungan. Hampir semua lesson punya contoh yang bisa langsung dijalankan di code sandbox dan dilengkapi quiz pilihan ganda.',
     'Sandbox di course ini menjalankan SQL dengan SQLite 3.27.2 lewat shell `sqlite3`: setiap contoh adalah skrip mandiri yang membuat tabelnya sendiri, dan dua baris pertamanya (`.headers on` dan `.mode column`) membuat hasil query tampil lengkap dengan judul kolom. Karena versinya 3.27.2, fitur SQLite yang lebih baru (misalnya `RETURNING`, `DROP COLUMN`, atau `HAVING` tanpa `GROUP BY`) tidak tersedia, dan sintaks khas MySQL atau PostgreSQL tidak selalu jalan. Perbedaan penting disebut di lesson terkait. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
   ].join('\n\n'),
   sandboxLanguage: 'sql',
