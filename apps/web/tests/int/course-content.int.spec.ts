@@ -349,10 +349,7 @@ const UNDEFINED_LEAK = /\bundefined\b(?!\s+behaviou?r)/
 
 // Course yang masih punya pelanggaran nyata di luar daftar perbaikan task guard ini. Key =
 // slug course, value = catatan. Entri dihapus di task course masing-masing.
-const PENDING_CLEAN_COURSES: Record<string, string> = {
-  'php-from-zero':
-    'phpfz-scope-variabel masih memuat catatan penulis "sulit didemonstrasikan" (X6), dihapus di Task 14 (PHP)',
-}
+const PENDING_CLEAN_COURSES: Record<string, string> = {}
 
 /** Pelanggaran kebersihan satu course: konten, starter, dan string quiz. */
 function cleanlinessViolations(course: CourseDef): string[] {
