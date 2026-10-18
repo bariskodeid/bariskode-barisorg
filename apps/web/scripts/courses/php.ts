@@ -158,7 +158,7 @@ echo "Umur sekarang bertipe string: $umur\\n";
         title: 'Tipe Data Dasar',
         slug: 'phpfz-tipe-data-dasar',
         content: [
-          'PHP punya beberapa tipe data dasar: `int` (bilangan bulat), `float` (bilangan desimal), `string` (teks), `bool` (`true`/`false`), dan `array` (kumpulan data).',
+          'PHP punya beberapa tipe data dasar: `int` (bilangan bulat), `float` (bilangan desimal), `string` (teks), `bool` (`true`/`false`), dan `array` (kumpulan data). Ada juga satu tipe khusus bernama `null`, yang dibahas di lesson berikutnya.',
           '## Mengecek tipe: gettype() dan var_dump()',
           'Fungsi bawaan `gettype()` mengembalikan nama tipe dari sebuah nilai/variabel sebagai teks — berguna untuk debugging. Hati-hati, nama yang dicetaknya adalah nama lama dari sejarah PHP: `integer` (bukan `int`), `boolean` (bukan `bool`), dan `double` untuk bilangan desimal (bukan `float`). Maknanya sama, hanya namanya berbeda. Sisanya tercetak `string` dan `array`.',
           'Fungsi `var_dump()` menampilkan tipe sekaligus nilainya, dan memakai nama yang sama dengan yang kita pelajari (`int`, `float`, `bool`). Untuk string, angka dalam kurung adalah panjangnya dalam byte; untuk array, jumlah elemennya:',
@@ -233,6 +233,67 @@ echo "echo false: [" . false . "]\\n";
             ['true', false],
             ['Tidak ada, teks kosong', false],
             ['bool(true)', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Null, isset(), empty() & ??',
+        slug: 'phpfz-null-isset-coalesce',
+        content: [
+          'Selain `int`, `float`, `string`, `bool`, dan `array`, PHP punya satu tipe khusus bernama `null`, yang artinya "tidak ada nilai". Variabel bernilai `null` kalau kita mengisinya dengan `null` secara eksplisit. Seperti `true` dan `false`, `null` tidak peka huruf besar-kecil. `gettype()` dan `var_dump()` mencetaknya sebagai `NULL`.',
+          '## isset()',
+          '`isset($x)` bernilai `true` kalau variabel `$x` ada DAN nilainya bukan `null`. Fungsi ini aman dipanggil untuk variabel yang belum pernah dibuat atau key array yang tidak ada, tanpa pesan error, sehingga cocok untuk memeriksa dulu sebelum membaca, misal `isset($siswa["kota"])`.',
+          '## empty()',
+          '`empty($x)` bernilai `true` kalau nilai `$x` dianggap "kosong": `null`, `false`, `0`, `0.0`, string kosong `""`, string `"0"`, dan array kosong `[]`. Jebakannya, `0` dan `"0"` ikut dianggap kosong padahal bisa jadi nilai yang sah, misal umur 0 atau skor 0. Sebaliknya `"false"`, string berisi satu spasi, dan array yang punya elemen (walau elemennya `0`) tidak dianggap kosong. Kalau yang ingin dicek hanya ada-tidaknya nilai, pakai `isset()`.',
+          '## Operator ??',
+          'Operator null coalescing `??` mengembalikan nilai di sebelah kirinya kalau ada dan bukan `null`, kalau tidak, nilai di sebelah kanannya. Seperti `isset()`, ia tidak mengeluarkan pesan error kalau variabel atau key di kiri tidak ada, jadi cocok untuk memberi nilai default. Tanpa `??`, membaca key array yang tidak ada menghasilkan `null` disertai pesan Notice (menjadi Warning sejak PHP 8.0). Perhatikan bahwa `??` hanya mengganti `null`, sedangkan `0` dan `""` tetap dipakai apa adanya.',
+          '```php\n<?php\n$siswa = ["nama" => "Budi", "umur" => 0];\n\necho $siswa["kota"] ?? "belum diisi";   // belum diisi\necho $siswa["umur"] ?? 18;              // 0, bukan 18: hanya null yang diganti\n\nif (isset($siswa["nama"])) {\n    echo "Nama sudah diisi";\n}\n```',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `<?php
+$kosong = null;
+$nol = 0;
+$teks_kosong = "";
+$siswa = ["nama" => "Budi", "umur" => 0];
+
+var_dump($kosong);                // NULL
+echo "Tipe null: " . gettype($kosong) . "\\n";
+
+var_dump(isset($kosong));         // false, null dianggap "tidak ada"
+var_dump(isset($nol));            // true, 0 tetap nilai yang ada
+var_dump(isset($belum_dibuat));   // false, tanpa pesan error
+var_dump(isset($siswa["nama"]));  // true
+var_dump(isset($siswa["kota"]));  // false
+
+var_dump(empty($nol));            // true
+var_dump(empty($teks_kosong));    // true
+var_dump(empty("0"));             // true
+var_dump(empty("false"));         // false, teks tidak kosong
+var_dump(empty([0]));             // false, array berisi elemen tidak kosong
+var_dump(empty([]));              // true
+
+echo "Kota: " . ($siswa["kota"] ?? "belum diisi") . "\\n";
+echo "Umur: " . ($siswa["umur"] ?? 18) . "\\n";   // 0, bukan 18
+echo "Teks kosong: [" . ($teks_kosong ?? "default") . "]\\n";   // tetap kosong, bukan "default"
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa hasil isset($x) setelah $x = null; dijalankan?', [
+            ['false, karena isset() menganggap nilai null sebagai tidak ada', true],
+            ['true, karena variabel $x sudah dibuat', false],
+            ['null, karena isset() mengembalikan nilai variabelnya', false],
+            ['Error, karena null tidak boleh dicek dengan isset()', false],
+          ]),
+          q('Mana dari nilai berikut yang membuat empty() bernilai true?', [
+            ['"0", yaitu string berisi angka nol', true],
+            ['"false", yaitu string berisi kata false', false],
+            ['" ", yaitu string berisi satu spasi', false],
+            ['[0], yaitu array dengan satu elemen angka nol', false],
+          ]),
+          q('Apa yang dicetak oleh echo $umur ?? 18; kalau $umur bernilai 0?', [
+            ['0, karena ?? hanya mengganti nilai null', true],
+            ['18, karena 0 dianggap kosong', false],
+            ['Error, karena ?? hanya bisa dipakai pada array', false],
           ]),
         ],
       },
@@ -493,6 +554,75 @@ echo "Status: $status\\n";
             ['-> dan <-', false],
             ['=> saja', false],
             ['if() else()', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Percabangan switch',
+        slug: 'phpfz-switch',
+        content: [
+          '`switch` cocok dipakai kalau satu nilai dibandingkan dengan banyak kemungkinan, sebagai pengganti rantai `if`/`elseif` yang panjang. Nilai di dalam `switch (...)` dibandingkan dengan tiap `case` dari atas ke bawah memakai perbandingan longgar `==` (bukan `===`), sehingga string `"1"` cocok dengan `case 1`.',
+          '```php\n<?php\n$hari = 6;\n\nswitch ($hari) {\n    case 1:\n        echo "Senin";\n        break;\n    case 6:\n    case 7:\n        echo "Akhir pekan";\n        break;\n    default:\n        echo "Hari kerja";\n}\n```',
+          '## break dan fall-through',
+          'Setelah menemukan `case` yang cocok, PHP menjalankan semua statement dari situ sampai bertemu `break` atau akhir `switch`, termasuk statement di `case` berikutnya yang sebenarnya tidak cocok. Perilaku ini disebut fall-through, dan lupa menulis `break` adalah kesalahan paling umum pada `switch`. Di sisi lain, fall-through bisa dipakai dengan sengaja untuk menggabungkan beberapa `case` yang tindakannya sama, seperti `case 6:` dan `case 7:` di contoh di atas.',
+          '## default',
+          '`default` dijalankan kalau tidak ada `case` yang cocok, mirip `else` pada `if`. Bagian ini opsional dan biasanya ditulis paling bawah.',
+          '`switch` cocok untuk mencocokkan nilai yang persis sama. Untuk rentang nilai, misal nilai >= 90, tetap pakai `if`/`elseif`.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `<?php
+$hari = 6;
+
+switch ($hari) {
+    case 1:
+        echo "Senin\\n";
+        break;
+    case 6:
+    case 7:
+        echo "Akhir pekan\\n";
+        break;
+    default:
+        echo "Hari kerja\\n";
+}
+
+// Tanpa break, eksekusi "jatuh" ke case berikutnya (fall-through)
+$level = 2;
+switch ($level) {
+    case 3:
+        echo "Akses admin\\n";
+    case 2:
+        echo "Akses editor\\n";
+    case 1:
+        echo "Akses pembaca\\n";
+}
+
+// switch memakai perbandingan longgar (==), jadi "1" cocok dengan case 1
+switch ("1") {
+    case 1:
+        echo "Teks \\"1\\" cocok dengan case 1\\n";
+        break;
+    default:
+        echo "Tidak cocok\\n";
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Apa yang terjadi kalau sebuah case di switch tidak diakhiri break?', [
+            ['Eksekusi lanjut ke statement case berikutnya, walaupun case itu tidak cocok', true],
+            ['PHP menolak menjalankan kode dan memberi parse error', false],
+            ['switch berhenti sendiri di akhir case, jadi break hanya soal gaya penulisan', false],
+            ['Eksekusi kembali ke case pertama dan mengulang dari atas', false],
+          ]),
+          q('Apa yang dicetak oleh: switch ("1") { case 1: echo "A"; break; default: echo "B"; }', [
+            ['A, karena switch memakai == yang menyamakan "1" dan 1', true],
+            ['B, karena string "1" dan integer 1 berbeda tipe', false],
+            ['AB, karena kedua blok dijalankan', false],
+            ['Error, karena tipe nilai switch dan case tidak sama', false],
+          ]),
+          q('Kapan blok default di switch dijalankan?', [
+            ['Kalau tidak ada case yang cocok dengan nilai switch', true],
+            ['Selalu dijalankan di akhir switch, setelah case yang cocok selesai', false],
+            ['Hanya kalau nilai switch berupa string', false],
           ]),
         ],
       },
@@ -864,7 +994,7 @@ echo "Total: $total\\n";
     ],
   },
   {
-    title: 'OOP Dasar & Ringkasan',
+    title: 'OOP, Exception & Ringkasan',
     lessons: [
       {
         title: 'Class & Object',
@@ -976,12 +1106,73 @@ echo "Nama lewat method: " . $siswa1->getNama() . "\\n";
         ],
       },
       {
+        title: 'try/catch & Exception',
+        slug: 'phpfz-try-catch-exception',
+        content: [
+          'Saat program berjalan, hal yang tak terduga bisa terjadi: pembagi nol, data tidak valid, file yang hilang. PHP menangani situasi ini dengan exception. Kode yang menemukan masalah "melempar" exception dengan `throw new Exception("pesan")`, dan kode di sekitarnya bisa "menangkapnya" dengan `try`/`catch` supaya program tidak langsung berhenti.',
+          '## try, catch, dan finally',
+          '`try` membungkus kode yang mungkin gagal. Begitu exception dilempar, sisa kode di dalam `try` dilewati dan PHP lompat ke blok `catch (Exception $e)`. Di dalam `catch`, `$e->getMessage()` mengembalikan pesan exception. Blok `finally` bersifat opsional dan selalu dijalankan, entah ada exception atau tidak, cocok untuk pekerjaan bersih-bersih. Exception yang tidak ditangkap menghentikan program dengan Fatal error.',
+          '```php\n<?php\nfunction bagi($a, $b) {\n    if ($b == 0) {\n        throw new Exception("Pembagi tidak boleh nol");\n    }\n    return $a / $b;\n}\n\ntry {\n    echo bagi(10, 0);\n} catch (Exception $e) {\n    echo "Error: " . $e->getMessage();   // Error: Pembagi tidak boleh nol\n} finally {\n    echo " (selesai)";\n}\n```',
+          '## Exception dan Error',
+          'PHP punya dua jenis objek yang bisa dilempar. `Exception` biasanya dilempar oleh kode kita sendiri. Kesalahan yang dilempar oleh PHP, misal `intdiv(10, 0)` (pembagian bilangan bulat) yang melempar `DivisionByZeroError`, termasuk class `Error`, bukan `Exception`. Karena itu `catch (Exception $e)` TIDAK menangkapnya. Untuk menangkap keduanya, pakai `catch (Throwable $e)`; `Throwable` adalah induk dari `Exception` dan `Error`. Catatan: operator `/` pada PHP 7.4 hanya memberi warning kalau pembaginya nol, baru PHP 8 yang melempar `DivisionByZeroError` juga untuk `/`.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `<?php
+function bagi($a, $b) {
+    if ($b == 0) {
+        throw new Exception("Pembagi tidak boleh nol");
+    }
+    return $a / $b;
+}
+
+try {
+    echo "Hasil: " . bagi(10, 2) . "\\n";
+    echo "Hasil: " . bagi(10, 0) . "\\n";   // melempar exception, baris-baris sesudahnya dilewati
+    echo "Baris ini tidak pernah dicetak\\n";
+} catch (Exception $e) {
+    echo "Terjadi error: " . $e->getMessage() . "\\n";
+} finally {
+    echo "Blok finally selalu dijalankan\\n";
+}
+
+echo "Program tetap lanjut setelah try/catch\\n";
+
+// intdiv() melempar DivisionByZeroError, yang termasuk Error, bukan Exception.
+// Karena itu perlu catch (Throwable ...); get_class() mencetak nama class dari objeknya.
+try {
+    echo intdiv(10, 0);
+} catch (Throwable $e) {
+    echo get_class($e) . ": " . $e->getMessage() . "\\n";
+}
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Kapan blok finally dijalankan?', [
+            ['Selalu, baik ada exception maupun tidak', true],
+            ['Hanya kalau ada exception yang ditangkap oleh catch', false],
+            ['Hanya kalau tidak ada exception sama sekali', false],
+            ['Hanya kalau blok catch tidak ditulis', false],
+          ]),
+          q('Apa yang terjadi pada baris di dalam try yang ada sesudah baris yang melempar exception?', [
+            ['Dilewati, eksekusi lompat ke blok catch yang cocok', true],
+            ['Tetap dijalankan, baru kemudian catch dijalankan', false],
+            ['Dijalankan setelah blok catch selesai', false],
+            ['Program berhenti total tanpa menjalankan catch', false],
+          ]),
+          q('Mengapa catch (Exception $e) tidak menangkap kesalahan dari intdiv(10, 0)?', [
+            ['intdiv() melempar DivisionByZeroError yang termasuk Error, bukan Exception; pakai Throwable untuk menangkap keduanya', true],
+            ['intdiv() tidak melempar apa pun, ia hanya mengembalikan false', false],
+            ['catch hanya berlaku untuk exception dari kode kita sendiri; kesalahan milik PHP tidak pernah bisa ditangkap', false],
+          ]),
+        ],
+      },
+      {
         title: 'Studi Kasus Gabungan',
         slug: 'phpfz-studi-kasus-gabungan',
         content: [
           'Sebagai penutup course ini, kita akan menggabungkan semua yang sudah dipelajari: array, fungsi, dan class, dalam satu program utuh yang menghitung nilai rata-rata beberapa siswa dan menentukan status kelulusan masing-masing.',
           'Program di bawah membuat beberapa object `Siswa` dari sebuah class, menyimpannya dalam array, lalu menggunakan `foreach` dan fungsi buatan sendiri untuk memproses data setiap siswa — persis alur kerja aplikasi PHP sungguhan yang mengolah data dari database.',
-          'Sepanjang course ini kita sudah belajar sintaks dasar, tipe data, operator, kontrol alur, array, fungsi, hingga OOP dasar — fondasi yang cukup untuk mulai membangun aplikasi PHP yang lebih kompleks, termasuk yang terhubung ke database dan web framework.',
+          'Sepanjang course ini kita sudah belajar sintaks dasar, tipe data, operator, kontrol alur, array, fungsi, OOP dasar, hingga penanganan error dengan `try`/`catch` — fondasi yang cukup untuk mulai membangun aplikasi PHP yang lebih kompleks, termasuk yang terhubung ke database dan web framework.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `<?php
@@ -1048,7 +1239,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'PHP from Zero adalah course pengantar untuk kamu yang belum pernah menulis PHP, bahasa server-side yang menjalankan WordPress dan banyak website dinamis lainnya. Cocok sebagai bahasa pertama untuk web development; pengalaman di bahasa lain membantu tapi tidak wajib.',
-    'Di sini kamu belajar struktur dasar file PHP, variabel, tipe data (termasuk membaca output `gettype()` dan `var_dump()`), operator (termasuk jebakan `and`/`or` dibanding `&&`/`||`), string, type juggling dan type casting, percabangan, perulangan, array indexed dan associative, fungsi array bawaan, fungsi, scope variabel, `include`/`require`, serta class, object, constructor, dan visibilitas `public`/`protected`/`private`, ditutup dengan studi kasus yang menggabungkan semuanya. Lesson pembuka juga menjelaskan cara PHP menerima data form lewat `$_GET`/`$_POST` dan mengamankan outputnya dengan `htmlspecialchars()`. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox dan dilengkapi quiz pilihan ganda.',
+    'Di sini kamu belajar struktur dasar file PHP, variabel, tipe data (termasuk membaca output `gettype()` dan `var_dump()`), `null` dengan `isset()`, `empty()`, dan operator `??`, operator (termasuk jebakan `and`/`or` dibanding `&&`/`||`), string, type juggling dan type casting, percabangan `if`/`elseif` dan `switch`, perulangan, array indexed dan associative, fungsi array bawaan, fungsi, scope variabel, `include`/`require`, serta class, object, constructor, visibilitas `public`/`protected`/`private`, dan penanganan error dengan `try`/`catch`/`finally`, ditutup dengan studi kasus yang menggabungkan semuanya. Lesson pembuka juga menjelaskan cara PHP menerima data form lewat `$_GET`/`$_POST` dan mengamankan outputnya dengan `htmlspecialchars()`. Hampir semua lesson punya contoh kode yang bisa langsung dijalankan di code sandbox dan dilengkapi quiz pilihan ganda.',
     'Sandbox di course ini menjalankan kode dengan PHP 7.4 lewat baris perintah, tanpa akses jaringan dan tanpa input keyboard, jadi `$_GET`/`$_POST` tidak bisa dicoba di sana dan fitur yang lebih baru dari PHP 7.4 (misalnya `match`) tidak dipakai di contoh. Beberapa pesan error, seperti Notice, berbeda tingkatnya di PHP 8, dan perbedaan itu disebut di lesson terkait. Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun.',
   ].join('\n\n'),
   sandboxLanguage: 'php',
