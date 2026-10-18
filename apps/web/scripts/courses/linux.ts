@@ -102,8 +102,8 @@ const modules: ModuleDef[] = [
           '## Perintah pertama',
           '`pwd` (print working directory) menampilkan lokasi direktori saat ini. `id -u` menampilkan nomor (UID) user yang menjalankan perintah, dan `id -un` menampilkan namanya. `echo` menampilkan teks ke layar. Ada juga `whoami`, yang menampilkan nama user efektif (effective user): user yang hak aksesnya dipakai proses saat ini. Biasanya ia sama dengan user yang login, tapi bisa berbeda; setelah memakai `sudo`, misalnya, `whoami` menampilkan `root`.',
           '## Catatan tentang user di sandbox',
-          'Di komputer Linux-mu, user punya nama (misalnya `budi`), jadi `id -un` dan `whoami` menampilkannya. User yang menjalankan skrip di sandbox kemungkinan besar hanya punya nomor UID tanpa nama terdaftar. Akibatnya `whoami` gagal dengan pesan error, dan `id -un` tidak punya nama untuk ditampilkan. Karena itu starter memakai `id -u` (selalu berhasil) dan `id -un 2>/dev/null || echo "(user sandbox tanpa nama)"`: `2>/dev/null` membuang pesan error, sedangkan `||` menjalankan perintah sesudahnya hanya kalau perintah sebelumnya gagal. Pada `id` versi GNU, perintah yang gagal itu masih bisa mencetak angka UID lebih dulu, jadi di sandbox kamu mungkin melihat angka diikuti baris cadangan. Itu normal.',
-          'Coba jalankan skrip di sandbox berikut. Lokasi yang dicetak `pwd` dan nomor UID bisa berbeda tiap sandbox.',
+          'Di komputer Linux-mu, user punya nama (misalnya `budi`), jadi `id -un` dan `whoami` menampilkannya. User yang menjalankan skrip di sandbox kemungkinan besar hanya punya nomor UID tanpa nama terdaftar. Akibatnya `whoami` gagal dengan pesan error, dan `id -un` tidak punya nama untuk ditampilkan. Karena itu starter memakai `id -u` (selalu berhasil) dan `id -un 2>/dev/null || echo "(user sandbox tanpa nama)"`: `2>/dev/null` membuang pesan error, sedangkan `||` menjalankan perintah sesudahnya hanya kalau perintah sebelumnya gagal (dibahas lagi di lesson Exit Code, stderr & Chaining). Pada `id` versi GNU, perintah yang gagal itu masih bisa mencetak angka UID lebih dulu, jadi di sandbox kamu mungkin melihat angka diikuti baris cadangan. Itu normal.',
+          'Coba jalankan skrip di sandbox berikut. Lokasi yang dicetak `pwd` dan nomor UID bisa berbeda tiap sandbox. Cara mencari tahu opsi sebuah perintah dibahas di lesson berikutnya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#!/bin/bash
@@ -145,6 +145,59 @@ echo "Selamat belajar Linux from Zero!"
           ]),
         ],
       },
+      {
+        title: 'Mencari Bantuan: type, help, --help, dan man',
+        slug: 'lfz-man-help',
+        content: [
+          'Ratusan perintah Linux punya puluhan opsi, dan hampir tidak ada orang yang menghafal semuanya. Yang dilakukan sehari-hari adalah membaca bantuan bawaan sistem. Ada beberapa sumber bantuan, dan mana yang tepat tergantung jenis perintahnya.',
+          '## Kenali jenis perintah dengan type',
+          '`type nama` memberi tahu apa sebenarnya `nama` itu: builtin shell (bagian dari Bash sendiri, seperti `cd` dan `echo`), keyword shell (seperti `if` untuk percabangan, dibahas di modul terakhir), alias, atau program terpisah di disk yang ditampilkan lengkap dengan lokasinya. Jenis ini menentukan cara mencari bantuannya.',
+          '```bash\ntype cd\ntype if\ntype ls\n```',
+          'Hasilnya kira-kira `cd is a shell builtin`, `if is a shell keyword`, dan `ls is /bin/ls` (`ls` menampilkan isi direktori; lokasinya bisa berbeda tiap sistem).',
+          '## help, --help, dan man',
+          '- `help cd`: bantuan untuk builtin shell. `help` tanpa argumen menampilkan daftar builtin, dan `help -s cd` hanya menampilkan ringkasan penggunaannya.\n- `mkdir --help`: bantuan singkat yang dicetak langsung oleh program terpisah (versi GNU), berisi baris `Usage:` dan daftar opsi. Cepat dibaca, tapi bisa panjang.\n- `man mkdir`: manual lengkap yang dibuka di pager seperti `less`: spasi untuk halaman berikutnya, `/kata` untuk mencari, `q` untuk keluar.',
+          'Di sandbox, `man` kemungkinan besar tidak tersedia karena sandbox tidak membawa halaman manual, dan tampilan interaktifnya memang tidak cocok untuk skrip sekali jalan. Di Linux milikmu sendiri, `man` hampir selalu ada.',
+          '## Membaca baris Usage',
+          'Baris `Usage` mengikuti konvensi sederhana: bagian yang diapit `[ ]` bersifat opsional, `...` berarti boleh diulang, dan HURUF BESAR menandai nilai yang kamu isi sendiri. Contoh bantuan `mkdir` (perintah untuk membuat folder, dibahas di modul berikutnya):',
+          '```plaintext\nUsage: mkdir [OPTION]... DIRECTORY...\n```',
+          'Artinya: `mkdir` boleh diberi nol atau lebih opsi, lalu satu atau lebih nama direktori, misalnya `mkdir -p a/b c`. Kalau salah mengetik opsi, pesan error program GNU biasanya berakhir dengan petunjuk seperti `Try \'mkdir --help\' for more information.`',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#!/bin/bash
+echo "=== type: jenis perintah ==="
+type cd
+type if
+type ls
+
+echo "=== help: bantuan builtin shell ==="
+help -d cd
+help -s cd
+
+echo "=== --help: bantuan program terpisah (4 baris pertama saja) ==="
+# "| head -n 4" hanya memotong output jadi 4 baris pertama
+mkdir --help | head -n 4
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Kamu ingin tahu cara memakai cd, yang menurut type cd adalah builtin shell. Perintah mana yang menampilkan bantuannya?', [
+            ['help cd', true],
+            ['type cd', false],
+            ['ls cd', false],
+          ]),
+          q('Apa yang ditampilkan perintah type ls?', [
+            ['Jenis perintah itu (builtin, keyword, alias, atau program) dan lokasinya kalau berupa program', true],
+            ['Manual lengkap ls yang dibuka per halaman dan bisa digulir dengan spasi', false],
+            ['Daftar semua opsi yang diterima ls, beserta penjelasan singkat tiap opsi', false],
+            ['Versi program ls yang terpasang di sistem dan tanggal rilisnya', false],
+          ]),
+          q('Pada baris Usage: mkdir [OPTION]... DIRECTORY..., apa arti [OPTION]?', [
+            ['Bagian opsional: boleh ada, boleh tidak', true],
+            ['Wajib diketik persis seperti itu, lengkap dengan tanda kurung sikunya', false],
+            ['Tempat mengisi nama file, bukan opsi', false],
+            ['Penanda bahwa perintah hanya boleh dijalankan oleh root', false],
+          ]),
+        ],
+      },
     ],
   },
   {
@@ -179,7 +232,7 @@ pwd
         content: [
           '`mkdir` membuat folder baru, `touch` membuat file kosong baru (atau update timestamp file yang sudah ada). `mkdir -p` membuat folder bertingkat sekaligus tanpa error kalau parent-nya belum ada.',
           '`cp` menyalin file/folder (`cp -r` untuk folder), `mv` memindahkan atau me-rename file/folder, dan `rm` menghapus file (`rm -r` untuk folder, `rm -rf` untuk paksa tanpa konfirmasi).',
-          'Hati-hati dengan `rm -rf` — perintah ini menghapus permanen tanpa Recycle Bin. Selalu periksa ulang path sebelum menekan Enter, apalagi memakai wildcard seperti `*`.',
+          'Hati-hati dengan `rm -rf` — perintah ini menghapus permanen tanpa Recycle Bin. Selalu periksa ulang path sebelum menekan Enter, apalagi memakai wildcard seperti `*` (artinya "semua file", dibahas di lesson berikutnya).',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#!/bin/bash
@@ -225,6 +278,80 @@ ls -la latihan/backup
             ['Menghapus file', false],
             ['Mengubah permission', false],
             ['Mengompres file', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Wildcard & Globbing',
+        slug: 'lfz-wildcard-globbing',
+        content: [
+          'Wildcard (globbing) adalah pola dengan karakter khusus yang dipakai untuk menyebut banyak file sekaligus tanpa mengetik semua namanya, misalnya `rm *.log` untuk menghapus semua file berakhiran `.log`.',
+          '## Karakter pola',
+          '- `*` cocok dengan nol atau lebih karakter apa pun: `*.txt` cocok dengan `catatan.txt` dan `laporan1.txt`.\n- `?` cocok dengan tepat satu karakter: `laporan?.txt` cocok dengan `laporan1.txt`, tapi tidak dengan `laporan12.txt`.\n- `[abc]` cocok dengan satu karakter dari daftar, `[1-3]` dengan satu karakter dalam rentang, dan `[!abc]` dengan satu karakter yang BUKAN dari daftar (Bash juga menerima `[^abc]`).',
+          '## Shell yang memperluas pola',
+          'Pola diperluas oleh shell sebelum perintah dijalankan. Perintah seperti `rm` atau `ls` tidak pernah melihat tanda `*`; mereka hanya menerima daftar nama file hasil perluasannya. Cara mengintip hasil perluasan adalah mencetaknya dengan `echo`. Kebiasaan ini aman dipakai sebelum menghapus: periksa dulu dengan `echo` atau `ls`, baru ganti dengan `rm`.',
+          '```bash\ntouch a.txt b.txt c.log\necho *.txt\nls *.log\n```',
+          'Baris `echo *.txt` mencetak `a.txt b.txt`: `echo` menerima dua argumen, bukan satu pola.',
+          '## Hal yang sering mengejutkan',
+          'File tersembunyi (nama diawali titik) tidak ikut cocok dengan `*`; polanya harus ikut diawali titik, misalnya `.rahasia*`. Hindari `.*`, karena di Bash 5.0 pola itu juga cocok dengan `.` dan `..` (direktori saat ini dan induknya).',
+          'Kalau tidak ada file yang cocok, Bash membiarkan pola apa adanya. `echo *.pdf` mencetak `*.pdf`, dan `rm *.pdf` melaporkan bahwa file bernama `*.pdf` tidak ada.',
+          'Tanda kutip mencegah perluasan: `echo "*.txt"` mencetak `*.txt` apa adanya. Itu sebabnya `find -name "*.txt"` ditulis dengan kutip: polanya harus sampai ke `find` secara utuh, bukan diperluas oleh shell lebih dulu.',
+          'Glob bukan regular expression. `*` di glob berarti "karakter apa pun, berapa pun", sedangkan di regular expression (seperti pada `grep`) `*` berarti "ulangi karakter sebelumnya".',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#!/bin/bash
+mkdir -p glob
+cd glob
+touch laporan1.txt laporan2.txt laporan3.txt laporan_final.txt catatan.txt foto.png .rahasia.txt
+
+echo "=== * : semua file (file tersembunyi tidak ikut) ==="
+echo *
+
+echo "=== *.txt ==="
+echo *.txt
+
+echo "=== laporan?.txt : ? = tepat satu karakter ==="
+echo laporan?.txt
+
+echo "=== laporan[12].txt : angka 1 atau 2 ==="
+echo laporan[12].txt
+
+echo "=== laporan[!12].txt : karakter selain 1 dan 2 ==="
+echo laporan[!12].txt
+
+echo "=== File tersembunyi harus diawali titik ==="
+echo .rahasia*
+
+echo "=== Pola tanpa kecocokan dicetak apa adanya ==="
+echo *.pdf
+
+echo "=== Dalam kutip, pola tidak diperluas ==="
+echo "*.txt"
+
+echo "=== Intip dulu dengan echo, baru hapus ==="
+echo rm *.png
+rm *.png
+ls
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Siapa yang memperluas pola *.txt menjadi daftar nama file?', [
+            ['Shell, sebelum perintah dijalankan', true],
+            ['Perintah itu sendiri (misalnya rm atau ls) yang mencocokkan pola dengan isi direktori', false],
+            ['Kernel Linux, saat perintah membuka file', false],
+            ['Hanya perintah find, karena wildcard cuma dikenali oleh find', false],
+          ]),
+          q('Di direktori ada laporan1.txt, laporan2.txt, dan laporan_final.txt. Apa yang dicetak echo laporan?.txt?', [
+            ['laporan1.txt laporan2.txt', true],
+            ['laporan1.txt laporan2.txt laporan_final.txt', false],
+            ['laporan?.txt, karena tanda ? tidak diperluas', false],
+            ['Pesan error, karena ? tidak boleh dipakai pada nama file', false],
+          ]),
+          q('Bagaimana cara mencegah shell memperluas *.txt, misalnya supaya pola itu sampai utuh ke find -name?', [
+            ['Mengapit polanya dengan tanda kutip, misalnya "*.txt"', true],
+            ['Menaruh spasi di antara * dan .txt', false],
+            ['Menambahkan titik di depan pola, misalnya .*.txt', false],
+            ['Tidak bisa dicegah; shell selalu memperluas setiap tanda *', false],
           ]),
         ],
       },
@@ -292,7 +419,7 @@ cat -n buah.txt
         title: 'Mencari File',
         slug: 'lfz-mencari-file',
         content: [
-          "`find` mencari file/folder berdasarkan nama, tipe, ukuran, atau kriteria lain, dijelajahi langsung dari filesystem. Contoh: `find /home -name '*.txt'` mencari semua file `.txt` di dalam `/home`.",
+          "`find` mencari file/folder berdasarkan nama, tipe, ukuran, atau kriteria lain, dijelajahi langsung dari filesystem. Contoh: `find /home -name '*.txt'` mencari semua file `.txt` di dalam `/home`. Pola `'*.txt'` ditulis dengan kutip supaya sampai ke `find` apa adanya, bukan diperluas dulu oleh shell (lihat lesson Wildcard & Globbing).",
           '`locate` mencari file lebih cepat karena memakai database index yang di-update berkala (`updatedb`) — tapi hasilnya bisa saja belum termasuk file yang baru dibuat.',
           '`which` menampilkan lokasi lengkap (path) dari sebuah perintah/program yang terpasang, berguna untuk cek apakah suatu tool sudah terinstall dan dari mana ia dijalankan.',
         ],
@@ -522,7 +649,7 @@ echo "Root selalu punya UID 0; UID saya: $(id -u)"
           '## Latihan aman dengan process latar belakang',
           'Tanda `&` di akhir perintah menjalankannya di latar belakang, dan `$!` berisi PID process latar belakang terakhir. Dengan itu kamu bisa berlatih `kill` tanpa mengganggu process lain:',
           '```bash\nsleep 30 &\nkill $!\n```',
-          '`sleep 30` hanya menunggu 30 detik, dan `kill $!` mengirim SIGTERM ke process itu. Di starter, `wait` menunggu process tersebut benar-benar berhenti, lalu `$?` (status akhir perintah terakhir) bernilai 143. Angka itu 128 ditambah nomor sinyalnya (15 untuk SIGTERM): cara shell memberi tahu bahwa process berhenti karena menerima sinyal, bukan selesai dengan sendirinya. PID yang tercetak berbeda tiap kali dijalankan.',
+          '`sleep 30` hanya menunggu 30 detik, dan `kill $!` mengirim SIGTERM ke process itu. Di starter, `wait` menunggu process tersebut benar-benar berhenti, lalu `$?` (status akhir perintah terakhir, dibahas lebih lengkap di lesson Exit Code, stderr & Chaining) bernilai 143. Angka itu 128 ditambah nomor sinyalnya (15 untuk SIGTERM): cara shell memberi tahu bahwa process berhenti karena menerima sinyal, bukan selesai dengan sendirinya. PID yang tercetak berbeda tiap kali dijalankan.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#!/bin/bash
@@ -816,7 +943,7 @@ ls 10
           '## stdout dan stderr',
           'Setiap perintah punya dua jalur keluaran: stdout (output normal) dan stderr (pesan error). Keduanya tampil di layar sehingga terlihat sama, padahal terpisah. `>` dan `|` hanya membawa stdout. Untuk mengalihkan stderr, pakai `2>` (angka 2 adalah nomor jalur stderr): `ls tidak-ada.txt 2> error.txt` menyimpan pesan error ke file, bukan menampilkannya di layar. Di panel output sandbox, stderr tampil berwarna merah, terpisah dari stdout.',
           '```bash\nseq 1 5 > angka.txt\nwc -l < angka.txt\nls tidak-ada.txt 2> error.txt\ncat error.txt\n```',
-          'Contoh itu mencetak `5` dari `wc -l`, lalu isi `error.txt`: pesan error dari `ls` yang bunyinya bisa sedikit berbeda antar-sistem.',
+          'Contoh itu mencetak `5` dari `wc -l`, lalu isi `error.txt`: pesan error dari `ls` yang bunyinya bisa sedikit berbeda antar-sistem. Menggabungkan stderr ke stdout (`2>&1`) dan membuang pesan error (`2>/dev/null`) dibahas di lesson berikutnya.',
         ],
         hasSandbox: true,
         sandboxStarterCode: `#!/bin/bash
@@ -860,6 +987,75 @@ cat error.txt
             ['Menyimpan output normal ke error.txt, tapi hanya kalau perintahnya gagal', false],
             ['Menyimpan output normal dan pesan error sekaligus ke error.txt', false],
             ['Menjalankan perintah dua kali dan menyimpan hasil keduanya ke error.txt', false],
+          ]),
+        ],
+      },
+      {
+        title: 'Exit Code, stderr & Chaining',
+        slug: 'lfz-exit-code-stderr-chaining',
+        content: [
+          'Setiap perintah, ketika selesai, meninggalkan exit status (sering disebut exit code): angka 0 sampai 255 yang memberi tahu apakah ia berhasil. Konvensinya: `0` berarti sukses, angka lain berarti gagal (angkanya bisa menunjukkan jenis kegagalan). Ini kebalikan dari banyak bahasa pemrograman yang menganggap 0 sebagai false.',
+          '## Membaca exit code dengan $?',
+          'Variabel khusus `$?` berisi exit code perintah yang baru saja selesai. Bacalah segera, karena perintah berikutnya (termasuk `echo` itu sendiri) menimpanya. `grep -q` (mode diam: tidak mencetak baris yang cocok) memberi 0 kalau ada baris yang cocok, 1 kalau tidak ada, dan 2 kalau terjadi error seperti file tidak ditemukan. Perintah `true` dan `false` tugasnya cuma berakhir dengan sukses dan gagal, jadi cocok untuk percobaan. Percabangan `if` yang kamu pakai sebelumnya juga membaca exit code: cabang `then` berjalan kalau perintah di kondisinya mengembalikan 0.',
+          '```bash\ntrue\necho "true memberi $?"\nfalse\necho "false memberi $?"\n```',
+          'Contoh itu mencetak `true memberi 0` lalu `false memberi 1`. Exit code perintah terakhir di sebuah skrip menjadi exit code skrip itu; kalau bukan 0, sandbox menampilkan status error (misalnya Runtime Error) di panel output. Karena itu starter di lesson ini diakhiri dengan perintah yang sukses.',
+          '## Mengalihkan stderr',
+          'Di lesson sebelumnya, `2>` mengalihkan stderr ke file. Dua bentuk lain yang sering dipakai: `2>&1` mengarahkan stderr ke tempat stdout sedang menunjuk, dan `/dev/null` adalah "tempat sampah" yang membuang semua yang ditulis ke sana.',
+          '```bash\necho "isi catatan" > catatan.txt\ncat catatan.txt tidak-ada.txt > semua.txt 2>&1\ncat semua.txt\ncat tidak-ada.txt 2>/dev/null\necho "pesan error dibuang, exit code tetap $?"\n```',
+          'Perintah `cat` pertama menulis isi `catatan.txt` (stdout) dan pesan error untuk file yang tidak ada (stderr) ke `semua.txt`, jadi `cat semua.txt` menampilkan keduanya. Pada perintah berikutnya pesan error dibuang, tapi exit code-nya tetap 1.',
+          'Urutan penting. `> semua.txt 2>&1` berarti: stdout ke file dulu, lalu stderr ikut ke tempat yang sama. Kebalikannya, `2>&1 > semua.txt`, menyalin stderr ke layar (tempat stdout waktu itu) sebelum stdout dipindah ke file, sehingga pesan error tetap muncul di layar. Bash juga punya singkatan `&> semua.txt` untuk mengalihkan keduanya sekaligus.',
+          '## Merangkai perintah',
+          '- `a ; b` menjalankan `a`, lalu `b`, apa pun hasil `a`.\n- `a && b` menjalankan `b` hanya kalau `a` sukses (exit code 0), cocok untuk langkah yang bergantung pada langkah sebelumnya.\n- `a || b` menjalankan `b` hanya kalau `a` gagal, cocok untuk pesan atau tindakan cadangan.',
+          '```bash\nmkdir -p proyek && echo "mkdir sukses, lanjut"\ncat tidak-ada.txt 2>/dev/null || echo "cat gagal, pakai cadangan"\n```',
+          'Hati-hati memakai `a && b || c` sebagai pengganti if/else: `c` juga berjalan kalau `a` sukses tetapi `b` gagal.',
+        ],
+        hasSandbox: true,
+        sandboxStarterCode: `#!/bin/bash
+echo "=== Exit code: 0 = sukses, selain 0 = gagal ==="
+true
+echo "true memberi exit code $?"
+false
+echo "false memberi exit code $?"
+
+echo "belajar linux" > catatan.txt
+grep -q linux catatan.txt
+echo "grep (pola ada) memberi exit code $?"
+grep -q windows catatan.txt
+echo "grep (pola tidak ada) memberi exit code $?"
+
+echo "=== stderr: digabung ke file bersama stdout, atau dibuang ==="
+cat catatan.txt tidak-ada.txt > semua.txt 2>&1
+echo "Isi semua.txt (output normal + pesan error; bunyi pesan bisa beda antar-sistem):"
+cat semua.txt
+
+cat tidak-ada.txt 2>/dev/null
+echo "Pesan error dibuang ke /dev/null, exit code tetap $?"
+
+echo "=== Merangkai perintah ==="
+echo "satu"; echo "dua"
+mkdir -p proyek && echo "&& : mkdir sukses, jadi ini jalan"
+cat tidak-ada.txt 2>/dev/null && echo "&& : ini TIDAK tercetak"
+cat tidak-ada.txt 2>/dev/null || echo "|| : cat gagal, jadi ini jalan"
+`,
+        hasQuiz: true,
+        quizQuestions: [
+          q('Berapa exit code yang menandakan sebuah perintah berhasil?', [
+            ['0', true],
+            ['1, seperti true di bahasa pemrograman lain', false],
+            ['Angka apa pun yang lebih besar dari 0', false],
+            ['Tidak ada angka; sukses ditandai dengan teks OK di layar', false],
+          ]),
+          q('Apa arti perintah cmd > hasil.txt 2>&1 ?', [
+            ['Output normal dan pesan error cmd sama-sama ditulis ke hasil.txt', true],
+            ['Hanya pesan error yang ditulis ke hasil.txt, output normal tetap ke layar', false],
+            ['cmd dijalankan dua kali: sekali untuk output normal, sekali untuk pesan error', false],
+            ['Output normal ditulis ke hasil.txt, sedangkan pesan error dibuang', false],
+          ]),
+          q('Kapan perintah b pada a && b dijalankan?', [
+            ['Hanya kalau a selesai dengan exit code 0 (sukses)', true],
+            ['Hanya kalau a gagal; itu fungsi ||', false],
+            ['Selalu, karena && hanya pemisah baris seperti ;', false],
+            ['Hanya kalau a tidak mencetak apa pun ke layar', false],
           ]),
         ],
       },
@@ -928,7 +1124,7 @@ const course: CourseDef = {
   level: 'pemula',
   description: [
     'Linux from Zero adalah course pengantar untuk kamu yang belum pernah memakai Linux lewat command line: calon developer, mahasiswa, atau siapa saja yang ingin nyaman bekerja di terminal dan server Linux. Tidak perlu pengalaman programming atau sistem operasi tertentu sebelumnya.',
-    'Di sini kamu belajar apa itu Linux dan distro, struktur direktori (FHS), cara memakai terminal, navigasi dan manajemen file, melihat dan mencari isi file, permission, ownership, user, group, dan `sudo`, process, package manager, environment variable dan `PATH`, penjadwalan dengan cron, lalu shell scripting dengan Bash: variabel, `if` dan perulangan, pipe, redirection, stdout dan stderr, serta `grep`, `sed`, dan `awk`. Hampir semua lesson punya contoh yang bisa langsung dijalankan di code sandbox. Pengecualiannya empat lesson yang membahas konsep murni atau butuh hak root dan jaringan (pengenalan Linux, struktur direktori, package manager, dan cron), yang dipelajari lewat penjelasan dan quiz. Hampir semua lesson juga dilengkapi quiz pilihan ganda.',
+    'Di sini kamu belajar apa itu Linux dan distro, struktur direktori (FHS), cara memakai terminal dan mencari bantuan (`type`, `help`, `--help`, `man`), navigasi dan manajemen file, wildcard, melihat dan mencari isi file, permission, ownership, user, group, dan `sudo`, process, package manager, environment variable dan `PATH`, penjadwalan dengan cron, lalu shell scripting dengan Bash: variabel, `if` dan perulangan, pipe, redirection, stdout dan stderr, exit code dengan `$?`, operator `&&` dan `||`, serta `grep`, `sed`, dan `awk`. Hampir semua lesson punya contoh yang bisa langsung dijalankan di code sandbox. Pengecualiannya empat lesson yang membahas konsep murni atau butuh hak root dan jaringan (pengenalan Linux, struktur direktori, package manager, dan cron), yang dipelajari lewat penjelasan dan quiz. Hampir semua lesson juga dilengkapi quiz pilihan ganda.',
     'Sandbox di course ini menjalankan skrip dengan Bash 5.0 sekali jalan: tanpa input keyboard, tanpa akses jaringan, dan tanpa hak root, jadi `sudo`, `apt`, dan `ssh` tidak bisa dicoba di sana. User di sandbox kemungkinan besar hanya punya nomor UID tanpa nama, sehingga `whoami` bisa gagal dan `ls -l` menampilkan angka; lesson terkait menjelaskan cara menyiasatinya (`id -u` dan `ls -ln`). Prasyaratnya cuma browser dan kemauan mencoba: tidak perlu menginstal apa pun. Untuk mencoba perintah yang butuh hak root, siapkan Linux milikmu sendiri, misalnya di mesin virtual.',
   ].join('\n\n'),
   sandboxLanguage: 'bash',
