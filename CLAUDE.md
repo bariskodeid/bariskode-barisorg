@@ -143,7 +143,11 @@ bagian bawah `docs/17-ROADMAP.md`.
   belum, dan pasang backup terjadwal (`pg_dump` Postgres bariskode di daemon
   rootful, lihat `infra/backup.sh`) ke storage di luar nekosama. Restore dari
   dump `pg_dump -Fc` sudah terbukti jalan sekali (dipakai saat pindah dari
-  daemon rootless ke rootful), tapi belum ada backup otomatis.
+  daemon rootless ke rootful), tapi belum ada backup otomatis. Sejak rilis
+  `0066c1f` (2026-10-20) file upload (avatar, thumbnail course, gambar blog)
+  disimpan di volume Docker `bariskode_media_data` (`/app/media` di container
+  web) — ini TIDAK ikut `pg_dump` maupun `infra/backup.sh`, jadi backup
+  terjadwal juga harus men-tar volume itu.
 - **2 vulnerability (1 moderate, sisanya transitive) belum ada fix upstream**:
   `esbuild` (lewat drizzle-kit, dependency `@payloadcms/db-postgres`, dev-time
   saja) dan DOMPurify (lewat monaco-editor, dependency `@payloadcms/ui`, dipakai
