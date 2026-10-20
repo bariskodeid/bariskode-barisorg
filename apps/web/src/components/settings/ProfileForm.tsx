@@ -64,7 +64,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
       if (avatarFile) {
         const formData = new FormData()
         formData.append('file', avatarFile)
-        formData.append('alt', `${name}'s avatar`)
+        // Payload 3 hanya membaca field non-file dari `_payload` (JSON) pada
+        // request multipart — field `alt` biasa diabaikan dan upload ditolak 400.
+        formData.append('_payload', JSON.stringify({ alt: `${name}'s avatar` }))
 
         const uploadRes = await fetch('/api/media', {
           method: 'POST',
@@ -73,7 +75,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
         })
 
         if (!uploadRes.ok) {
-          setError(t.settings.profile.error)
+          const uploadError = await uploadRes.json().catch(() => null)
+          setError(uploadError?.errors?.[0]?.message || t.settings.profile.error)
           setLoading(false)
           return
         }

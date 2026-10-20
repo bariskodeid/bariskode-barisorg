@@ -63,6 +63,13 @@ export default buildConfig({
     },
   }),
   sharp,
+  // Batas ukuran upload di server (form avatar juga membatasi 5MB, tapi itu
+  // cuma di browser). Tanpa abortOnLimit, file yang kelewat batas dipotong
+  // diam-diam, bukan ditolak.
+  upload: {
+    limits: { fileSize: 5 * 1024 * 1024 },
+    abortOnLimit: true,
+  },
   plugins: [
     seoPlugin({
       collections: ['posts', 'courses'],

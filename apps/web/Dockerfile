@@ -55,6 +55,12 @@ COPY --from=builder /app/public ./public
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
+# Folder upload Payload (Media.upload.staticDir = 'media', relatif ke /app).
+# Tanpa ini proses `nextjs` tidak bisa membuat folder di /app (milik root) dan
+# setiap upload gagal 500 `EACCES: mkdir 'media'`. Volume `media_data` di
+# docker-compose menempel di sini; volume kosong mewarisi owner folder ini.
+RUN mkdir media && chown nextjs:nodejs media
+
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

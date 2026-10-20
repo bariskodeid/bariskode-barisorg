@@ -83,12 +83,27 @@ export const Categories: CollectionConfig = {
 
 ```ts
 // src/collections/Media.ts
-import type { CollectionConfig } from 'payload'
+import type { Access, CollectionConfig } from 'payload'
+
+const isStaff: Access = ({ req: { user } }) => user?.role === 'admin' || user?.role === 'instructor'
 
 export const Media: CollectionConfig = {
   slug: 'media',
-  access: { read: () => true },
+  access: {
+    read: () => true,
+    // Semua user login boleh upload (avatar di /settings), tapi ubah/hapus
+    // hanya admin & instructor — JANGAN pakai default Payload (`Boolean(user)`)
+    // yang membuat student bisa menimpa/menghapus thumbnail course & avatar
+    // user lain.
+    create: ({ req: { user } }) => Boolean(user),
+    update: isStaff,
+    delete: isStaff,
+  },
   upload: {
+    // Relatif ke cwd: /app/media di container web. Folder ini harus milik
+    // user `nextjs` (Dockerfile) dan di-mount volume `media_data`
+    // (infra/docker-compose.yml), kalau tidak upload gagal EACCES atau file
+    // hilang tiap rilis. Ukuran maks 5MB diatur di `upload.limits` config.
     staticDir: 'media',
     imageSizes: [
       { name: 'thumbnail', width: 400, height: 300 },

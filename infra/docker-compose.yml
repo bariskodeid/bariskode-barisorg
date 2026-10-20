@@ -193,6 +193,10 @@ services:
       - meilisearch
     expose:
       - '3000'
+    # File upload Payload (avatar, thumbnail course, gambar blog). Tanpa volume
+    # file hilang setiap container web dibuat ulang (tiap rilis).
+    volumes:
+      - media_data:/app/media
     mem_limit: 600m
     <<: *default-logging
 
@@ -250,6 +254,7 @@ services:
 
 volumes:
   postgres_data:
+  media_data:
   judge0_data:
   ctfd_uploads:
   ctfd_logs:
