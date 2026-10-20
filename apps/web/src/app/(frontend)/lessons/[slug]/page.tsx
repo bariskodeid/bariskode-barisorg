@@ -15,7 +15,7 @@ import { getPayload } from '@/lib/payload'
 
 // Halaman ini butuh status login (untuk tombol "Tandai Selesai" & status
 // completed), jadi tidak bisa ISR murni — lihat catatan di
-// components/layout/Header.tsx soal trade-off dynamic vs ISR yang sama.
+// lib/auth/AuthContext.tsx soal trade-off dynamic vs ISR yang sama.
 export const dynamic = 'force-dynamic'
 
 export default async function LessonDetailPage(props: PageProps<'/lessons/[slug]'>) {

@@ -2,11 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
 
 import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher'
 import { SearchButton } from '@/components/ui/SearchDialog'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { useAuth } from '@/lib/auth/AuthContext'
 import { useLocale } from '@/lib/i18n/LocaleContext'
 import { useSettings } from '@/lib/useSettings'
 import { cn } from '@/lib/utils'
@@ -25,24 +25,10 @@ export function Header() {
     { href: '/courses', label: t.nav.courses },
     { href: '/blog', label: t.nav.blog },
   ]
-  // Status login dicek client-side (bukan lewat props dari server layout)
-  // supaya halaman ISR seperti landing page tidak ikut jadi fully dynamic
-  // gara-gara root layout membaca cookies/headers. Trade-off: nav auth state
-  // sempat "logged out" sesaat sebelum fetch selesai.
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    fetch('/api/users/me', { credentials: 'include' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled) setIsLoggedIn(Boolean(data?.user))
-      })
-      .catch(() => {})
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  // Status login dari AuthProvider (lihat komentar di lib/auth/AuthContext.tsx
+  // soal kenapa tidak di-fetch di sini).
+  const { user } = useAuth()
+  const isLoggedIn = Boolean(user)
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">

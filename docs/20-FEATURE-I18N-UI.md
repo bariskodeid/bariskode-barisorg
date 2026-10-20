@@ -36,15 +36,15 @@ sama sekali. Root layout dipakai SEMUA route, termasuk yang ISR
 (`courses`, `courses/[slug]`, `blog`, `blog/[slug]` — punya
 `export const revalidate = 60`). Dynamic API (`cookies()`/`headers()`) di
 layout memaksa SEMUA route jadi dynamic, termasuk yang harusnya ISR — persis
-masalah yang sudah dihindari `Header.tsx` untuk auth state (lihat komentar
-di sana), sekarang direplikasi untuk locale.
+masalah yang sudah dihindari untuk auth state (lihat komentar di
+`lib/auth/AuthContext.tsx`), sekarang direplikasi untuk locale.
 
 `LocaleProvider` karena itu TIDAK menerima locale awal dari server — default
 `'id'` saat render pertama (server & client selalu sama, hydration-safe),
 lalu dikoreksi dari cookie browser lewat `useEffect` sekali setelah mount.
 Trade-off: kalau user sudah pilih EN, ada kilasan singkat UI Indonesia
 sebelum `useEffect` jalan — sama seperti trade-off status login di
-`Header.tsx`.
+`lib/auth/AuthContext.tsx`.
 
 ## Dua Pola Pemakaian, Tergantung Jenis Halaman
 

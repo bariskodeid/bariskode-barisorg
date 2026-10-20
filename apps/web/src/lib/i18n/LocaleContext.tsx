@@ -26,7 +26,7 @@ function readLocaleCookie(): Locale {
 // 'id' saat render awal (server & first paint client selalu sama, hydration-
 // safe), lalu disesuaikan dari cookie browser lewat useEffect — konsekuensi:
 // user yang pernah pilih EN sempat melihat kilasan UI Indonesia sebelum
-// useEffect jalan, sama seperti trade-off status login di Header.tsx.
+// useEffect jalan, sama seperti trade-off status login di lib/auth/AuthContext.tsx.
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [locale, setLocaleState] = useState<Locale>('id')

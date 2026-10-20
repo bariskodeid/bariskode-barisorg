@@ -4,11 +4,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
+import { useAuth } from '@/lib/auth/AuthContext'
 import { useLocale } from '@/lib/i18n/LocaleContext'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { t } = useLocale()
+  const { setUser } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -47,6 +49,8 @@ export default function RegisterPage() {
         return
       }
 
+      const loginData = await loginRes.json()
+      setUser(loginData?.user ?? null)
       router.push('/my-learning')
       router.refresh()
     } catch {

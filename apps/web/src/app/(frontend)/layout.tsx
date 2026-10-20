@@ -5,6 +5,7 @@ import React from 'react'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import { GridBackground } from '@/components/ui/GridBackground'
+import { AuthProvider } from '@/lib/auth/AuthContext'
 import { LocaleProvider } from '@/lib/i18n/LocaleContext'
 import { ThemeProvider } from '@/lib/theme/ThemeContext'
 
@@ -21,8 +22,8 @@ export const metadata: Metadata = {
 // SENGAJA TIDAK baca cookies()/headers() di sini (mis. untuk locale) — root
 // layout ini dipakai semua route termasuk yang ISR (courses, blog, lihat
 // revalidate=60 di sana). Dynamic API di layout akan memaksa SEMUA route jadi
-// dynamic, sama seperti alasan Header.tsx sengaja fetch auth state client-side
-// (lihat komentar di sana). Locale untuk halaman ISR ditangani via client
+// dynamic, sama seperti alasan auth state sengaja di-fetch client-side (lihat
+// lib/auth/AuthContext.tsx). Locale untuk halaman ISR ditangani via client
 // island (komponen <T>), bukan di sini — lihat lib/i18n/LocaleContext.tsx.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -37,15 +38,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeProvider>
           <LocaleProvider>
-            <GridBackground />
-            <div
-              className="min-h-screen flex flex-col font-sans text-foreground selection:bg-white selection:text-black relative"
-              style={{ zIndex: 1 }}
-            >
-              <Header />
-              <main className="flex-1 pt-16">{children}</main>
-              <Footer />
-            </div>
+            <AuthProvider>
+              <GridBackground />
+              <div
+                className="min-h-screen flex flex-col font-sans text-foreground selection:bg-white selection:text-black relative"
+                style={{ zIndex: 1 }}
+              >
+                <Header />
+                <main className="flex-1 pt-16">{children}</main>
+                <Footer />
+              </div>
+            </AuthProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>
