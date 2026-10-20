@@ -2,6 +2,7 @@
 // Sync semua courses, lessons, dan posts dari Payload ke Meilisearch.
 
 import { getPayload } from '../lib/payload'
+import { getPublicAuthor } from '../lib/publicAuthor'
 import { syncCourse, syncLesson, syncPost, setupIndexes } from '../lib/search/sync'
 
 async function main() {
@@ -47,7 +48,10 @@ async function main() {
   })
 
   for (const post of posts.docs) {
-    await syncPost(post as Parameters<typeof syncPost>[0])
+    // Relasi author cuma berisi ID (Users tidak bisa dibaca publik) — nama
+    // diambil lewat field publik saja.
+    const author = await getPublicAuthor(payload, post.author)
+    await syncPost({ ...post, author: author?.name ?? '' } as Parameters<typeof syncPost>[0])
   }
   console.log(`  ✅ ${posts.docs.length} posts synced`)
 

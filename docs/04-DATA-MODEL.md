@@ -29,7 +29,14 @@ export const Users: CollectionConfig = {
   auth: true,
   admin: { useAsTitle: 'email' },
   access: {
-    read: () => true,
+    // JANGAN `read: () => true` — itu membuka email, role, dan sesi login
+    // semua user lewat GET /api/users tanpa login. Admin baca semua, user
+    // login hanya dirinya sendiri. Profil author (blog, index search) diambil
+    // lewat lib/publicAuthor.ts yang dibatasi ke name/bio/avatar.
+    read: ({ req: { user } }) => {
+      if (user?.role === 'admin') return true
+      return user ? { id: { equals: user.id } } : false
+    },
     create: () => true, // registrasi publik untuk role student
     update: ({ req: { user }, id }) => user?.role === 'admin' || user?.id === id,
     delete: ({ req: { user } }) => user?.role === 'admin',

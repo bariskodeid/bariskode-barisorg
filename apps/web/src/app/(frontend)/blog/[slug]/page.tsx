@@ -9,6 +9,7 @@ import { GiscusComments } from '@/components/GiscusComments'
 import { LessonRichText } from '@/components/ui/LessonRichText'
 import { T } from '@/lib/i18n/LocaleContext'
 import { getPayload } from '@/lib/payload'
+import { getPublicAuthor } from '@/lib/publicAuthor'
 
 export const revalidate = 60
 
@@ -22,7 +23,13 @@ const getPost = cache(async (slug: string) => {
     limit: 1,
     overrideAccess: false,
   })
-  return result.docs[0]
+  const post = result.docs[0]
+  if (!post) return undefined
+
+  // Relasi author cuma berisi ID untuk pengunjung (Users tidak bisa dibaca
+  // publik) — profil author diambil terpisah, terbatas ke field publik.
+  const author = await getPublicAuthor(payload, post.author)
+  return { ...post, author: author ?? undefined }
 })
 
 export async function generateMetadata(
@@ -46,7 +53,7 @@ export default async function BlogDetailPage(props: PageProps<'/blog/[slug]'>) {
     notFound()
   }
 
-  const author = typeof post.author === 'object' ? post.author : undefined
+  const author = post.author
   const relatedCourse = typeof post.relatedCourse === 'object' ? post.relatedCourse : undefined
   const avatar =
     author && typeof author.avatar === 'object' ? author.avatar : undefined

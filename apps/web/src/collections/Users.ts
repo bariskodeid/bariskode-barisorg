@@ -7,7 +7,14 @@ export const Users: CollectionConfig = {
   access: {
     // Hanya admin yang bisa akses admin panel
     admin: ({ req: { user } }) => user?.role === 'admin',
-    read: () => true,
+    // Email, role, dan sesi login tidak boleh terbaca publik: admin baca
+    // semua, user login hanya dirinya sendiri (cukup untuk /api/users/me,
+    // relasi Progress/Bookmarks/Certificates miliknya). Profil author untuk
+    // blog & search diambil lewat lib/publicAuthor.ts (field publik saja).
+    read: ({ req: { user } }) => {
+      if (user?.role === 'admin') return true
+      return user ? { id: { equals: user.id } } : false
+    },
     create: () => true, // registrasi publik untuk role student
     update: ({ req: { user }, id }) => user?.role === 'admin' || user?.id === id,
     delete: ({ req: { user } }) => user?.role === 'admin',
