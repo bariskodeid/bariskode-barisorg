@@ -140,14 +140,8 @@ bagian bawah `docs/17-ROADMAP.md`.
   dev), dan host hanya membuka SSH ke publik (semua service bariskode bind ke
   `127.0.0.1` / network Docker privat; trafik web lewat cloudflared). Yang
   masih perlu user cek/lakukan: set SSL/TLS Cloudflare ke Full (strict) kalau
-  belum, dan pasang backup terjadwal (`pg_dump` Postgres bariskode di daemon
-  rootful, lihat `infra/backup.sh`) ke storage di luar nekosama. Restore dari
-  dump `pg_dump -Fc` sudah terbukti jalan sekali (dipakai saat pindah dari
-  daemon rootless ke rootful), tapi belum ada backup otomatis. Sejak rilis
-  `0066c1f` (2026-10-20) file upload (avatar, thumbnail course, gambar blog)
-  disimpan di volume Docker `bariskode_media_data` (`/app/media` di container
-  web) — ini TIDAK ikut `pg_dump` maupun `infra/backup.sh`, jadi backup
-  terjadwal juga harus men-tar volume itu.
+  belum. Backup terjadwal SUDAH jalan sejak 2026-10-21 — lihat bullet
+  "Backup" di bagian "Deployment Production (nekosama)".
 - **2 vulnerability (1 moderate, sisanya transitive) belum ada fix upstream**:
   `esbuild` (lewat drizzle-kit, dependency `@payloadcms/db-postgres`, dev-time
   saja) dan DOMPurify (lewat monaco-editor, dependency `@payloadcms/ui`, dipakai
@@ -293,6 +287,20 @@ Ini berbeda dari skenario VM Oracle + Caddy di docs/14 — hal yang penting:
 - **Resource**: setelah semua service jalan, sisa RAM host sekitar 2.5 GiB.
   `mem_limit` `judge0-server` dinaikkan ke 400m di override nekosama (200m
   di compose dasar terlalu mepet — pemakaiannya sempat ~190 MiB).
+- **Backup**: harian 03:00 WIB lewat kerangka backup host (systemd user
+  timer `prod-backup.timer` → `~/srv/backups/bin/run-all.sh` →
+  `backup-bariskode.sh`, sumbernya `infra/nekosama/backup-bariskode.sh` —
+  kalau diubah, salin ulang ke `~/srv/backups/bin/`). Arsip
+  `~/srv/backups/bariskode/bariskode-<tanggal>.tar.gz` (retensi lokal 14 hari)
+  berisi `bariskode.dump` (`pg_dump -Fc`), `media.tar.gz` (volume
+  `bariskode_media_data`), dan file secret; lalu `offsite.sh` mengirimnya,
+  dienkripsi age, ke `gdrive:nekosama-backups/bariskode/` (retensi 30 hari;
+  private key hanya di Mac `~/.config/age/nekosama-backup.key`). Gagal → alert
+  Telegram. Cara buka & isi arsip: `~/srv/backups/README.md`. Restore DB &
+  media dari arsip pertama sudah diuji ke container/volume sementara (jumlah
+  baris & file identik dengan live). `infra/backup.sh` (skenario VM Oracle)
+  TIDAK dipakai di nekosama. Dump `pre-release-*` dari `ci-deploy.sh` tetap
+  ada terpisah di `~/srv/prod/bariskode-barisorg/backups/`.
 - **Mode `wait=true` Judge0 jangan dipakai**: untuk Java, submission selesai
   (Accepted) tapi response `wait=true` tidak pernah kembali. Aplikasi
   (`/api/sandbox`) sudah benar memakai `wait=false` + poll token; tes/skrip
