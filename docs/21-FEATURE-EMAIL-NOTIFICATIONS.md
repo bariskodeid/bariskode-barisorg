@@ -86,9 +86,14 @@ Memakai operasi bawaan Payload, bukan route custom:
   tapi korban tetap menerima email-email tersebut dan link terbaru berlaku.
   Endpoint selalu membalas sukses walau email tidak terdaftar (perilaku
   Payload, supaya daftar email user tidak bisa ditebak).
-- **Password baru minimal 8 karakter**, dicek di form dan di server (hook
-  yang sama), sama seperti `/api/users/change-password`. Registrasi
-  (`POST /api/users`) BELUM punya batas minimal ini di server.
+- **Password minimal 8 karakter**, dicek di form dan di server (hook
+  `guardPasswords` yang sama) untuk reset password, registrasi
+  (`POST /api/users`), dan update user — sama seperti
+  `/api/users/change-password`.
+- Sejak Payload 3.90, Payload sendiri juga membatasi forgot-password per user
+  (`auth.forgotPassword.minRequestInterval`, default 15 detik, kolom
+  `reset_password_requested_at`), dan reset password membuka kunci akun
+  yang terkunci karena salah login berulang.
 
 Yang perlu disiapkan di production: isi `SMTP_*` di `apps/web/.env.docker`
 lalu restart service `web`. Tes end-to-end lokal memakai Mailpit sebagai

@@ -3,7 +3,7 @@ import config from '../../src/payload.config.js'
 
 export const testUser = {
   email: 'dev@payloadcms.com',
-  password: 'test',
+  password: 'test-password', // minimal 8 karakter (hook guardPasswords di Users)
   name: 'Test User',
   role: 'admin' as const,
 }

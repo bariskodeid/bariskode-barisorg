@@ -28,9 +28,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError(t.settings.profile.error)
+    // Validate file type — server juga menolak format lain untuk student
+    // (collections/Media.ts).
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError(t.settings.profile.typeError)
       return
     }
 
@@ -146,7 +147,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               onChange={handleAvatarChange}
               className="hidden"
             />

@@ -134,6 +134,23 @@ describe('status login di Header', () => {
     expect(router.push).toHaveBeenCalledWith('/')
   })
 
+  it('menu mobile membuka nav & tombol akun, dan tertutup dengan Escape', async () => {
+    renderFrontend()
+    await waitFor(() => expect(header().getByRole('link', { name: 'Masuk' })).toBeTruthy())
+    const toggle = header().getByRole('button', { name: 'Buka menu' })
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(toggle)
+
+    const panel = within(document.getElementById('mobile-nav')!)
+    expect(panel.getByRole('link', { name: 'Kursus' })).toBeTruthy()
+    expect(panel.getByRole('link', { name: 'Daftar' })).toBeTruthy()
+    expect(header().getByRole('button', { name: 'Tutup menu' }).getAttribute('aria-expanded')).toBe('true')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    await waitFor(() => expect(document.getElementById('mobile-nav')).toBeNull())
+  })
+
   it('logout tetap membersihkan Header kalau sesi sudah habis duluan', async () => {
     session = testUser
     renderFrontend()

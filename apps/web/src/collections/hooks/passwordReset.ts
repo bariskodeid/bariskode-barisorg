@@ -1,9 +1,9 @@
-import { APIError, type CollectionBeforeOperationHook } from 'payload'
+import { APIError, ValidationError, type CollectionBeforeOperationHook } from 'payload'
 
 import type { User } from '../../payload-types'
 import { checkRateLimit, getClientIp } from '../../lib/rateLimit'
 
-// Sama dengan aturan /api/users/change-password.
+// Sama dengan aturan /api/users/change-password dan form register/reset.
 export const MIN_PASSWORD_LENGTH = 8
 
 const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
@@ -15,8 +15,10 @@ const escapeHtml = (value: string) =>
 // /api/users/reset-password) dipakai langsung oleh halaman frontend, jadi
 // batasannya dipasang di hook ini — berlaku juga untuk siapa pun yang
 // memanggil endpoint itu tanpa lewat halaman. Lihat bagian "Reset password"
-// di docs/21-FEATURE-EMAIL-NOTIFICATIONS.md.
-export const guardPasswordReset: CollectionBeforeOperationHook = ({ args, operation, req }) => {
+// di docs/21-FEATURE-EMAIL-NOTIFICATIONS.md. Hook yang sama menegakkan
+// panjang minimal password saat registrasi (POST /api/users, publik) dan
+// update — sebelumnya cuma dicek validasi browser.
+export const guardPasswords: CollectionBeforeOperationHook = ({ args, operation, req }) => {
   if (operation === 'forgotPassword') {
     // Tanpa batas, endpoint ini bisa dipakai membanjiri inbox seseorang
     // dengan email reset. Per IP dulu; kuota per alamat email hanya terpakai
@@ -43,6 +45,18 @@ export const guardPasswordReset: CollectionBeforeOperationHook = ({ args, operat
     const password = args.data?.password
     if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
       throw new APIError(`Password minimal ${MIN_PASSWORD_LENGTH} karakter.`, 400, null, true)
+    }
+  }
+
+  // Bentuk ValidationError (path `password`) supaya form register bisa
+  // memetakannya ke pesan yang terlokalisasi, sama seperti error email.
+  if (operation === 'create' || operation === 'update') {
+    const password = (args.data as { password?: unknown } | undefined)?.password
+    if (typeof password === 'string' && password.length < MIN_PASSWORD_LENGTH) {
+      throw new ValidationError({
+        collection: 'users',
+        errors: [{ path: 'password', message: `Password minimal ${MIN_PASSWORD_LENGTH} karakter.` }],
+      })
     }
   }
 

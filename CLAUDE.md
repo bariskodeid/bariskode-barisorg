@@ -178,21 +178,18 @@ bagian bawah `docs/17-ROADMAP.md`.
   masih perlu user cek/lakukan: set SSL/TLS Cloudflare ke Full (strict) kalau
   belum. Backup terjadwal SUDAH jalan sejak 2026-10-21 — lihat bullet
   "Backup" di bagian "Deployment Production (nekosama)".
-- **2 vulnerability (1 moderate, sisanya transitive) belum ada fix upstream**:
-  `esbuild` (lewat drizzle-kit, dependency `@payloadcms/db-postgres`, dev-time
-  saja) dan DOMPurify (lewat monaco-editor, dependency `@payloadcms/ui`, dipakai
-  admin panel Payload sendiri) — keduanya transitive dependency internal
-  Payload, tidak bisa di-bump manual tanpa upstream Payload merilis versi
-  baru. Juga ada 1 CVE moderate langsung di `payload@3.88.0` sendiri
-  ("default account-unlock access", GHSA-jg8r-5jh2-v2xj) yang per saat ini
-  belum ada versi patch (`pnpm audit` update berkala untuk cek apakah sudah
-  ada rilis baru).
-- **Menyisipkan block `Code` lewat editor Lexical di `/admin` belum pernah
-  dicoba**: yang sudah dicek cuma config server (block `Code` terdaftar,
-  importMap ter-generate) dan output render-nya di frontend (`LessonRichText`).
-  Alur editor sungguhan (insert block Code di lesson/post, isi kode, pilih
-  bahasa, Save, lalu buka halamannya) belum pernah dijalankan di browser.
-  Coba sekali secara manual, terutama sebelum editor mulai menulis post blog.
+- **Sisa `pnpm audit` setelah upgrade 2026-10-22** (`payload`/`@payloadcms/*`
+  3.88.0 → 3.91.0, `next` 16.3.3 → 16.3.8, `sharp` 0.35.5): 0 critical. Sisanya
+  tooling dev/build (eslint/brace-expansion, vite/vitest toolchain, esbuild
+  lewat drizzle-kit) dan DOMPurify di monaco-editor milik admin panel Payload
+  (`@payloadcms/ui`) — transitive, menunggu rilis upstream. Cek `pnpm audit`
+  berkala; Payload rutin merilis perbaikan keamanan (3.90 berisi belasan).
+- **Menyisipkan block `Code` BARU lewat editor Lexical di `/admin` belum
+  pernah dicoba**: sudah dicek di browser sungguhan (Payload 3.91, 2026-10-22)
+  bahwa lesson yang berisi block Code terbuka di editor dengan block-nya
+  tampil benar, dan Save dari admin berhasil (ikut tersinkron ke search).
+  Yang belum: alur menyisipkan block Code baru (pilih bahasa, isi kode, Save,
+  buka halamannya). Coba sekali sebelum editor mulai menulis post blog.
 
 ## Status Implementasi
 
@@ -291,10 +288,18 @@ bagian bawah `docs/17-ROADMAP.md`.
       DB baru, smoke test API lewat curl (search, quiz lulus/gagal/ulang,
       bypass progress, reset password end-to-end dengan SMTP Mailpit), dan
       browser sungguhan (Playwright di container Docker) untuk login, quiz,
-      lesson, course, mode EN, lupa password, dan tampilan mobile. Temuan
-      baru yang BELUM dikerjakan: di layar ~390px tombol "Daftar" di header
-      terpotong dan tidak ada menu navigasi mobile; registrasi belum punya
-      batas minimal panjang password di server.
+      lesson, course, mode EN, lupa password, dan tampilan mobile.
+      Lanjutan di hari yang sama: upgrade keamanan Payload 3.91.0 + Next
+      16.3.8 (migration `20261022_050646_payload_3_91_security` menambah
+      `users.reset_password_requested_at`); `/api/users/change-password` kini
+      meneruskan `user` ke `payload.update` (sejak 3.90 ganti password
+      mencabut semua sesi kecuali milik req.user — tanpa itu user langsung
+      ter-logout setelah ganti password; sesi di perangkat lain tetap
+      dicabut); menu navigasi mobile (sebelumnya nav tidak ada dan tombol
+      Daftar terpotong di ~390px); password minimal 8 karakter juga untuk
+      registrasi/update di server (hook `guardPasswords`); upload avatar
+      student dibatasi JPG/PNG/WebP (SVG ditolak), admin/instructor tetap
+      `image/*`.
 
 Semua 9 fase v1 + Fase 10 di docs/17-ROADMAP.md sudah dikerjakan, dan
 production sudah live di nekosama. Sisa pekerjaan proyek ini adalah aksi

@@ -19,6 +19,8 @@ const id = {
     login: 'Masuk',
     register: 'Daftar',
     logout: 'Keluar',
+    openMenu: 'Buka menu',
+    closeMenu: 'Tutup menu',
   },
   footer: {
     tagline:
@@ -90,6 +92,8 @@ const id = {
       genericError: 'Registrasi gagal.',
       emailTaken: 'Email ini sudah terdaftar. Silakan masuk, atau reset password kalau lupa.',
       emailInvalid: 'Format email tidak valid.',
+      passwordTooShort: 'Password minimal 8 karakter.',
+      passwordHint: 'Minimal 8 karakter.',
       networkError: 'Tidak bisa terhubung ke server. Coba lagi.',
     },
     forgot: {
@@ -192,6 +196,7 @@ const id = {
       success: 'Profil berhasil diperbarui.',
       error: 'Gagal memperbarui profil.',
       maxSizeError: 'Ukuran file maksimal 5MB.',
+      typeError: 'Format foto harus JPG, PNG, atau WebP.',
     },
     password: {
       current: 'Password Saat Ini',
@@ -251,6 +256,8 @@ const en: typeof id = {
     login: 'Log In',
     register: 'Sign Up',
     logout: 'Log Out',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
   },
   footer: {
     tagline:
@@ -320,6 +327,8 @@ const en: typeof id = {
       genericError: 'Registration failed.',
       emailTaken: 'This email is already registered. Log in, or reset your password if you forgot it.',
       emailInvalid: 'Invalid email format.',
+      passwordTooShort: 'Password must be at least 8 characters.',
+      passwordHint: 'At least 8 characters.',
       networkError: "Couldn't connect to the server. Try again.",
     },
     forgot: {
@@ -420,6 +429,7 @@ const en: typeof id = {
       success: 'Profile updated successfully.',
       error: 'Failed to update profile.',
       maxSizeError: 'File size must be under 5MB.',
+      typeError: 'Photo must be a JPG, PNG, or WebP file.',
     },
     password: {
       current: 'Current Password',

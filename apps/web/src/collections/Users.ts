@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { cleanupDeletedUserAvatar, cleanupReplacedAvatar } from './hooks/cleanupAvatar'
-import { forgotPasswordEmailHTML, guardPasswordReset } from './hooks/passwordReset'
+import { forgotPasswordEmailHTML, guardPasswords } from './hooks/passwordReset'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -28,7 +28,7 @@ export const Users: CollectionConfig = {
     delete: ({ req: { user } }) => user?.role === 'admin',
   },
   hooks: {
-    beforeOperation: [guardPasswordReset],
+    beforeOperation: [guardPasswords],
     afterChange: [cleanupReplacedAvatar],
     afterDelete: [cleanupDeletedUserAvatar],
   },
