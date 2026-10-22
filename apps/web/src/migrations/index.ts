@@ -6,6 +6,7 @@ import * as migration_20260910_064000_add_settings_global from './20260910_06400
 import * as migration_20260914_074316 from './20260914_074316';
 import * as migration_20261018_041529_add_bookmarks from './20261018_041529_add_bookmarks';
 import * as migration_20261022_041500_remove_failed_quiz_progress from './20261022_041500_remove_failed_quiz_progress';
+import * as migration_20261022_050646_payload_3_91_security from './20261022_050646_payload_3_91_security';
 
 export const migrations = [
   {
@@ -41,11 +42,16 @@ export const migrations = [
   {
     up: migration_20261018_041529_add_bookmarks.up,
     down: migration_20261018_041529_add_bookmarks.down,
-    name: '20261018_041529_add_bookmarks'
+    name: '20261018_041529_add_bookmarks',
   },
   {
     up: migration_20261022_041500_remove_failed_quiz_progress.up,
     down: migration_20261022_041500_remove_failed_quiz_progress.down,
     name: '20261022_041500_remove_failed_quiz_progress',
+  },
+  {
+    up: migration_20261022_050646_payload_3_91_security.up,
+    down: migration_20261022_050646_payload_3_91_security.down,
+    name: '20261022_050646_payload_3_91_security'
   },
 ];

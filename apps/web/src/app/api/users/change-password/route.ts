@@ -33,11 +33,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Current password is incorrect' }, { status: 401 })
     }
 
-    // Update password
+    // Update password. `user` wajib diteruskan: sejak Payload 3.90 ganti
+    // password mencabut semua sesi KECUALI sesi milik req.user (`_sid` dari
+    // cookie). Tanpa `user`, sesi yang sedang dipakai ikut dicabut dan user
+    // langsung ter-logout setelah mengganti password di /settings.
     await payload.update({
       collection: 'users',
       id: user.id,
       data: { password: newPassword },
+      user,
     })
 
     return NextResponse.json({ success: true })
