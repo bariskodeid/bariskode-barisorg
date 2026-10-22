@@ -108,35 +108,26 @@ bagian bawah `docs/17-ROADMAP.md`.
 
 ## Pending Aksi Manual dari User
 
-- **Tindak lanjut QA 2026-10-21 yang butuh aksi user** (perbaikan kodenya
-  sudah dikerjakan 2026-10-22, lihat "Perbaikan hasil QA" di Status
-  Implementasi):
-  - **Deploy + reindex search**: perubahan belum aktif di production sampai
-    image baru di-rilis. Setelah rilis, WAJIB jalankan reindex sekali:
-    `./dcr --profile script run --rm -T web-script src/scripts/search-sync.ts`
-    (index Meilisearch production kosong total, 0 index). Rilis ini membawa
-    migration data `20261022_041500_remove_failed_quiz_progress` (hapus baris
-    Progress kuis dengan skor < 70 dan samakan `course_id` dengan course
-    lesson-nya; di production per 2026-10-22 cuma 1 baris yang terhapus, milik
-    akun QA, dan tidak ada `course_id` yang salah).
-  - **Cloudflare**: aktifkan "Always Use HTTPS" (origin sudah redirect lewat
-    header `CF-Visitor` + kirim HSTS, tapi lapis edge tetap disarankan);
-    tambahkan public hostname `www.bariskode.org` → `http://localhost:3040` di
-    tunnel cloudflared (Zero Trust) — aplikasi sudah me-redirect www → apex,
-    tapi DNS/tunnel untuk www belum ada sama sekali.
+- **Tindak lanjut QA 2026-10-21 yang masih butuh aksi user** (semua
+  perbaikan kode sudah di-deploy 2026-10-22, lihat "Perbaikan hasil QA" di
+  Status Implementasi):
+  - **Cloudflare (dashboard, tidak bisa dari server)**: tambahkan public
+    hostname `www.bariskode.org` → `http://localhost:3040` di tunnel
+    cloudflared (Zero Trust) — aplikasi sudah me-redirect www → apex, tapi
+    DNS/tunnel untuk www belum ada sama sekali. "Always Use HTTPS" opsional:
+    `http://` sudah di-redirect 308 oleh origin (diverifikasi live) dan HSTS
+    terkirim, lapis edge hanya menghemat satu hop.
   - **SMTP**: isi `SMTP_*` di `apps/web/.env.docker` (lalu `./dcr up -d web`)
     supaya lupa password, notifikasi course, dan reminder benar-benar
     terkirim. Selama kosong, `/forgot-password` menampilkan pesan "reset lewat
     email belum tersedia".
-  - **Akun uji QA** `qa.sapin@bariskode.org` di production: minta dihapus QA
-    setelah ditinjau — hapus lewat `/admin` kalau sudah tidak dipakai.
-  - **Temuan QA yang keliru (tidak perlu aksi)**: "stack production di
-    nekosama mati sejak 18 Okt" — QA melihat context Docker *rootless*
-    (container lama yang memang sengaja dimatikan); production jalan di
-    context rootful (`./dcr`). "Halaman kursus 22 lesson vs progress 21" —
-    DB dan halaman live sama-sama 21 lesson per course. Container & volume
-    rootless lama masih disimpan sebagai cadangan rollback; hapus kalau sudah
-    yakin tidak perlu.
+  - **Sudah beres, tidak perlu aksi**: akun uji QA `qa.sapin@bariskode.org`
+    sudah dihapus (beserta 1 baris progress-nya); container rootless lama
+    (`bariskode-web/postgres/meilisearch-1`, mati sejak 18 Okt) sudah
+    dihapus — volume `bariskode_postgres_data` di daemon rootless dan
+    `backups/pre-rootful-*.dump` tetap disimpan sebagai cadangan. Temuan QA
+    "stack production mati" keliru (QA melihat daemon rootless); "22 vs 21
+    lesson" juga keliru (DB & halaman live 21 lesson per course).
   - **Di luar repo ini** (dicatat QA, bukan kode bariskode.org): staging
     barislms (`lms-staging.bariskode.com`) terbuka publik tanpa gerbang akses;
     worker `sosmed-autopost` restart 235 kali; build cache Docker 11,9 GB dan
@@ -266,8 +257,8 @@ bagian bawah `docs/17-ROADMAP.md`.
       idempotent lewat `pnpm seed:courses`. Detail & angka di bagian
       "Konten" di bawah.
 - [x] Perbaikan hasil QA 2026-10-21 (spreadsheet QA, 2 putaran) — dikerjakan
-      2026-10-22, BELUM di-deploy (lihat "Tindak lanjut QA" di Pending Aksi
-      Manual):
+      dan **di-deploy 2026-10-22** (image `d83501f`; sisa aksi manual di
+      "Tindak lanjut QA" di Pending Aksi Manual):
       search (akar masalah: hook sync Meilisearch tidak pernah dibuat padahal
       disebut docs/25, dan script bulk sync terpotong `payload run` sebelum
       mengindex apa pun; kini ada hook di Courses/Lessons/Modules/Posts,
@@ -350,7 +341,12 @@ Ini berbeda dari skenario VM Oracle + Caddy di docs/14 — hal yang penting:
 - **Search (Meilisearch)**: index diisi otomatis oleh hook collection saat
   konten disimpan (termasuk lewat seed). Reindex penuh / perbaiki index:
   `./dcr --profile script run --rm -T web-script src/scripts/search-sync.ts`
-  (mencetak jumlah dokumen Postgres vs index, exit 1 kalau beda).
+  (mencetak jumlah dokumen Postgres vs index, exit 1 kalau beda). Reindex
+  pertama dijalankan 2026-10-22 (12 course, 252 lesson). `mem_limit` 100m
+  lama membuat Meilisearch di-OOM-kill tiap indexing (event `oom` berulang,
+  RestartCount 7) karena buffer indexing-nya diukur dari RAM host; compose
+  kini set `MEILI_MAX_INDEXING_MEMORY=128Mb`, `MEILI_MAX_INDEXING_THREADS=1`,
+  `mem_limit: 256m` (pemakaian ~45 MiB setelah reindex).
 - **Seed konten**: `./dcr --profile script run --rm -T web-script
   scripts/seed-all-courses.ts` (override sudah set `NODE_ENV=production`).
   Ingat: re-seed menimpa edit admin pada 12 course itu — dump DB dulu.

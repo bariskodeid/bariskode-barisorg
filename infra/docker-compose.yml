@@ -173,11 +173,17 @@ services:
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       MEILI_ENV: production
       MEILI_DATA_DIR: /meili_data
+      # Tanpa batas ini Meilisearch mengukur buffer indexing dari RAM host
+      # (bukan mem_limit container) dan di-OOM-kill begitu indexing jalan —
+      # reindex pertama di nekosama gagal karena ini (event oom berulang,
+      # dengan mem_limit lama 100m). Diuji: reindex penuh puncaknya ~20 MiB.
+      MEILI_MAX_INDEXING_MEMORY: 128Mb
+      MEILI_MAX_INDEXING_THREADS: 1
     volumes:
       - ./meilisearch_data:/meili_data
     expose:
       - '7700'
-    mem_limit: 100m
+    mem_limit: 256m
     <<: *default-logging
 
   # --- Aplikasi utama & reverse proxy (Fase 7, production only) ---

@@ -152,5 +152,10 @@ Semua string UI search sudah ditambahkan ke dictionaries (lihat
 
 ## Resource Impact
 
-- Meilisearch: ~30-50MB RAM idle, ~100MB with index.
-- Sync overhead: minimal, hook afterChange async (non-blocking).
+- Meilisearch: ~15-50 MiB RAM (diukur 2026-10-22 dengan 264 dokumen; puncak
+  reindex ~20 MiB). WAJIB set `MEILI_MAX_INDEXING_MEMORY` (compose: 128Mb) —
+  tanpa itu Meilisearch mengukur buffer indexing dari RAM host, bukan
+  `mem_limit` container, dan di-OOM-kill begitu indexing jalan (terjadi di
+  nekosama dengan `mem_limit: 100m`). `mem_limit` sekarang 256m.
+- Sync overhead: minimal — satu request HTTP lokal per dokumen yang
+  disimpan (hook di-await, timeout 5 detik).
