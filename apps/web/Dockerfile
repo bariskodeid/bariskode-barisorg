@@ -25,6 +25,25 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Variabel NEXT_PUBLIC_* dibaca saat BUILD untuk bundle client dan halaman
+# statis (robots.txt, metadataBase Open Graph di halaman yang di-prerender) —
+# env_file .env.docker baru ada saat container jalan, dan .env* tidak ikut ke
+# build context (.dockerignore). Tanpa ARG ini robots.txt production menunjuk
+# sitemap di http://localhost:3000. Deployment dengan domain lain:
+# `docker build --build-arg NEXT_PUBLIC_SERVER_URL=https://domain-lain ...`.
+# Giscus (komponen client) juga hanya aktif kalau env-nya diisi lewat
+# --build-arg saat build image, bukan di .env.docker.
+ARG NEXT_PUBLIC_SERVER_URL=https://bariskode.org
+ARG NEXT_PUBLIC_GISCUS_REPO=
+ARG NEXT_PUBLIC_GISCUS_REPO_ID=
+ARG NEXT_PUBLIC_GISCUS_CATEGORY=
+ARG NEXT_PUBLIC_GISCUS_CATEGORY_ID=
+ENV NEXT_PUBLIC_SERVER_URL=$NEXT_PUBLIC_SERVER_URL \
+    NEXT_PUBLIC_GISCUS_REPO=$NEXT_PUBLIC_GISCUS_REPO \
+    NEXT_PUBLIC_GISCUS_REPO_ID=$NEXT_PUBLIC_GISCUS_REPO_ID \
+    NEXT_PUBLIC_GISCUS_CATEGORY=$NEXT_PUBLIC_GISCUS_CATEGORY \
+    NEXT_PUBLIC_GISCUS_CATEGORY_ID=$NEXT_PUBLIC_GISCUS_CATEGORY_ID
+
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.

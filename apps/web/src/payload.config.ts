@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { BlocksFeature, CodeBlock, lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
@@ -20,8 +21,11 @@ import {
 } from './collections'
 import { Settings } from './globals'
 import { CODE_LANGUAGES } from './lib/codeLanguages'
+import { emailFromAddress, getSmtpOptions } from './lib/email'
 
 const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+
+const smtpOptions = getSmtpOptions()
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -63,6 +67,16 @@ export default buildConfig({
     },
   }),
   sharp,
+  // Email bawaan Payload (lupa password, lihat Users.ts). Tanpa SMTP_HOST
+  // tidak ada adapter: Payload hanya menulis email ke console, dan halaman
+  // /forgot-password menampilkan pesan bahwa reset lewat email belum tersedia.
+  email: smtpOptions
+    ? nodemailerAdapter({
+        defaultFromAddress: emailFromAddress(),
+        defaultFromName: 'bariskode.org',
+        transportOptions: smtpOptions,
+      })
+    : undefined,
   // Batas ukuran upload di server (form avatar juga membatasi 5MB, tapi itu
   // cuma di browser). Tanpa abortOnLimit, file yang kelewat batas dipotong
   // diam-diam, bukan ditolak.

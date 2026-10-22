@@ -8,6 +8,7 @@ import { SearchButton } from '@/components/ui/SearchDialog'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useLocale } from '@/lib/i18n/LocaleContext'
+import { useHasPublishedPosts } from '@/lib/useHasPublishedPosts'
 import { useSettings } from '@/lib/useSettings'
 import { cn } from '@/lib/utils'
 
@@ -17,17 +18,19 @@ export function Header() {
   const pathname = usePathname()
   const { t } = useLocale()
   const { settings } = useSettings()
+  const hasPosts = useHasPublishedPosts()
 
   // Nav item ditambah bertahap seiring fase roadmap selesai (lihat
-  // docs/17-ROADMAP.md) — jangan link ke rute yang belum dibangun.
+  // docs/17-ROADMAP.md) — jangan link ke rute yang belum dibangun. Blog baru
+  // tampil kalau sudah ada artikel published (lib/useHasPublishedPosts.ts).
   const navItems = [
     { href: '/', label: t.nav.home },
     { href: '/courses', label: t.nav.courses },
-    { href: '/blog', label: t.nav.blog },
+    ...(hasPosts ? [{ href: '/blog', label: t.nav.blog }] : []),
   ]
   // Status login dari AuthProvider (lihat komentar di lib/auth/AuthContext.tsx
   // soal kenapa tidak di-fetch di sini).
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const isLoggedIn = Boolean(user)
 
   return (
@@ -78,7 +81,11 @@ export function Header() {
           <SearchButton />
           <ThemeToggle />
           <LocaleSwitcher />
-          {isLoggedIn ? (
+          {authLoading ? (
+            // Placeholder selebar tombol Masuk/Daftar: status login belum
+            // diketahui, jangan tampilkan salah satunya dulu (flicker).
+            <span aria-hidden="true" className="block h-7 w-28" />
+          ) : isLoggedIn ? (
             <LogoutButton />
           ) : (
             <>

@@ -10,6 +10,29 @@ completion per course dan menampilkannya di halaman `/my-learning`.
 Lihat `Progress` di `04-DATA-MODEL.md`. Field kunci: `user`, `lesson`, `course`
 (denormalized untuk query cepat), `completedAt`, `score` (opsional).
 
+## Aturan Integritas (berlaku sejak 2026-10-22)
+
+Baris Progress = bukti lesson selesai, dan dihitung untuk persentase course
+serta syarat sertifikat. Access control (`Progress.ts`) hanya memastikan user
+menulis baris miliknya; isi baris dijaga hook `beforeChange`
+`src/collections/hooks/progressIntegrity.ts`, yang berlaku untuk SEMUA jalur
+tulis (route custom, REST `/api/progress/:id`, GraphQL `createProgress`):
+
+- Lesson ber-quiz hanya bisa diselesaikan lewat `/api/quiz` yang lulus
+  (route itu mengirim `context: { quizPassed: true }`; request REST/GraphQL
+  selalu mulai dengan context kosong). `POST /api/progress` menolak lesson
+  ber-quiz.
+- `course` selalu diturunkan dari lesson (`lesson.module.course`), bukan
+  dipercaya dari body — sebelumnya `courseId` palsu bisa menggelembungkan
+  progress course lain sampai 100% dan membuka sertifikatnya.
+- `score` hanya diisi grading quiz; nilai dari client dibuang.
+- `update` Progress hanya untuk admin (tidak ada alur aplikasi yang
+  mengubah baris setelah dibuat).
+- Admin dan Local API tanpa user (script server) tidak dicek hook ini.
+
+Contoh kode di bawah adalah rancangan awal; implementasi sebenarnya ada di
+`src/app/api/progress/route.ts` dan `src/lib/getCourseProgress.ts`.
+
 ## API Route: Tandai Lesson Selesai
 
 ```ts
@@ -84,6 +107,8 @@ export async function getCourseProgress(payload: Payload, userId: string, course
 
 ## UI Trigger "Tandai Selesai"
 
-Tombol di halaman `/lessons/[slug]` memanggil `POST /api/progress` dengan
-`lessonId` & `courseId` saat user klik "Tandai selesai" (atau otomatis saat user
-scroll sampai akhir konten, sesuai preferensi UX).
+Hanya untuk lesson TANPA quiz: tombol di halaman `/lessons/[slug]` memanggil
+`POST /api/progress` dengan `lessonId` saat user klik "Tandai selesai". Lesson
+ber-quiz (mayoritas konten) diselesaikan dengan lulus quiz — lihat
+`19-FEATURE-QUIZ.md`. Di bawah area ini ada navigasi lesson
+sebelum/berikutnya (urutan module.order lalu lesson.order).

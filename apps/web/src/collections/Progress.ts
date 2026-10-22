@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { enforceProgressIntegrity } from './hooks/progressIntegrity'
+
 export const Progress: CollectionConfig = {
   slug: 'progress',
   admin: { useAsTitle: 'id' },
@@ -15,12 +17,15 @@ export const Progress: CollectionConfig = {
       if (user.role === 'admin') return true
       return data?.user === user.id
     },
-    update: ({ req: { user } }) => {
-      if (!user) return false
-      if (user.role === 'admin') return true
-      return { user: { equals: user.id } }
-    },
+    // Baris progress = bukti lesson selesai; tidak ada alur aplikasi yang
+    // mengubahnya setelah dibuat. Update terbuka untuk pemilik sebelumnya
+    // membuat student bisa mengganti `score`/`lesson` sendiri lewat REST
+    // PATCH /api/progress/:id atau GraphQL.
+    update: ({ req: { user } }) => user?.role === 'admin',
     delete: ({ req: { user } }) => user?.role === 'admin',
+  },
+  hooks: {
+    beforeChange: [enforceProgressIntegrity],
   },
   fields: [
     { name: 'user', type: 'relationship', relationTo: 'users', required: true },
@@ -32,7 +37,7 @@ export const Progress: CollectionConfig = {
       required: true,
       defaultValue: () => new Date().toISOString(),
     },
-    { name: 'score', type: 'number' }, // opsional, untuk lesson dengan quiz
+    { name: 'score', type: 'number' }, // skor quiz yang lulus (>= QUIZ_PASSING_SCORE), kosong untuk lesson tanpa quiz
   ],
   indexes: [{ fields: ['user', 'lesson'], unique: true }], // cegah duplikat record
 }

@@ -8,11 +8,9 @@ import { useLocale } from '@/lib/i18n/LocaleContext'
 
 export function MarkCompleteButton({
   lessonId,
-  courseId,
   initiallyCompleted,
 }: {
   lessonId: number
-  courseId: number
   initiallyCompleted: boolean
 }) {
   const router = useRouter()
@@ -27,7 +25,7 @@ export function MarkCompleteButton({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ lessonId, courseId }),
+        body: JSON.stringify({ lessonId }),
       })
       if (res.ok) {
         setCompleted(true)

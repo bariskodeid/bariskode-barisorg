@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { notifyCoursePublished } from '../lib/notifications'
 
 import { formatSlugHook } from './hooks/formatSlug'
+import { removeCourseFromSearch, syncCourseToSearch } from './hooks/searchSync'
 
 export const Courses: CollectionConfig = {
   slug: 'courses',
@@ -30,7 +31,9 @@ export const Courses: CollectionConfig = {
         }
         return doc
       },
+      syncCourseToSearch,
     ],
+    afterDelete: [removeCourseFromSearch],
   },
   fields: [
     { name: 'title', type: 'text', required: true },

@@ -5,6 +5,7 @@ import * as migration_20260907_114625_add_lesson_quiz_fields from './20260907_11
 import * as migration_20260910_064000_add_settings_global from './20260910_064000_add_settings_global';
 import * as migration_20260914_074316 from './20260914_074316';
 import * as migration_20261018_041529_add_bookmarks from './20261018_041529_add_bookmarks';
+import * as migration_20261022_041500_remove_failed_quiz_progress from './20261022_041500_remove_failed_quiz_progress';
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20261018_041529_add_bookmarks.up,
     down: migration_20261018_041529_add_bookmarks.down,
     name: '20261018_041529_add_bookmarks'
+  },
+  {
+    up: migration_20261022_041500_remove_failed_quiz_progress.up,
+    down: migration_20261022_041500_remove_failed_quiz_progress.down,
+    name: '20261022_041500_remove_failed_quiz_progress',
   },
 ];

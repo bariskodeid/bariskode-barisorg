@@ -1,11 +1,19 @@
 import { BookOpen } from 'lucide-react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { CategoryName, LevelLabel } from '@/components/ui/TaxonomyLabel'
 import { T } from '@/lib/i18n/LocaleContext'
 import { getPayload } from '@/lib/payload'
 import { cn } from '@/lib/utils'
 
 export const revalidate = 60
+
+export const metadata: Metadata = {
+  title: 'Kursus | bariskode.org',
+  description:
+    'Kursus gratis dari nol: Python, JavaScript, C, Go, Java, Rust, SQL, Linux, dan lainnya — lengkap dengan quiz dan sandbox kode di browser.',
+}
 
 export default async function CoursesPage(props: PageProps<'/courses'>) {
   const searchParams = await props.searchParams
@@ -72,7 +80,7 @@ export default async function CoursesPage(props: PageProps<'/courses'>) {
                     : 'border-white/10 bg-white/5 text-muted-foreground hover:text-white',
                 )}
               >
-                {category.name}
+                <CategoryName slug={category.slug} name={category.name} />
               </Link>
             ))}
           </div>
@@ -96,8 +104,8 @@ export default async function CoursesPage(props: PageProps<'/courses'>) {
                       <div className="p-2 rounded-lg bg-white/5 text-white">
                         <BookOpen className="w-6 h-6" />
                       </div>
-                      <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground capitalize">
-                        {course.level}
+                      <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground">
+                        <LevelLabel level={course.level ?? ''} />
                       </span>
                     </div>
 
@@ -108,7 +116,7 @@ export default async function CoursesPage(props: PageProps<'/courses'>) {
                     <div className="mt-auto pt-4 flex flex-wrap gap-2">
                       {category && (
                         <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground">
-                          {category.name}
+                          <CategoryName slug={category.slug} name={category.name} />
                         </span>
                       )}
                     </div>

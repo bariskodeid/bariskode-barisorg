@@ -245,16 +245,21 @@ export const Progress: CollectionConfig = {
     // user hanya boleh baca/tulis progress miliknya sendiri; admin baca semua
     read: ({ req: { user } }) =>
       user?.role === 'admin' ? true : { user: { equals: user?.id } },
-    create: ({ req: { user } }) => !!user,
-    update: ({ req: { user } }) => !!user,
+    // create: user login, hanya atas nama dirinya sendiri (data.user === user.id)
+    create: ({ req: { user }, data }) => !!user && (user.role === 'admin' || data?.user === user.id),
+    // tidak ada alur aplikasi yang mengubah baris progress setelah dibuat
+    update: ({ req: { user } }) => user?.role === 'admin',
     delete: ({ req: { user } }) => user?.role === 'admin',
   },
+  // isi baris (lesson ber-quiz, course, score) dijaga hook — lihat
+  // docs/09-FEATURE-PROGRESS-TRACKING.md bagian "Aturan Integritas"
+  hooks: { beforeChange: [enforceProgressIntegrity] },
   fields: [
     { name: 'user', type: 'relationship', relationTo: 'users', required: true },
     { name: 'lesson', type: 'relationship', relationTo: 'lessons', required: true },
     { name: 'course', type: 'relationship', relationTo: 'courses', required: true }, // denormalized, mempercepat query "progress per course"
     { name: 'completedAt', type: 'date', required: true, defaultValue: () => new Date().toISOString() },
-    { name: 'score', type: 'number' }, // diisi POST /api/quiz saat lesson.hasQuiz — lihat docs/19-FEATURE-QUIZ.md
+    { name: 'score', type: 'number' }, // diisi POST /api/quiz saat quiz lulus (>= 70%) — lihat docs/19-FEATURE-QUIZ.md
   ],
   indexes: [{ fields: ['user', 'lesson'], unique: true }], // cegah duplikat record
 }

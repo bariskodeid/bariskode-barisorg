@@ -75,10 +75,38 @@ describe('status login di Header', () => {
     vi.unstubAllGlobals()
   })
 
+  it('tidak menampilkan Masuk/Daftar maupun menu user sebelum status login diketahui', async () => {
+    // /api/users/me yang belum selesai: Header harus netral, bukan sempat
+    // menampilkan Masuk/Daftar lalu berganti jadi menu user (flicker).
+    let resolveMe: (res: Response) => void = () => {}
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) =>
+        String(input) === '/api/users/me'
+          ? new Promise<Response>((resolve) => (resolveMe = resolve))
+          : fakeApi(input, init),
+      ),
+    )
+    session = testUser
+    renderFrontend()
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/users/me', expect.anything()))
+
+    expect(header().queryByRole('link', { name: 'Masuk' })).toBeNull()
+    expect(header().queryByRole('link', { name: 'Daftar' })).toBeNull()
+    expect(header().queryByRole('button', { name: 'Keluar' })).toBeNull()
+
+    resolveMe(
+      new Response(JSON.stringify({ user: testUser }), {
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+    await waitFor(() => expect(header().getByRole('button', { name: 'Keluar' })).toBeTruthy())
+    expect(header().queryByRole('link', { name: 'Masuk' })).toBeNull()
+  })
+
   it('pindah ke menu user setelah login, tanpa full reload', async () => {
     const { container } = renderFrontend()
-    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/users/me', expect.anything()))
-    expect(header().getByRole('link', { name: 'Masuk' })).toBeTruthy()
+    await waitFor(() => expect(header().getByRole('link', { name: 'Masuk' })).toBeTruthy())
 
     fireEvent.change(container.querySelector('#email')!, { target: { value: testUser.email } })
     fireEvent.change(container.querySelector('#password')!, { target: { value: 'rahasia-123' } })

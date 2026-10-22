@@ -17,6 +17,23 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Error validasi Payload berbahasa Inggris — dipetakan ke teks UI, bukan
+  // ditampilkan mentah. Bentuk respons ValidationError:
+  // { errors: [{ data: { errors: [{ path: 'email', message: '...' }] } }] }
+  function registerErrorMessage(data: unknown): string {
+    type FieldError = { path?: string; message?: string }
+    const fieldErrors =
+      (data as { errors?: { data?: { errors?: FieldError[] } }[] } | null)?.errors?.[0]?.data
+        ?.errors ?? []
+    const emailError = fieldErrors.find((err) => err.path === 'email')
+    if (emailError) {
+      return /already registered/i.test(emailError.message ?? '')
+        ? t.auth.register.emailTaken
+        : t.auth.register.emailInvalid
+    }
+    return t.auth.register.genericError
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
@@ -31,7 +48,7 @@ export default function RegisterPage() {
       const createData = await createRes.json()
 
       if (!createRes.ok) {
-        setError(createData?.errors?.[0]?.message || createData?.message || t.auth.register.genericError)
+        setError(registerErrorMessage(createData))
         setLoading(false)
         return
       }

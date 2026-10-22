@@ -2,6 +2,9 @@
 // (nav/tombol/label/pesan) yang diterjemahkan di sini. Konten dari Payload
 // (title/description/richText course, lesson, post) TIDAK PERNAH masuk ke
 // dictionary ini — tetap apa adanya sesuai bahasa penulis konten.
+// Satu pengecualian: label taksonomi yang tampil sebagai filter/badge
+// (`categoryNames` per slug kategori, `levels` per nilai level course).
+// Locale id tidak mengisi `categoryNames`, jadi nama dari CMS yang tampil.
 export type Locale = 'id' | 'en'
 
 export const locales: Locale[] = ['id', 'en']
@@ -44,6 +47,7 @@ const id = {
     empty: 'Belum ada kursus published di kategori ini.',
   },
   courseDetail: {
+    start: 'Mulai Belajar',
     materials: 'Materi',
     empty: 'Belum ada materi untuk kursus ini.',
   },
@@ -66,7 +70,11 @@ const id = {
       submitting: 'Memproses...',
       noAccount: 'Belum punya akun?',
       register: 'Daftar',
+      forgot: 'Lupa password?',
       genericError: 'Email atau password salah.',
+      locked:
+        'Akun dikunci sementara karena terlalu banyak percobaan masuk yang gagal. Coba lagi dalam 10 menit.',
+      serverError: 'Gagal masuk. Coba lagi sebentar lagi.',
       networkError: 'Tidak bisa terhubung ke server. Coba lagi.',
     },
     register: {
@@ -80,6 +88,37 @@ const id = {
       hasAccount: 'Sudah punya akun?',
       login: 'Masuk',
       genericError: 'Registrasi gagal.',
+      emailTaken: 'Email ini sudah terdaftar. Silakan masuk, atau reset password kalau lupa.',
+      emailInvalid: 'Format email tidak valid.',
+      networkError: 'Tidak bisa terhubung ke server. Coba lagi.',
+    },
+    forgot: {
+      title: 'Lupa Password',
+      subtitle: 'Masukkan email akunmu. Kami kirim link untuk membuat password baru.',
+      email: 'Email',
+      submit: 'Kirim Link Reset',
+      submitting: 'Mengirim...',
+      sent: 'Kalau email itu terdaftar, link reset password sudah dikirim. Cek inbox dan folder spam — link berlaku 1 jam.',
+      unavailable:
+        'Reset password lewat email belum tersedia. Hubungi pengelola bariskode.org untuk memulihkan akunmu.',
+      rateLimited: 'Terlalu banyak permintaan reset. Coba lagi nanti.',
+      genericError: 'Gagal mengirim permintaan. Coba lagi.',
+      networkError: 'Tidak bisa terhubung ke server. Coba lagi.',
+      backToLogin: 'Kembali ke halaman masuk',
+    },
+    reset: {
+      title: 'Buat Password Baru',
+      subtitle: 'Password baru minimal 8 karakter.',
+      password: 'Password Baru',
+      confirm: 'Konfirmasi Password Baru',
+      submit: 'Simpan Password',
+      submitting: 'Menyimpan...',
+      mismatch: 'Konfirmasi password tidak cocok.',
+      minLength: 'Password baru minimal 8 karakter.',
+      invalidToken: 'Link reset tidak valid atau sudah kedaluwarsa.',
+      missingToken: 'Link reset tidak lengkap. Buka link dari email, atau minta link baru.',
+      requestNew: 'Minta link baru',
+      genericError: 'Gagal menyimpan password baru. Coba lagi.',
       networkError: 'Tidak bisa terhubung ke server. Coba lagi.',
     },
   },
@@ -91,6 +130,10 @@ const id = {
     labDesc:
       'Ruang lab terpisah — perlu akun sendiri di sana (tidak terhubung dengan akun bariskode.org ini).',
     loginToComplete: 'untuk menandai lesson ini selesai dan melacak progress belajarmu.',
+    loginToQuiz: (passingScore: number) =>
+      `untuk mengerjakan quiz di akhir lesson ini. Lesson tercatat selesai setelah kamu lulus quiz dengan skor minimal ${passingScore}%.`,
+    previous: 'Sebelumnya',
+    next: 'Berikutnya',
   },
   markComplete: {
     done: 'Selesai',
@@ -98,18 +141,28 @@ const id = {
     saving: 'Menyimpan...',
   },
   quiz: {
+    intro: (passingScore: number) =>
+      `Jawab benar minimal ${passingScore}% soal untuk menandai lesson ini selesai. Belum lulus? Kamu bisa mengulang quiz-nya.`,
     submit: 'Submit Quiz',
     submitting: 'Mengirim...',
-    done: 'Quiz Selesai',
+    passed: 'Lulus — lesson selesai',
+    failed: 'Belum lulus',
     scoreLabel: 'Skor kamu:',
+    correctOf: (correct: number, total: number) => `${correct} dari ${total} benar`,
+    needScore: (passingScore: number) =>
+      `Butuh minimal ${passingScore}% untuk menyelesaikan lesson ini — baca ulang materinya lalu coba lagi.`,
+    retry: 'Ulangi Quiz',
+    correct: 'Benar',
+    incorrect: 'Salah',
     answerAll: 'Jawab semua soal dulu sebelum submit.',
     genericError: 'Gagal submit quiz.',
+    rateLimited: 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.',
   },
   myLearning: {
     title: 'Belajar Saya',
     subtitle: 'Progress kursus yang sedang atau sudah kamu jalani.',
     emptyDesc:
-      'Belum ada progress. Mulai kursus dan tandai lesson selesai untuk melihatnya di sini.',
+      'Belum ada progress. Mulai kursus dan selesaikan quiz di akhir lesson untuk melihatnya di sini.',
     explore: 'Jelajahi Kursus',
     lessonsCompleted: (completed: number, total: number) => `${completed} / ${total} lesson selesai`,
     downloadCertificate: 'Download Sertifikat',
@@ -166,10 +219,17 @@ const id = {
     title: 'Pencarian',
     placeholder: 'Cari course, materi, artikel...',
     noResults: 'Tidak ditemukan',
+    unavailable: 'Pencarian sedang bermasalah. Coba lagi sebentar lagi.',
     course: 'Course',
     lesson: 'Materi',
     post: 'Artikel',
   },
+  categoryNames: {} as Record<string, string>,
+  levels: {
+    pemula: 'Pemula',
+    menengah: 'Menengah',
+    lanjutan: 'Lanjutan',
+  } as Record<string, string>,
   bookmark: {
     add: 'Bookmark',
     remove: 'Hapus Bookmark',
@@ -218,6 +278,7 @@ const en: typeof id = {
     empty: 'No published courses in this category yet.',
   },
   courseDetail: {
+    start: 'Start Learning',
     materials: 'Materials',
     empty: 'No materials for this course yet.',
   },
@@ -240,7 +301,10 @@ const en: typeof id = {
       submitting: 'Processing...',
       noAccount: "Don't have an account?",
       register: 'Sign up',
+      forgot: 'Forgot password?',
       genericError: 'Wrong email or password.',
+      locked: 'This account is temporarily locked after too many failed login attempts. Try again in 10 minutes.',
+      serverError: "Couldn't log in. Try again shortly.",
       networkError: "Couldn't connect to the server. Try again.",
     },
     register: {
@@ -254,6 +318,37 @@ const en: typeof id = {
       hasAccount: 'Already have an account?',
       login: 'Log in',
       genericError: 'Registration failed.',
+      emailTaken: 'This email is already registered. Log in, or reset your password if you forgot it.',
+      emailInvalid: 'Invalid email format.',
+      networkError: "Couldn't connect to the server. Try again.",
+    },
+    forgot: {
+      title: 'Forgot Password',
+      subtitle: "Enter your account email. We'll send you a link to create a new password.",
+      email: 'Email',
+      submit: 'Send Reset Link',
+      submitting: 'Sending...',
+      sent: "If that email is registered, a password reset link is on its way. Check your inbox and spam folder — the link is valid for 1 hour.",
+      unavailable:
+        "Password reset by email isn't available yet. Contact the bariskode.org maintainers to recover your account.",
+      rateLimited: 'Too many reset requests. Try again later.',
+      genericError: "Couldn't send the request. Try again.",
+      networkError: "Couldn't connect to the server. Try again.",
+      backToLogin: 'Back to log in',
+    },
+    reset: {
+      title: 'Create a New Password',
+      subtitle: 'Your new password must be at least 8 characters.',
+      password: 'New Password',
+      confirm: 'Confirm New Password',
+      submit: 'Save Password',
+      submitting: 'Saving...',
+      mismatch: 'Passwords do not match.',
+      minLength: 'Your new password must be at least 8 characters.',
+      invalidToken: 'This reset link is invalid or has expired.',
+      missingToken: 'This reset link is incomplete. Open the link from the email, or request a new one.',
+      requestNew: 'Request a new link',
+      genericError: "Couldn't save your new password. Try again.",
       networkError: "Couldn't connect to the server. Try again.",
     },
   },
@@ -264,6 +359,10 @@ const en: typeof id = {
     openLab: 'Open CTF Lab',
     labDesc: 'A separate lab space — needs its own account there (not connected to this bariskode.org account).',
     loginToComplete: 'to mark this lesson complete and track your learning progress.',
+    loginToQuiz: (passingScore: number) =>
+      `to take the quiz at the end of this lesson. The lesson is marked complete once you pass the quiz with a score of at least ${passingScore}%.`,
+    previous: 'Previous',
+    next: 'Next',
   },
   markComplete: {
     done: 'Completed',
@@ -271,17 +370,27 @@ const en: typeof id = {
     saving: 'Saving...',
   },
   quiz: {
+    intro: (passingScore: number) =>
+      `Answer at least ${passingScore}% of the questions correctly to mark this lesson complete. Didn't pass? You can retake the quiz.`,
     submit: 'Submit Quiz',
     submitting: 'Submitting...',
-    done: 'Quiz Completed',
+    passed: 'Passed — lesson complete',
+    failed: 'Not passed yet',
     scoreLabel: 'Your score:',
+    correctOf: (correct: number, total: number) => `${correct} of ${total} correct`,
+    needScore: (passingScore: number) =>
+      `You need at least ${passingScore}% to complete this lesson — review the material and try again.`,
+    retry: 'Retake Quiz',
+    correct: 'Correct',
+    incorrect: 'Incorrect',
     answerAll: 'Answer every question before submitting.',
     genericError: 'Failed to submit the quiz.',
+    rateLimited: 'Too many attempts. Wait a moment and try again.',
   },
   myLearning: {
     title: 'My Learning',
     subtitle: 'Progress on courses you are taking or have completed.',
-    emptyDesc: 'No progress yet. Start a course and mark lessons complete to see them here.',
+    emptyDesc: 'No progress yet. Start a course and pass the quiz at the end of each lesson to see it here.',
     explore: 'Explore Courses',
     lessonsCompleted: (completed: number, total: number) => `${completed} / ${total} lessons completed`,
     downloadCertificate: 'Download Certificate',
@@ -338,9 +447,22 @@ const en: typeof id = {
     title: 'Search',
     placeholder: 'Search courses, materials, articles...',
     noResults: 'No results found',
+    unavailable: 'Search is having trouble right now. Try again shortly.',
     course: 'Course',
     lesson: 'Material',
     post: 'Article',
+  },
+  categoryNames: {
+    'sistem-linux': 'Systems & Linux',
+    programming: 'Programming',
+    database: 'Databases',
+    'data-science': 'Data Science',
+    cybersecurity: 'Cybersecurity',
+  },
+  levels: {
+    pemula: 'Beginner',
+    menengah: 'Intermediate',
+    lanjutan: 'Advanced',
   },
   bookmark: {
     add: 'Bookmark',

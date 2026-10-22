@@ -108,11 +108,47 @@ bagian bawah `docs/17-ROADMAP.md`.
 
 ## Pending Aksi Manual dari User
 
+- **Tindak lanjut QA 2026-10-21 yang butuh aksi user** (perbaikan kodenya
+  sudah dikerjakan 2026-10-22, lihat "Perbaikan hasil QA" di Status
+  Implementasi):
+  - **Deploy + reindex search**: perubahan belum aktif di production sampai
+    image baru di-rilis. Setelah rilis, WAJIB jalankan reindex sekali:
+    `./dcr --profile script run --rm -T web-script src/scripts/search-sync.ts`
+    (index Meilisearch production kosong total, 0 index). Rilis ini membawa
+    migration data `20261022_041500_remove_failed_quiz_progress` (hapus baris
+    Progress kuis dengan skor < 70 dan samakan `course_id` dengan course
+    lesson-nya; di production per 2026-10-22 cuma 1 baris yang terhapus, milik
+    akun QA, dan tidak ada `course_id` yang salah).
+  - **Cloudflare**: aktifkan "Always Use HTTPS" (origin sudah redirect lewat
+    header `CF-Visitor` + kirim HSTS, tapi lapis edge tetap disarankan);
+    tambahkan public hostname `www.bariskode.org` → `http://localhost:3040` di
+    tunnel cloudflared (Zero Trust) — aplikasi sudah me-redirect www → apex,
+    tapi DNS/tunnel untuk www belum ada sama sekali.
+  - **SMTP**: isi `SMTP_*` di `apps/web/.env.docker` (lalu `./dcr up -d web`)
+    supaya lupa password, notifikasi course, dan reminder benar-benar
+    terkirim. Selama kosong, `/forgot-password` menampilkan pesan "reset lewat
+    email belum tersedia".
+  - **Akun uji QA** `qa.sapin@bariskode.org` di production: minta dihapus QA
+    setelah ditinjau — hapus lewat `/admin` kalau sudah tidak dipakai.
+  - **Temuan QA yang keliru (tidak perlu aksi)**: "stack production di
+    nekosama mati sejak 18 Okt" — QA melihat context Docker *rootless*
+    (container lama yang memang sengaja dimatikan); production jalan di
+    context rootful (`./dcr`). "Halaman kursus 22 lesson vs progress 21" —
+    DB dan halaman live sama-sama 21 lesson per course. Container & volume
+    rootless lama masih disimpan sebagai cadangan rollback; hapus kalau sudah
+    yakin tidak perlu.
+  - **Di luar repo ini** (dicatat QA, bukan kode bariskode.org): staging
+    barislms (`lms-staging.bariskode.com`) terbuka publik tanpa gerbang akses;
+    worker `sosmed-autopost` restart 235 kali; build cache Docker 11,9 GB dan
+    swap 1,1 GB terpakai di nekosama.
 - **Giscus (komentar blog)**: `GiscusComments.tsx` sudah dipasang dan sengaja
   tidak merender apa pun selama env var `NEXT_PUBLIC_GISCUS_*` masih nilai
   placeholder. Untuk mengaktifkan: buat repo GitHub publik untuk proyek ini,
   aktifkan Discussions, install app giscus, ikuti langkah lengkap di
-  `docs/08-FEATURE-BLOG.md`, lalu isi env var di `apps/web/.env`.
+  `docs/08-FEATURE-BLOG.md`. Komponennya client component, jadi untuk image
+  production nilainya harus dikirim saat build (`docker build --build-arg
+  NEXT_PUBLIC_GISCUS_REPO=... ...`, lihat ARG di `apps/web/Dockerfile`),
+  bukan di `.env.docker`.
 - **Judge0 sudah jalan di production, tapi baru dites dengan contoh kecil**:
   sejak 2026-10-18 Judge0 hidup di nekosama (lihat "Deployment Production
   (nekosama)" di bawah). Eksekusi end-to-end lewat `https://bariskode.org`
@@ -232,6 +268,33 @@ bagian bawah `docs/17-ROADMAP.md`.
       total), soal quiz diacak saat seed, lesson merender block kode, seed
       idempotent lewat `pnpm seed:courses`. Detail & angka di bagian
       "Konten" di bawah.
+- [x] Perbaikan hasil QA 2026-10-21 (spreadsheet QA, 2 putaran) — dikerjakan
+      2026-10-22, BELUM di-deploy (lihat "Tindak lanjut QA" di Pending Aksi
+      Manual):
+      search (akar masalah: hook sync Meilisearch tidak pernah dibuat padahal
+      disebut docs/25, dan script bulk sync terpotong `payload run` sebelum
+      mengindex apa pun; kini ada hook di Courses/Lessons/Modules/Posts,
+      `pnpm search:sync`, rate limit per IP — sebelumnya satu jatah untuk
+      semua pengunjung); quiz dengan ambang lulus 70% + ulangi quiz, dan hook
+      `progressIntegrity.ts` yang menutup bypass lewat `/api/progress`, REST,
+      dan GraphQL serta menurunkan `course` dari lesson (sebelumnya
+      `courseId` palsu bisa membuka sertifikat course lain); lupa/reset
+      password (`/forgot-password`, `/reset-password`, adapter
+      `@payloadcms/email-nodemailer`, rate limit per IP/email); redirect
+      HTTP→HTTPS & www→apex + HSTS di `next.config.ts`; Open Graph/Twitter
+      Card + `opengraph-image.tsx`; ARG `NEXT_PUBLIC_SERVER_URL` di Dockerfile
+      (robots.txt production sebelumnya menunjuk sitemap di localhost);
+      header tanpa flicker status login; navigasi lesson sebelum/berikutnya;
+      tombol "Mulai Belajar" di halaman course; label kategori/level & pesan
+      error auth terlokalisasi; menu Blog tersembunyi sampai ada artikel
+      published. Diverifikasi lokal: lint, typecheck, build, tes int, migrate
+      DB baru, smoke test API lewat curl (search, quiz lulus/gagal/ulang,
+      bypass progress, reset password end-to-end dengan SMTP Mailpit), dan
+      browser sungguhan (Playwright di container Docker) untuk login, quiz,
+      lesson, course, mode EN, lupa password, dan tampilan mobile. Temuan
+      baru yang BELUM dikerjakan: di layar ~390px tombol "Daftar" di header
+      terpotong dan tidak ada menu navigasi mobile; registrasi belum punya
+      batas minimal panjang password di server.
 
 Semua 9 fase v1 + Fase 10 di docs/17-ROADMAP.md sudah dikerjakan, dan
 production sudah live di nekosama. Sisa pekerjaan proyek ini adalah aksi
@@ -279,6 +342,10 @@ Ini berbeda dari skenario VM Oracle + Caddy di docs/14 — hal yang penting:
   ~/srv/prod/bariskode-barisorg && SSH_ORIGINAL_COMMAND='release <tag>'
   ./ci-deploy.sh"`. Alur yang sama dipakai job `deploy` di
   `.github/workflows/deploy.yml` setelah diaktifkan.
+- **Search (Meilisearch)**: index diisi otomatis oleh hook collection saat
+  konten disimpan (termasuk lewat seed). Reindex penuh / perbaiki index:
+  `./dcr --profile script run --rm -T web-script src/scripts/search-sync.ts`
+  (mencetak jumlah dokumen Postgres vs index, exit 1 kalau beda).
 - **Seed konten**: `./dcr --profile script run --rm -T web-script
   scripts/seed-all-courses.ts` (override sudah set `NODE_ENV=production`).
   Ingat: re-seed menimpa edit admin pada 12 course itu — dump DB dulu.

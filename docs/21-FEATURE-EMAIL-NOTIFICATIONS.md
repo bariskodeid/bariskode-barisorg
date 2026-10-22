@@ -2,10 +2,9 @@
 
 ## Ringkasan
 
-Dua trigger: (a) course baru published, (b) reminder untuk course yang
-progress-nya mandek. Pakai `nodemailer` + env `SMTP_HOST/PORT/USER/PASS/FROM`
-yang sudah di-scaffold sejak Fase 3 di `.env.example` tapi baru sekarang
-benar-benar dipakai — BUKAN reset password (belum ada flow itu di v1).
+Tiga jenis email: (a) course baru published, (b) reminder untuk course yang
+progress-nya mandek, (c) lupa password (lihat "Reset Password" di bawah).
+Semuanya pakai env `SMTP_HOST/PORT/USER/PASS/FROM` yang sama.
 
 ## Helper Email
 
@@ -59,3 +58,39 @@ docker compose -f infra/docker-compose.yml run --rm web-script scripts/send-prog
 ```
 
 Dokumentasi cron lengkap ada di `docs/14-DEPLOYMENT-ORACLE-VM.md` bagian 10.
+
+## Reset Password
+
+Ditambahkan 2026-10-22 (temuan QA: tidak ada jalur pemulihan akun mandiri).
+Memakai operasi bawaan Payload, bukan route custom:
+
+- **Halaman**: `/forgot-password` (form email → `POST /api/users/forgot-password`)
+  dan `/reset-password?token=...` (form password baru → `POST
+  /api/users/reset-password`; kalau berhasil Payload langsung memasang cookie
+  login, user diarahkan ke `/my-learning`). Link "Lupa password?" ada di
+  halaman `/login`.
+- **Adapter email Payload**: `@payloadcms/email-nodemailer` di
+  `payload.config.ts`, memakai SMTP yang sama dengan `src/lib/email.ts`
+  (`getSmtpOptions()`). Tanpa `SMTP_HOST` tidak ada adapter: Payload hanya
+  menulis email ke console, dan `/forgot-password` (force-dynamic, supaya env
+  dibaca saat request) menampilkan pesan "reset lewat email belum tersedia".
+- **Isi email**: `forgotPasswordEmailHTML` di
+  `src/collections/hooks/passwordReset.ts` — link ke halaman frontend
+  `/reset-password`, BUKAN `/admin/reset/...` bawaan Payload (admin panel
+  hanya untuk role admin). Token berlaku 1 jam (default Payload), sekali pakai.
+- **Rate limit** (hook `beforeOperation` di Users, berlaku untuk siapa pun
+  yang memanggil endpoint itu): maks 5 permintaan per IP per 15 menit dan 5
+  per alamat email per jam (cegah inbox seseorang dibanjiri email reset).
+  Kuota per email hanya dihitung untuk request yang lolos cek IP. Kuota itu
+  dibagi semua IP, jadi orang lain bisa menghabiskannya untuk email korban —
+  tapi korban tetap menerima email-email tersebut dan link terbaru berlaku.
+  Endpoint selalu membalas sukses walau email tidak terdaftar (perilaku
+  Payload, supaya daftar email user tidak bisa ditebak).
+- **Password baru minimal 8 karakter**, dicek di form dan di server (hook
+  yang sama), sama seperti `/api/users/change-password`. Registrasi
+  (`POST /api/users`) BELUM punya batas minimal ini di server.
+
+Yang perlu disiapkan di production: isi `SMTP_*` di `apps/web/.env.docker`
+lalu restart service `web`. Tes end-to-end lokal memakai Mailpit sebagai
+SMTP (`docker run -p 1025:1025 -p 8025:8025 axllent/mailpit`, lalu
+`SMTP_HOST=127.0.0.1 SMTP_PORT=1025 pnpm dev`).

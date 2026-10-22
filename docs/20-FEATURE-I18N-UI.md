@@ -79,6 +79,25 @@ tidak perlu `<T>`.
    deklarasi `en`).
 2. Pilih pola A/B/C di atas sesuai jenis halaman/komponen yang dipakai.
 
+## Pengecualian: Label Taksonomi
+
+Nama kategori (filter/badge di `/courses`, beranda, `/blog`) dan level
+course (`pemula`/`menengah`/`lanjutan`) berfungsi sebagai label UI, jadi
+diterjemahkan lewat dictionary berdasarkan **slug/nilai**, bukan teks CMS:
+`categoryNames` (hanya diisi di `en`; locale `id` memakai nama dari CMS apa
+adanya) dan `levels`. Halaman ISR memakai client island
+`src/components/ui/TaxonomyLabel.tsx` (`<CategoryName>`, `<LevelLabel>`).
+Kategori baru yang slug-nya belum ada di `categoryNames` tetap tampil dengan
+nama dari CMS di mode EN — tambahkan slug-nya ke dictionary.
+
+## Pesan Error dari Payload
+
+Pesan error REST Payload selalu berbahasa Inggris (mis. "The email or
+password provided is incorrect."). Halaman login/register/reset password
+TIDAK menampilkannya mentah — status/field error dipetakan ke string
+dictionary (`auth.login.genericError`/`locked`/`serverError`,
+`auth.register.emailTaken`/`emailInvalid`, dst).
+
 ## Non-Goal
 
 Menerjemahkan konten CMS (course/lesson/post) — kalau nanti dibutuhkan, itu

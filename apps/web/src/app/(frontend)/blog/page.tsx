@@ -1,11 +1,18 @@
 import { Newspaper } from 'lucide-react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { CategoryName } from '@/components/ui/TaxonomyLabel'
 import { T } from '@/lib/i18n/LocaleContext'
 import { getPayload } from '@/lib/payload'
 import { cn } from '@/lib/utils'
 
 export const revalidate = 60
+
+export const metadata: Metadata = {
+  title: 'Blog | bariskode.org',
+  description: 'Artikel tutorial, pengumuman, dan tulisan seputar programming, data, dan security.',
+}
 
 export default async function BlogPage(props: PageProps<'/blog'>) {
   const searchParams = await props.searchParams
@@ -64,7 +71,7 @@ export default async function BlogPage(props: PageProps<'/blog'>) {
                     : 'border-white/10 bg-white/5 text-muted-foreground hover:text-white',
                 )}
               >
-                {tag.name}
+                <CategoryName slug={tag.slug} name={tag.name} />
               </Link>
             ))}
           </div>

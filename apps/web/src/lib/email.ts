@@ -1,24 +1,32 @@
 import nodemailer from 'nodemailer'
+import type SMTPTransport from 'nodemailer/lib/smtp-transport'
 
 // Helper email umum, dipakai oleh Courses.ts (hook afterChange, notifikasi
 // course baru) dan scripts/send-progress-reminders.ts (cron, reminder
 // progress). Pakai SMTP_HOST/PORT/USER/PASS/FROM yang sudah di-scaffold di
-// .env.example (Fase 3) tapi belum pernah dipakai — lihat
-// docs/21-FEATURE-EMAIL-NOTIFICATIONS.md.
+// .env.example (Fase 3) — lihat docs/21-FEATURE-EMAIL-NOTIFICATIONS.md.
+// Email bawaan Payload (reset password) memakai SMTP yang sama lewat
+// getSmtpOptions() di payload.config.ts.
 let transporter: ReturnType<typeof nodemailer.createTransport> | null = null
 
-function getTransporter(): ReturnType<typeof nodemailer.createTransport> | null {
+export const emailFromAddress = () => process.env.SMTP_FROM || 'no-reply@bariskode.org'
+
+export function getSmtpOptions(): SMTPTransport.Options | null {
   if (!process.env.SMTP_HOST) return null
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: Number(process.env.SMTP_PORT) === 465,
-      auth: process.env.SMTP_USER
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined,
-    })
+  return {
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: process.env.SMTP_USER
+      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+      : undefined,
   }
+}
+
+function getTransporter(): ReturnType<typeof nodemailer.createTransport> | null {
+  const options = getSmtpOptions()
+  if (!options) return null
+  transporter ??= nodemailer.createTransport(options)
   return transporter
 }
 
@@ -41,7 +49,7 @@ export async function sendEmail({
   }
   try {
     await t.sendMail({
-      from: process.env.SMTP_FROM || 'no-reply@bariskode.org',
+      from: emailFromAddress(),
       to,
       subject,
       html,

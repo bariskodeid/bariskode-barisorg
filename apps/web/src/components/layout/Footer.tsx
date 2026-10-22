@@ -3,12 +3,14 @@
 import Link from 'next/link'
 
 import { useLocale } from '@/lib/i18n/LocaleContext'
+import { useHasPublishedPosts } from '@/lib/useHasPublishedPosts'
 import { useSettings } from '@/lib/useSettings'
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
   const { t } = useLocale()
   const { settings } = useSettings()
+  const hasPosts = useHasPublishedPosts()
 
   const socialLinks = [
     { url: settings?.github || undefined, label: 'GitHub' },
@@ -54,9 +56,11 @@ export function Footer() {
               <Link href="/courses" className="hover:text-white transition-colors">
                 {t.nav.courses}
               </Link>
-              <Link href="/blog" className="hover:text-white transition-colors">
-                {t.nav.blog}
-              </Link>
+              {hasPosts && (
+                <Link href="/blog" className="hover:text-white transition-colors">
+                  {t.nav.blog}
+                </Link>
+              )}
             </div>
           </div>
         </div>

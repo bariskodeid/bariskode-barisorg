@@ -37,6 +37,11 @@ const nextConfig: NextConfig = {
       {
         source: '/:path*',
         headers: [
+          // Browser mengabaikan header ini di respons HTTP biasa, jadi aman
+          // dikirim dari origin (cloudflared -> http://127.0.0.1:3040). Sengaja
+          // tanpa includeSubDomains/preload: subdomain lain (ctf, dst) belum
+          // tentu semuanya HTTPS.
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -49,6 +54,35 @@ const nextConfig: NextConfig = {
             value: "object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
           },
         ],
+      },
+    ]
+  },
+  // Redirect di sini untuk deployment tanpa Caddy (nekosama: Cloudflare ->
+  // cloudflared -> Next.js langsung). Di skenario Caddy (docs/14) Caddy yang
+  // menangani, dan kedua rule ini tidak pernah cocok.
+  async redirects() {
+    return [
+      // www.bariskode.org -> bariskode.org (sama seperti Caddyfile). Butuh
+      // public hostname `www` di tunnel cloudflared supaya request-nya sampai.
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www\\.(?<apex>.+)' }],
+        destination: 'https://:apex/:path*',
+        permanent: true,
+      },
+      // HTTP -> HTTPS. Dicek dari header CF-Visitor (diisi edge Cloudflare
+      // dengan skema yang dipakai pengunjung), BUKAN X-Forwarded-Proto: Next.js
+      // mengisi X-Forwarded-Proto=http sendiri untuk request tanpa header itu,
+      // termasuk health check ci-deploy.sh ke http://127.0.0.1:3040 yang tidak
+      // boleh ikut di-redirect.
+      {
+        source: '/:path*',
+        has: [
+          { type: 'header', key: 'cf-visitor', value: '.*"scheme":"http".*' },
+          { type: 'host', value: '(?<host>.+)' },
+        ],
+        destination: 'https://:host/:path*',
+        permanent: true,
       },
     ]
   },

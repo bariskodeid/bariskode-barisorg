@@ -68,6 +68,9 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchHit[]>([])
   const [loading, setLoading] = useState(false)
+  // Error/429 dari /api/search dibedakan dari "Tidak ditemukan" — sebelumnya
+  // index yang kosong atau Meilisearch yang mati tampak seperti hasil kosong.
+  const [failed, setFailed] = useState(false)
   const [selectedIdx, setSelectedIdx] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -79,6 +82,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
   const search = useCallback(async (q: string) => {
     if (q.length < 2) {
       setResults([])
+      setFailed(false)
       return
     }
 
@@ -90,13 +94,21 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=10`, {
         signal: abortRef.current.signal,
       })
-      if (res.ok) {
-        const data = await res.json()
+      const data = await res.json().catch(() => null)
+      if (res.ok && data && !data.error) {
         setResults(data.results || [])
+        setFailed(false)
         setSelectedIdx(0)
+      } else {
+        setResults([])
+        setFailed(true)
       }
-    } catch {
-      // aborted or network error
+    } catch (err) {
+      // Request lama yang di-abort karena user lanjut mengetik bukan error.
+      if (!(err instanceof DOMException && err.name === 'AbortError')) {
+        setResults([])
+        setFailed(true)
+      }
     } finally {
       setLoading(false)
     }
@@ -174,7 +186,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
           {!loading && query.length >= 2 && results.length === 0 && (
             <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-              {t.search.noResults}
+              {failed ? t.search.unavailable : t.search.noResults}
             </div>
           )}
 

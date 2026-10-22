@@ -1,10 +1,16 @@
 import type { CollectionConfig } from 'payload'
 
 import { cleanupDeletedUserAvatar, cleanupReplacedAvatar } from './hooks/cleanupAvatar'
+import { forgotPasswordEmailHTML, guardPasswordReset } from './hooks/passwordReset'
 
 export const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  auth: {
+    forgotPassword: {
+      generateEmailSubject: () => 'Reset password akun bariskode.org',
+      generateEmailHTML: forgotPasswordEmailHTML,
+    },
+  },
   admin: { useAsTitle: 'email' },
   access: {
     // Hanya admin yang bisa akses admin panel
@@ -22,6 +28,7 @@ export const Users: CollectionConfig = {
     delete: ({ req: { user } }) => user?.role === 'admin',
   },
   hooks: {
+    beforeOperation: [guardPasswordReset],
     afterChange: [cleanupReplacedAvatar],
     afterDelete: [cleanupDeletedUserAvatar],
   },

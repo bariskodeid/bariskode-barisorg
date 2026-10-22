@@ -31,7 +31,17 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data?.errors?.[0]?.message || data?.message || t.auth.login.genericError)
+        // Pesan error Payload selalu berbahasa Inggris — jangan tampilkan
+        // mentah. Kredensial salah dan akun terkunci (maxLoginAttempts)
+        // sama-sama 401; yang terkunci dibedakan dari pesannya.
+        const raw: string = data?.errors?.[0]?.message ?? ''
+        setError(
+          res.status === 401
+            ? /locked/i.test(raw)
+              ? t.auth.login.locked
+              : t.auth.login.genericError
+            : t.auth.login.serverError,
+        )
         setLoading(false)
         return
       }
@@ -67,12 +77,20 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="text-xs font-mono uppercase tracking-wider text-muted-foreground"
-            >
-              {t.auth.login.password}
-            </label>
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="password"
+                className="text-xs font-mono uppercase tracking-wider text-muted-foreground"
+              >
+                {t.auth.login.password}
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t.auth.login.forgot}
+              </Link>
+            </div>
             <input
               id="password"
               type="password"

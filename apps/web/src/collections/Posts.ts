@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { formatSlugHook } from './hooks/formatSlug'
+import { removePostFromSearch, syncPostToSearch } from './hooks/searchSync'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -13,6 +14,10 @@ export const Posts: CollectionConfig = {
     create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'instructor',
     update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'instructor',
     delete: ({ req: { user } }) => user?.role === 'admin',
+  },
+  hooks: {
+    afterChange: [syncPostToSearch],
+    afterDelete: [removePostFromSearch],
   },
   fields: [
     { name: 'title', type: 'text', required: true },

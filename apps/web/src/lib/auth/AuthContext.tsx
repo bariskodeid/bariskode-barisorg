@@ -6,6 +6,9 @@ import type { User } from '@/payload-types'
 
 interface AuthContextValue {
   user: User | null
+  // true sampai status login pertama kali diketahui (fetch /api/users/me
+  // awal selesai, atau login/logout sudah memanggil setUser).
+  loading: boolean
   setUser: (user: User | null) => void
   refreshUser: () => Promise<void>
 }
@@ -15,8 +18,9 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 // Status login dicek client-side (bukan lewat props dari server layout)
 // supaya halaman ISR seperti landing page tidak ikut jadi fully dynamic
 // gara-gara root layout membaca cookies/headers (lihat app/(frontend)/layout.tsx).
-// Trade-off: nav auth state sempat "logged out" sesaat sebelum fetch pertama
-// selesai.
+// Trade-off: status login belum diketahui sampai fetch pertama selesai —
+// selama itu `loading` true dan Header menampilkan placeholder netral (bukan
+// tombol Masuk/Daftar yang lalu berganti jadi menu user).
 //
 // State-nya SENGAJA di context, bukan di Header: Header hidup di root layout
 // dan tidak di-remount saat soft navigation (router.push/router.refresh), jadi
@@ -24,6 +28,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 // sesudahnya. Login, register, dan logout wajib memanggil setUser/refreshUser.
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUserState] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   // Penanda request terbaru — respons /api/users/me yang lebih lama (mis. fetch
   // awal yang lambat) tidak boleh menimpa hasil login/logout yang lebih baru.
   const latestRequest = useRef(0)
@@ -31,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setUser = useCallback((next: User | null) => {
     latestRequest.current++
     setUserState(next)
+    setLoading(false)
   }, [])
 
   const refreshUser = useCallback(async () => {
@@ -41,6 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (requestId === latestRequest.current) setUserState(data?.user ?? null)
     } catch {
       // Gagal jaringan: biarkan state terakhir yang diketahui.
+    } finally {
+      setLoading(false)
     }
   }, [])
 
@@ -52,7 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser])
 
   return (
-    <AuthContext.Provider value={{ user, setUser, refreshUser }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, setUser, refreshUser }}>
+      {children}
+    </AuthContext.Provider>
   )
 }
 

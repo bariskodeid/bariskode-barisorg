@@ -4,8 +4,15 @@
 
 Pilihan ganda saja (satu jawaban benar per soal) — bukan quiz builder
 serba-tipe. Ditempel di lesson lewat field `hasQuiz`/`quizQuestions`,
-menggantikan tombol "Tandai Selesai" manual: submit quiz = lesson selesai +
-skor tersimpan.
+menggantikan tombol "Tandai Selesai" manual: **lulus quiz** (skor minimal
+`QUIZ_PASSING_SCORE` = 70%, `src/lib/quiz.ts`) = lesson selesai + skor
+tersimpan. Skor di bawah ambang tidak mencatat apa pun dan quiz boleh diulang.
+
+Sebelum 2026-10-22, submit dengan skor berapa pun (termasuk 0%) langsung
+menyelesaikan lesson dan mengunci quiz permanen tanpa opsi ulang (temuan QA
+P1). Migration `20261022_041500_remove_failed_quiz_progress` menghapus baris
+Progress lama yang skornya di bawah 70, sehingga lesson itu kembali "belum
+selesai" dan quiz-nya bisa dikerjakan ulang.
 
 ## Field di `Lessons`
 
@@ -15,7 +22,10 @@ Lihat `04-DATA-MODEL.md`. Pola sama seperti `hasSandbox` yang sudah ada
 tangan DDL tabel array Payload).
 
 Validasi server-side di field `quizQuestions` (`validate`): tiap soal harus
-punya **tepat satu** opsi `isCorrect`.
+punya **tepat satu** opsi `isCorrect`, dan `hasQuiz: true` wajib punya
+minimal satu soal (validate custom menggantikan validator bawaan array, jadi
+`minRows` tidak ditegakkan sendiri). "Lesson ber-quiz" di kode selalu dicek
+lewat `lessonHasQuiz()` (`src/lib/quiz.ts`) = `hasQuiz` DAN ada soal.
 
 ## KEAMANAN: Kunci Jawaban Jangan Bocor
 
@@ -36,17 +46,32 @@ menyertakan `isCorrect` untuk role student — props ke client component
 
 `POST /api/quiz` (`src/app/api/quiz/route.ts`):
 
-1. Auth gate, rate limit `quiz:${user.id}` (10/60s).
-2. Idempotent: kalau lesson ini sudah completed (baris `progress` ada),
-   balikan record lama — tidak ada fitur retake/re-grade di v1 ini.
+1. Auth gate, rate limit `quiz:${user.id}` (10/60s) — juga membatasi laju
+   percobaan ulang.
+2. Idempotent: baris `progress` hanya ada untuk lesson yang sudah lulus, jadi
+   kalau ada, balikan `{alreadyCompleted: true, passed: true, score}`. Lulus
+   tidak bisa di-re-grade (skor tidak bisa dinaikkan/diturunkan lagi).
 3. Grading: `payload.findByID({..., overrideAccess: true})` — **SATU-SATUNYA**
    tempat di route ini yang pakai `overrideAccess: true`, supaya server bisa
    baca `isCorrect` untuk grading. Field itu TIDAK PERNAH diteruskan balik ke
-   response (response cuma `{score, correctCount, total, results}`, `results`
-   cuma boolean benar/salah per soal, bukan opsi mana yang benar).
-4. `payload.create` ke collection `progress` yang sudah ada (reuse, TIDAK
-   bikin collection `QuizAttempts` baru) — field `score` (sudah ada sejak
-   awal sebagai placeholder, lihat `04-DATA-MODEL.md`) diisi di sini.
+   response (response cuma `{passed, score, correctCount, total, results,
+   passingScore}`, `results` cuma boolean benar/salah per soal, bukan opsi
+   mana yang benar).
+4. Skor < 70: response `passed: false`, TIDAK ada baris yang dibuat (tidak
+   ada riwayat percobaan gagal — sengaja, tanpa collection `QuizAttempts`).
+   Trade-off yang disadari: hasil benar/salah per soal + ulang tanpa batas
+   (selain rate limit) + urutan opsi tetap membuat siswa bisa mencapai 100%
+   dengan coba-coba dalam beberapa percobaan. Dipilih demi nilai belajar
+   (siswa tahu bagian mana yang perlu dibaca ulang). Kalau integritas
+   sertifikat jadi prioritas, opsinya: sembunyikan hasil per soal saat gagal,
+   cooldown antar percobaan, atau acak opsi per percobaan (butuh mapping
+   index di server).
+5. Skor >= 70: `payload.create` ke collection `progress` dengan
+   `context: { quizPassed: true }` — satu-satunya cara membuat baris Progress
+   untuk lesson ber-quiz (lihat hook `progressIntegrity.ts` di
+   `09-FEATURE-PROGRESS-TRACKING.md`). `course` diambil dari lesson, bukan
+   dari body request. Submit ganda yang balapan ditangani unique index
+   (user, lesson).
 
 ## Urutan Opsi: Diacak Saat Seed, Grading Tetap Berbasis Index
 
@@ -80,3 +105,11 @@ pertama, jadi siswa bisa dapat ~100% dengan selalu memilih A.
 sama seperti `MarkCompleteButton.tsx`). Di `lessons/[slug]/page.tsx`, blok
 "Tandai Selesai" jadi kondisional: `lesson.hasQuiz` → render `<Quiz>`,
 selain itu tetap `<MarkCompleteButton>` seperti sebelumnya.
+
+- Teks pengantar di atas soal menjelaskan ambang lulus dan bahwa quiz bisa
+  diulang; pengunjung yang belum login melihat ajakan masuk yang menyebut
+  quiz (bukan tombol "tandai selesai" yang memang tidak ada).
+- Lulus: kotak hijau "Lulus — lesson selesai" + skor.
+- Belum lulus: soal tetap tampil (terkunci) dengan tanda benar/salah per
+  soal, kotak merah "Belum lulus" + skor + ambang, dan tombol "Ulangi Quiz"
+  yang mengosongkan jawaban.

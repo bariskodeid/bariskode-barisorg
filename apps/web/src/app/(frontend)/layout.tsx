@@ -13,10 +13,26 @@ import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
+// Open Graph & Twitter Card: og:title/og:description per halaman otomatis
+// diambil Next.js dari `title`/`description` halaman itu, dan gambarnya dari
+// opengraph-image.tsx di folder ini. Halaman lain JANGAN set `openGraph`
+// sendiri — metadata di-merge dangkal, jadi objek `openGraph` di halaman
+// menimpa seluruh objek ini (siteName, locale, dan gambar ikut hilang).
+// metadataBase dibaca saat build untuk halaman statis — lihat ARG
+// NEXT_PUBLIC_SERVER_URL di Dockerfile.
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'),
   title: 'bariskode.org — Belajar Programming, Data, & Cybersecurity',
   description:
     'Platform pembelajaran open source untuk programming, database, data science, dan cybersecurity — dari nol sampai production.',
+  openGraph: {
+    type: 'website',
+    siteName: 'bariskode.org',
+    locale: 'id_ID',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 }
 
 // SENGAJA TIDAK baca cookies()/headers() di sini (mis. untuk locale) — root

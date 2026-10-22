@@ -1,11 +1,16 @@
 import type { CollectionConfig } from 'payload'
 
 import { formatSlugHook } from './hooks/formatSlug'
+import { removeLessonFromSearch, syncLessonToSearch } from './hooks/searchSync'
 
 export const Lessons: CollectionConfig = {
   slug: 'lessons',
   admin: { useAsTitle: 'title' },
   access: { read: () => true },
+  hooks: {
+    afterChange: [syncLessonToSearch],
+    afterDelete: [removeLessonFromSearch],
+  },
   fields: [
     { name: 'title', type: 'text', required: true },
     {
@@ -60,8 +65,14 @@ export const Lessons: CollectionConfig = {
       minRows: 1,
       admin: { condition: (data) => data.hasQuiz },
       // Validasi server-side: tiap soal harus punya tepat satu opsi benar —
-      // lihat docs/19-FEATURE-QUIZ.md.
-      validate: (value) => {
+      // lihat docs/19-FEATURE-QUIZ.md. Validate custom MENGGANTIKAN validator
+      // bawaan array, jadi minRows di atas tidak ditegakkan — quiz aktif
+      // tanpa soal dicek manual di sini.
+      validate: (value, { siblingData }) => {
+        const hasQuiz = (siblingData as { hasQuiz?: boolean } | undefined)?.hasQuiz
+        if (hasQuiz && (!Array.isArray(value) || value.length === 0)) {
+          return 'Quiz aktif butuh minimal satu soal (atau matikan "hasQuiz").'
+        }
         if (!Array.isArray(value)) return true
         for (const q of value as { question?: string; options?: { isCorrect?: boolean }[] }[]) {
           const correctCount = (q?.options ?? []).filter((o) => o?.isCorrect).length

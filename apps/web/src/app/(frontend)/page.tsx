@@ -104,7 +104,9 @@ export default async function HomePage() {
                 <div className="mb-4 p-3 inline-block rounded-lg bg-secondary/50 border border-border group-hover:border-primary/30 transition-colors">
                   <Icon className="w-6 h-6 text-foreground" />
                 </div>
-                <h3 className="text-lg font-bold mb-1">{category.name}</h3>
+                <h3 className="text-lg font-bold mb-1">
+                  {t.categoryNames[category.slug] ?? category.name}
+                </h3>
                 {category.description && (
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {category.description}
@@ -136,11 +138,11 @@ export default async function HomePage() {
                     <div className="flex items-center gap-2 mb-4">
                       {category && (
                         <span className="text-xs font-mono px-2 py-1 rounded bg-secondary text-muted-foreground">
-                          {category.name}
+                          {t.categoryNames[category.slug] ?? category.name}
                         </span>
                       )}
-                      <span className="text-xs font-mono px-2 py-1 rounded bg-secondary text-muted-foreground capitalize">
-                        {course.level}
+                      <span className="text-xs font-mono px-2 py-1 rounded bg-secondary text-muted-foreground">
+                        {t.levels[course.level ?? ''] ?? course.level}
                       </span>
                     </div>
                     <h3 className="text-xl font-bold mb-2 group-hover:text-green-400 transition-colors">

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getPayload } from '@/lib/payload'
+import { lessonHasQuiz } from '@/lib/quiz'
 import { checkRateLimit } from '@/lib/rateLimit'
 
 // Lihat docs/09-FEATURE-PROGRESS-TRACKING.md. overrideAccess: false dipakai
@@ -29,9 +30,29 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { lessonId, courseId } = await req.json()
-  if (!lessonId || !courseId) {
-    return NextResponse.json({ error: 'lessonId dan courseId wajib diisi' }, { status: 400 })
+  const body = await req.json().catch(() => null)
+  const lessonId = body?.lessonId
+  if (!lessonId) {
+    return NextResponse.json({ error: 'lessonId wajib diisi' }, { status: 400 })
+  }
+
+  // Course diturunkan dari lesson (bukan dari body) dan lesson ber-quiz
+  // ditolak: lesson seperti itu hanya selesai lewat quiz yang lulus
+  // (/api/quiz). Hook Progress memaksakan aturan yang sama untuk jalur tulis
+  // lain — lihat collections/hooks/progressIntegrity.ts.
+  const lesson = await payload
+    .findByID({ collection: 'lessons', id: lessonId, depth: 1, overrideAccess: false, user })
+    .catch(() => null)
+  const mod = lesson && typeof lesson.module === 'object' ? lesson.module : null
+  const courseId = mod && (typeof mod.course === 'object' ? mod.course.id : mod.course)
+  if (!lesson || !courseId) {
+    return NextResponse.json({ error: 'Lesson tidak ditemukan' }, { status: 404 })
+  }
+  if (lessonHasQuiz(lesson)) {
+    return NextResponse.json(
+      { error: 'Lesson ini diselesaikan dengan lulus quiz-nya.' },
+      { status: 400 },
+    )
   }
 
   const existing = await payload.find({
@@ -50,7 +71,7 @@ export async function POST(req: NextRequest) {
     collection: 'progress',
     data: {
       user: user.id,
-      lesson: lessonId,
+      lesson: lesson.id,
       course: courseId,
       completedAt: new Date().toISOString(),
     },

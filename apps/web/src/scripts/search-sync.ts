@@ -1,65 +1,39 @@
-// Bulk sync script — jalankan via: pnpm payload run scripts/search-sync.ts
-// Sync semua courses, lessons, dan posts dari Payload ke Meilisearch.
+// Bulk reindex — jalankan via: pnpm search:sync
+// (= payload run src/scripts/search-sync.ts; di production lewat service
+// web-script, lihat docs/25-FEATURE-SEARCH.md). Mengosongkan lalu mengisi
+// ulang index courses, lessons, dan posts dari Postgres. Aman dijalankan
+// berulang kali.
 
 import { getPayload } from '../lib/payload'
-import { getPublicAuthor } from '../lib/publicAuthor'
-import { syncCourse, syncLesson, syncPost, setupIndexes } from '../lib/search/sync'
+import { isSearchEnabled, meiliDocumentCount } from '../lib/search/meilisearch'
+import { reindexAll } from '../lib/search/sync'
 
 async function main() {
-  console.log('🔍 Setting up Meilisearch indexes...')
-  await setupIndexes()
+  if (!isSearchEnabled()) {
+    throw new Error('MEILISEARCH_HOST belum di-set — tidak ada Meilisearch untuk di-index.')
+  }
 
   const payload = await getPayload()
 
-  console.log('📚 Syncing courses...')
-  const courses = await payload.find({
-    collection: 'courses',
-    where: { status: { equals: 'published' } },
-    limit: 1000,
-    depth: 1,
-    overrideAccess: false,
-  })
+  console.log('🔍 Reindex Meilisearch...')
+  const result = await reindexAll(payload)
 
-  for (const course of courses.docs) {
-    await syncCourse(course as Parameters<typeof syncCourse>[0])
+  for (const index of ['courses', 'lessons', 'posts'] as const) {
+    const indexed = await meiliDocumentCount(index)
+    console.log(`  ${index}: ${result[index]} dokumen dari Postgres, ${indexed} di index`)
+    if (indexed !== result[index]) {
+      throw new Error(`Jumlah dokumen index ${index} tidak cocok (${indexed} vs ${result[index]})`)
+    }
   }
-  console.log(`  ✅ ${courses.docs.length} courses synced`)
-
-  console.log('📖 Syncing lessons...')
-  const lessons = await payload.find({
-    collection: 'lessons',
-    limit: 1000,
-    depth: 2,
-    overrideAccess: false,
-  })
-
-  for (const lesson of lessons.docs) {
-    await syncLesson(lesson as Parameters<typeof syncLesson>[0])
-  }
-  console.log(`  ✅ ${lessons.docs.length} lessons synced`)
-
-  console.log('📝 Syncing posts...')
-  const posts = await payload.find({
-    collection: 'posts',
-    where: { status: { equals: 'published' } },
-    limit: 1000,
-    depth: 1,
-    overrideAccess: false,
-  })
-
-  for (const post of posts.docs) {
-    // Relasi author cuma berisi ID (Users tidak bisa dibaca publik) — nama
-    // diambil lewat field publik saja.
-    const author = await getPublicAuthor(payload, post.author)
-    await syncPost({ ...post, author: author?.name ?? '' } as Parameters<typeof syncPost>[0])
-  }
-  console.log(`  ✅ ${posts.docs.length} posts synced`)
 
   console.log('🎉 Search sync complete!')
   process.exit(0)
 }
 
-main().catch((err) => {
+// WAJIB top-level await: `payload run` mengakhiri proses begitu modul selesai
+// dievaluasi, jadi main() yang tidak di-await terpotong diam-diam (exit 0)
+// sebelum sempat mengindex apa pun.
+await main().catch((err) => {
   console.error('❌ Sync failed:', err)
   process.exit(1)
 })

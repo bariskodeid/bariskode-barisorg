@@ -8,6 +8,10 @@
       cek riwayat commit tidak pernah bocor).
 - [ ] SSL/TLS mode Cloudflare di **Full (strict)**, bukan "Flexible" (yang rentan
       MITM antara Cloudflare↔origin).
+- [ ] `http://` di-redirect ke `https://` dan header HSTS terkirim. Origin
+      sudah melakukan keduanya (`next.config.ts`: redirect berdasarkan header
+      `CF-Visitor`, HSTS `max-age=31536000`); "Always Use HTTPS" di Cloudflare
+      tetap disarankan sebagai lapis pertama.
 - [ ] Hanya port 80/443 yang terbuka ke internet di Security List Oracle & `ufw`
       di VM — Postgres, Judge0 internal, CTFd DB **tidak** exposed publik.
 - [ ] Rate limiting aktif untuk `/api/progress` dan `/api/sandbox` (cegah abuse).

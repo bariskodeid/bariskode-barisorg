@@ -1,11 +1,13 @@
-import { ChevronRight, PlayCircle } from 'lucide-react'
+import { ArrowRight, ChevronRight, PlayCircle } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 import { LessonRichText } from '@/components/ui/LessonRichText'
+import { CategoryName, LevelLabel } from '@/components/ui/TaxonomyLabel'
 import { T } from '@/lib/i18n/LocaleContext'
+import { lexicalToPlainText } from '@/lib/lexicalText'
 import { getPayload } from '@/lib/payload'
 import type { Lesson, Module } from '@/payload-types'
 
@@ -38,7 +40,8 @@ export async function generateMetadata(
 
   return {
     title: course.meta?.title || `${course.title} | bariskode.org`,
-    description: course.meta?.description || undefined,
+    description:
+      course.meta?.description || lexicalToPlainText(course.description, 160) || undefined,
   }
 }
 
@@ -78,6 +81,12 @@ export default async function CourseDetailPage(props: PageProps<'/courses/[slug]
     }
   }
 
+  // Lesson pertama kurikulum (module.order lalu lesson.order) untuk tombol
+  // "Mulai Belajar".
+  const firstLesson = modulesResult.docs
+    .map((mod: Module) => lessonsByModule.get(mod.id)?.[0])
+    .find((lesson) => lesson !== undefined)
+
   return (
     <div className="min-h-screen pt-24 pb-12">
       <div className="container mx-auto px-6">
@@ -85,11 +94,11 @@ export default async function CourseDetailPage(props: PageProps<'/courses/[slug]
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {category && (
               <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground">
-                {category.name}
+                <CategoryName slug={category.slug} name={category.name} />
               </span>
             )}
-            <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground capitalize">
-              {course.level}
+            <span className="text-xs font-mono px-2 py-1 rounded bg-white/5 text-muted-foreground">
+              <LevelLabel level={course.level ?? ''} />
             </span>
           </div>
 
@@ -99,6 +108,16 @@ export default async function CourseDetailPage(props: PageProps<'/courses/[slug]
             <div className="prose prose-invert prose-code:before:content-none prose-code:after:content-none max-w-none text-muted-foreground mb-12">
               <LessonRichText data={course.description} />
             </div>
+          )}
+
+          {firstLesson && (
+            <Link
+              href={`/lessons/${firstLesson.slug}`}
+              className="group inline-flex items-center gap-2 px-6 py-3 mb-12 bg-white text-black font-mono text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors rounded-lg"
+            >
+              <T ns="courseDetail" k="start" />
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           )}
 
           <h2 className="text-sm font-mono uppercase tracking-widest text-muted-foreground mb-4">
